@@ -406,9 +406,122 @@ function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Add new items
+  const addProject = async (projectData: any) => {
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectData),
+      });
+      if (!res.ok) throw new Error("Failed to create project");
+      const newProject = await res.json();
+      setProjects((prev) => [...prev, newProject]);
+      toast({
+        title: "Project created successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      return newProject;
+    } catch (e: any) {
+      toast({
+        title: "Error creating project",
+        description: e.message,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      throw e;
+    }
+  };
+
+  const addEmployee = async (employeeData: any) => {
+    try {
+      const res = await fetch("/api/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(employeeData),
+      });
+      if (!res.ok) throw new Error("Failed to create employee");
+      const newEmployee = await res.json();
+      setEmployees((prev) => [...prev, newEmployee]);
+      toast({
+        title: "Employee added successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      return newEmployee;
+    } catch (e: any) {
+      toast({
+        title: "Error adding employee",
+        description: e.message,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      throw e;
+    }
+  };
+
+  const addEquipment = async (equipmentData: any) => {
+    try {
+      const res = await fetch("/api/equipment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(equipmentData),
+      });
+      if (!res.ok) throw new Error("Failed to create equipment");
+      const newEquipment = await res.json();
+      setEquipment((prev) => [...prev, newEquipment]);
+      toast({
+        title: "Equipment added successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      return newEquipment;
+    } catch (e: any) {
+      toast({
+        title: "Error adding equipment",
+        description: e.message,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      throw e;
+    }
+  };
+
+  // Update functions (placeholders for now)
+  const updateProject = async (projectId: string, updateData: any) => {
+    // TODO: Implement project update
+  };
+
+  const updateEmployee = async (employeeId: string, updateData: any) => {
+    // TODO: Implement employee update
+  };
+
+  const updateEquipment = async (equipmentId: string, updateData: any) => {
+    // TODO: Implement equipment update
+  };
+
   return (
     <AppContext.Provider
-      value={{ projects, employees, equipment, moveEmployee, moveEquipment }}
+      value={{ 
+        projects, 
+        employees, 
+        equipment, 
+        moveEmployee, 
+        moveEquipment,
+        addProject,
+        addEmployee,
+        addEquipment,
+        updateProject,
+        updateEmployee,
+        updateEquipment
+      }}
     >
       {children}
     </AppContext.Provider>
@@ -1465,11 +1578,35 @@ function MainApp() {
 /** ======= Enhanced Settings Page ======= **/
 function SettingsPage() {
   const { navigateToDashboard } = useNavigation();
-  const { projects, employees, equipment } = useApp();
+  const { projects, employees, equipment, addProject, addEmployee, addEquipment, updateProject, updateEmployee, updateEquipment } = useApp();
   const [activeTab, setActiveTab] = useState('projects');
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [newProjectData, setNewProjectData] = useState({
+    name: '',
+    location: '',
+    status: 'Planning',
+    budget: '',
+    startDate: '',
+    dueDate: '',
+    description: '',
+    progress: 0
+  });
+  const [newEmployeeData, setNewEmployeeData] = useState({
+    name: '',
+    role: '',
+    email: '',
+    phone: '',
+    department: 'Construction'
+  });
+  const [newEquipmentData, setNewEquipmentData] = useState({
+    name: '',
+    type: 'Heavy Machinery',
+    serialNumber: '',
+    condition: 'Excellent'
+  });
 
   const tabs = [
     { id: 'projects', label: 'Project Details', icon: '🏗️' },
@@ -1478,6 +1615,79 @@ function SettingsPage() {
     { id: 'company-contacts', label: 'Company Contacts', icon: '🏢' },
     { id: 'project-contacts', label: 'Project Contacts', icon: '📞' }
   ];
+
+  // Creation handlers
+  const handleCreateProject = async () => {
+    try {
+      const projectData = {
+        projectNumber: `PRJ-${Date.now()}`,
+        name: newProjectData.name,
+        location: newProjectData.location,
+        description: newProjectData.description,
+        status: newProjectData.status,
+        progress: newProjectData.progress
+      };
+      
+      await addProject(projectData);
+      setIsCreatingNew(false);
+      setNewProjectData({
+        name: '',
+        location: '',
+        status: 'Planning',
+        budget: '',
+        startDate: '',
+        dueDate: '',
+        description: '',
+        progress: 0
+      });
+    } catch (error) {
+      console.error('Error creating project:', error);
+    }
+  };
+
+  const handleCreateEmployee = async () => {
+    try {
+      const employeeData = {
+        name: newEmployeeData.name,
+        role: newEmployeeData.role,
+        email: newEmployeeData.email,
+        phone: newEmployeeData.phone
+      };
+      
+      await addEmployee(employeeData);
+      setIsCreatingNew(false);
+      setNewEmployeeData({
+        name: '',
+        role: '',
+        email: '',
+        phone: '',
+        department: 'Construction'
+      });
+    } catch (error) {
+      console.error('Error creating employee:', error);
+    }
+  };
+
+  const handleCreateEquipment = async () => {
+    try {
+      const equipmentData = {
+        name: newEquipmentData.name,
+        type: newEquipmentData.type,
+        serialNumber: newEquipmentData.serialNumber
+      };
+      
+      await addEquipment(equipmentData);
+      setIsCreatingNew(false);
+      setNewEquipmentData({
+        name: '',
+        type: 'Heavy Machinery',
+        serialNumber: '',
+        condition: 'Excellent'
+      });
+    } catch (error) {
+      console.error('Error creating equipment:', error);
+    }
+  };
 
   return (
     <Box p={6} minH="100vh">
@@ -1513,7 +1723,16 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Project Details Management</Heading>
-              <Button colorScheme="brand" size="sm">+ Add New Project</Button>
+              <Button 
+                colorScheme="brand" 
+                size="sm"
+                onClick={() => {
+                  setIsCreatingNew(true);
+                  setSelectedProject(null);
+                }}
+              >
+                + Add New Project
+              </Button>
             </HStack>
             
             <Flex gap={6}>
@@ -1543,7 +1762,111 @@ function SettingsPage() {
 
               {/* Project Details Form */}
               <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
-                {selectedProject ? (
+                {isCreatingNew ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Create New Project</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name *</Text>
+                        <Input 
+                          value={newProjectData.name} 
+                          onChange={(e) => setNewProjectData({...newProjectData, name: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="Enter project name"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
+                        <Select 
+                          bg="#1E1E2F" 
+                          color="white" 
+                          value={newProjectData.status}
+                          onChange={(e) => setNewProjectData({...newProjectData, status: e.target.value})}
+                        >
+                          <option style={{background: '#1E1E2F'}} value="Planning">Planning</option>
+                          <option style={{background: '#1E1E2F'}} value="In Progress">In Progress</option>
+                          <option style={{background: '#1E1E2F'}} value="On Hold">On Hold</option>
+                          <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
+                        </Select>
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location *</Text>
+                        <Input 
+                          value={newProjectData.location} 
+                          onChange={(e) => setNewProjectData({...newProjectData, location: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="Enter project location"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
+                        <Input 
+                          value={newProjectData.budget} 
+                          onChange={(e) => setNewProjectData({...newProjectData, budget: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="e.g. $50,000"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
+                        <Input 
+                          type="date" 
+                          value={newProjectData.startDate} 
+                          onChange={(e) => setNewProjectData({...newProjectData, startDate: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
+                        <Input 
+                          type="date" 
+                          value={newProjectData.dueDate} 
+                          onChange={(e) => setNewProjectData({...newProjectData, dueDate: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                        />
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
+                      <Textarea 
+                        value={newProjectData.description} 
+                        onChange={(e) => setNewProjectData({...newProjectData, description: e.target.value})}
+                        bg="#1E1E2F" 
+                        color="white" 
+                        rows={3} 
+                        placeholder="Project description..."
+                      />
+                    </Box>
+                    
+                    <HStack>
+                      <Button 
+                        colorScheme="brand" 
+                        onClick={handleCreateProject}
+                        isDisabled={!newProjectData.name || !newProjectData.location}
+                      >
+                        Create Project
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsCreatingNew(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </HStack>
+                  </VStack>
+                ) : selectedProject ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedProject.name}</Heading>
                     
@@ -1609,7 +1932,7 @@ function SettingsPage() {
                   </VStack>
                 ) : (
                   <Box textAlign="center" py={12}>
-                    <Text color="gray.400">Select a project from the list to edit its details</Text>
+                    <Text color="gray.400">Select a project from the list to edit its details or click "Add New Project" to create one</Text>
                   </Box>
                 )}
               </Box>
@@ -1621,7 +1944,16 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Team Management</Heading>
-              <Button colorScheme="brand" size="sm">+ Add Team Member</Button>
+              <Button 
+                colorScheme="brand" 
+                size="sm"
+                onClick={() => {
+                  setIsCreatingNew(true);
+                  setSelectedEmployee(null);
+                }}
+              >
+                + Add Team Member
+              </Button>
             </HStack>
             
             <Flex gap={6}>
@@ -1654,7 +1986,90 @@ function SettingsPage() {
 
               {/* Employee Details Form */}
               <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
-                {selectedEmployee ? (
+                {isCreatingNew && activeTab === 'team' ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Add New Team Member</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name *</Text>
+                        <Input 
+                          value={newEmployeeData.name} 
+                          onChange={(e) => setNewEmployeeData({...newEmployeeData, name: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="Enter employee name"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title *</Text>
+                        <Input 
+                          value={newEmployeeData.role} 
+                          onChange={(e) => setNewEmployeeData({...newEmployeeData, role: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="e.g. Site Manager, Heavy Operator"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
+                        <Input 
+                          value={newEmployeeData.email} 
+                          onChange={(e) => setNewEmployeeData({...newEmployeeData, email: e.target.value})}
+                          type="email" 
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="employee@company.com"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
+                        <Input 
+                          value={newEmployeeData.phone} 
+                          onChange={(e) => setNewEmployeeData({...newEmployeeData, phone: e.target.value})}
+                          type="tel" 
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="(555) 123-4567"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
+                        <Select 
+                          bg="#1E1E2F" 
+                          color="white" 
+                          value={newEmployeeData.department}
+                          onChange={(e) => setNewEmployeeData({...newEmployeeData, department: e.target.value})}
+                        >
+                          <option style={{background: '#1E1E2F'}} value="Construction">Construction</option>
+                          <option style={{background: '#1E1E2F'}} value="Demolition">Demolition</option>
+                          <option style={{background: '#1E1E2F'}} value="Management">Management</option>
+                          <option style={{background: '#1E1E2F'}} value="Safety">Safety</option>
+                        </Select>
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <HStack>
+                      <Button 
+                        colorScheme="green" 
+                        onClick={handleCreateEmployee}
+                        isDisabled={!newEmployeeData.name || !newEmployeeData.role}
+                      >
+                        Add Employee
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsCreatingNew(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </HStack>
+                  </VStack>
+                ) : selectedEmployee ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedEmployee.name}</Heading>
                     
@@ -1671,12 +2086,12 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
-                        <Input type="email" placeholder="employee@company.com" bg="#1E1E2F" color="white" />
+                        <Input type="email" value={selectedEmployee.email || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
-                        <Input type="tel" placeholder="(555) 123-4567" bg="#1E1E2F" color="white" />
+                        <Input type="tel" value={selectedEmployee.phone || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
@@ -1709,7 +2124,7 @@ function SettingsPage() {
                   </VStack>
                 ) : (
                   <Box textAlign="center" py={12}>
-                    <Text color="gray.400">Select a team member to edit their details</Text>
+                    <Text color="gray.400">Select a team member to edit their details or click "Add Team Member" to create one</Text>
                   </Box>
                 )}
               </Box>
@@ -1721,7 +2136,16 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Equipment Settings</Heading>
-              <Button colorScheme="brand" size="sm">+ Add Equipment</Button>
+              <Button 
+                colorScheme="brand" 
+                size="sm"
+                onClick={() => {
+                  setIsCreatingNew(true);
+                  setSelectedEquipment(null);
+                }}
+              >
+                + Add Equipment
+              </Button>
             </HStack>
             
             <Flex gap={6}>
@@ -1754,7 +2178,81 @@ function SettingsPage() {
 
               {/* Equipment Details Form */}
               <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
-                {selectedEquipment ? (
+                {isCreatingNew && activeTab === 'equipment' ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Add New Equipment</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name *</Text>
+                        <Input 
+                          value={newEquipmentData.name} 
+                          onChange={(e) => setNewEquipmentData({...newEquipmentData, name: e.target.value})}
+                          bg="#1E1E2F" 
+                          color="white" 
+                          placeholder="e.g. Excavator CAT-320"
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category *</Text>
+                        <Select 
+                          bg="#1E1E2F" 
+                          color="white" 
+                          value={newEquipmentData.type}
+                          onChange={(e) => setNewEquipmentData({...newEquipmentData, type: e.target.value})}
+                        >
+                          <option style={{background: '#1E1E2F'}} value="Heavy Machinery">Heavy Machinery</option>
+                          <option style={{background: '#1E1E2F'}} value="Construction Tools">Construction Tools</option>
+                          <option style={{background: '#1E1E2F'}} value="Safety Equipment">Safety Equipment</option>
+                          <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
+                        </Select>
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
+                        <Input 
+                          value={newEquipmentData.serialNumber} 
+                          onChange={(e) => setNewEquipmentData({...newEquipmentData, serialNumber: e.target.value})}
+                          placeholder="SN-123456" 
+                          bg="#1E1E2F" 
+                          color="white" 
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
+                        <Select 
+                          bg="#1E1E2F" 
+                          color="white"
+                          value={newEquipmentData.condition}
+                          onChange={(e) => setNewEquipmentData({...newEquipmentData, condition: e.target.value})}
+                        >
+                          <option style={{background: '#1E1E2F'}} value="Excellent">Excellent</option>
+                          <option style={{background: '#1E1E2F'}} value="Good">Good</option>
+                          <option style={{background: '#1E1E2F'}} value="Fair">Fair</option>
+                          <option style={{background: '#1E1E2F'}} value="Needs Maintenance">Needs Maintenance</option>
+                        </Select>
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <HStack>
+                      <Button 
+                        colorScheme="purple" 
+                        onClick={handleCreateEquipment}
+                        isDisabled={!newEquipmentData.name || !newEquipmentData.type}
+                      >
+                        Add Equipment
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsCreatingNew(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </HStack>
+                  </VStack>
+                ) : selectedEquipment ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedEquipment.name}</Heading>
                     
@@ -1776,7 +2274,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
-                        <Input placeholder="SN-123456" bg="#1E1E2F" color="white" />
+                        <Input value={selectedEquipment.serialNumber || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
@@ -1814,7 +2312,7 @@ function SettingsPage() {
                   </VStack>
                 ) : (
                   <Box textAlign="center" py={12}>
-                    <Text color="gray.400">Select equipment to edit its details</Text>
+                    <Text color="gray.400">Select equipment to edit its details or click "Add Equipment" to create one</Text>
                   </Box>
                 )}
               </Box>
