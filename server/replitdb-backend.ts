@@ -1,10 +1,12 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { setupVite, serveStatic, log } from "./vite";
-import { createServer } from "http";
+import express from "express";
+import cors from "cors";
+import { json } from "body-parser";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(cors());
+app.use(json());
+
+const PORT = process.env.PORT || 5000;
 
 /** Mock Replit DB for development **/
 class MockReplitDB {
@@ -143,37 +145,6 @@ async function initData() {
   }
 }
 
-// Logging middleware
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
 /** ====== GET endpoints ====== **/
 app.get("/api/employees", async (req, res) => {
   const employees = (await db.get(EMPLOYEES_KEY)) || [];
@@ -233,6 +204,7 @@ app.patch("/api/equipment/:id", async (req, res) => {
   res.json(updatedItem);
 });
 
+/** ====== POST endpoints (Create) ====== **/
 function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
@@ -241,7 +213,6 @@ function uuidv4() {
   });
 }
 
-/** ====== POST endpoints (Create) ====== **/
 app.post("/api/employees", async (req, res) => {
   const employees = (await db.get(EMPLOYEES_KEY)) || [];
   const newEmp = {
@@ -291,6 +262,7 @@ app.get("/api/conflicts", async (req, res) => {
   const employees = (await db.get(EMPLOYEES_KEY)) || [];
   const equipment = (await db.get(EQUIPMENT_KEY)) || [];
 
+  // Check for any potential conflicts
   const empProjectMap: Record<string, string> = {};
   const empConflicts: any[] = [];
   employees.forEach((emp: any) => {
@@ -318,34 +290,11 @@ app.get("/api/conflicts", async (req, res) => {
   res.json({ employeeConflicts: empConflicts, equipmentConflicts: eqConflicts });
 });
 
-(async () => {
-  // Initialize sample data
-  await initData();
-  
-  const server = createServer(app);
-
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+// Initialize data and start server
+initData().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Backend API running on port ${PORT}`);
   });
+});
 
-  // Setup vite in development and serve static files in production
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  // Serve on the specified port
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+export default app;
