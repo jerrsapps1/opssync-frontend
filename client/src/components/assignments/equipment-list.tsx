@@ -46,7 +46,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
 
   return (
     <div className="w-72 border-l border-blue-700 p-3 overflow-y-auto bg-gray-800">
-      <h2 className="text-sm font-medium mb-3">Equipment</h2>
+      <h2 className="text-sm font-medium mb-3">Equipment (Single List)</h2>
       <Droppable droppableId="equipment-list">
         {(provided, snapshot) => (
           <div
