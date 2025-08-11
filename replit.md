@@ -20,7 +20,14 @@ Routing is handled by Wouter for lightweight client-side navigation. The applica
 ## Backend Architecture
 The server runs on Express.js with TypeScript, following a simplified RESTful API design pattern. The application uses a streamlined architecture with direct API endpoints and Replit Database integration for persistent storage.
 
-The backend provides endpoints for CRUD operations on projects, employees, and equipment with drag-and-drop assignment functionality. Real-time updates are handled through standard HTTP requests with client-side polling via React Query.
+### API Endpoints Provided:
+- **Persistent Storage**: Replit Database integration for reliable data persistence
+- **CRUD Read Operations**: GET endpoints for employees, equipment, and projects
+- **Assignment Updates**: PATCH endpoints to update employee/equipment project assignments via drag-and-drop
+- **Entity Creation**: POST endpoints to create new employees, equipment, and projects
+- **Conflict Detection**: GET /api/conflicts endpoint returning duplicate assignments (extensible for business rules)
+
+Real-time updates are handled through standard HTTP requests with client-side polling via React Query, ensuring immediate UI updates when assignments change.
 
 ## Data Storage Solutions
 The application uses Replit Database (@replit/database) for simple, persistent storage. The implementation includes three main data collections: employees, equipment, and projects. Each entity uses UUID primary keys and includes assignment tracking through currentProjectId fields.
