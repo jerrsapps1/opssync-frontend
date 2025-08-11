@@ -107,10 +107,7 @@ export default function Settings() {
   // Mutations
   const createProjectMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
-      return apiRequest("/api/projects", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("/api/projects", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -132,10 +129,7 @@ export default function Settings() {
 
   const createEmployeeMutation = useMutation({
     mutationFn: async (data: InsertEmployee) => {
-      return apiRequest("/api/employees", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("/api/employees", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
@@ -157,10 +151,7 @@ export default function Settings() {
 
   const createEquipmentMutation = useMutation({
     mutationFn: async (data: InsertEquipment) => {
-      return apiRequest("/api/equipment", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("/api/equipment", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
@@ -182,10 +173,7 @@ export default function Settings() {
 
   const updateEmployeeMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateEmployee }) => {
-      return apiRequest(`/api/employees/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return apiRequest(`/api/employees/${id}`, "PATCH", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
@@ -206,10 +194,7 @@ export default function Settings() {
 
   const updateEquipmentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateEquipment }) => {
-      return apiRequest(`/api/equipment/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return apiRequest(`/api/equipment/${id}`, "PATCH", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
