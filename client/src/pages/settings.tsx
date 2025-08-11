@@ -26,10 +26,11 @@ import {
   type Employee, 
   type Equipment 
 } from "@shared/schema";
-import { Settings as SettingsIcon, Plus, Edit, UserCheck, UserX, AlertTriangle, Wrench } from "lucide-react";
+import { Settings as SettingsIcon, Plus, Edit, UserCheck, UserX, AlertTriangle, Wrench, Download, Upload } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -40,6 +41,8 @@ export default function Settings() {
   const [showAddEquipment, setShowAddEquipment] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -241,6 +244,98 @@ export default function Settings() {
       case "offline": case "maintenance": return "bg-yellow-500";
       case "broken": return "bg-red-500";
       default: return "bg-gray-500";
+    }
+  };
+
+  // Excel Import/Export Functions
+  const exportEquipmentToExcel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/equipment/export', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `equipment-export-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "Equipment data exported successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export equipment data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('excel', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/equipment/import', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setImportStatus({ type: 'error', message: result.message || 'Import failed' });
+        return;
+      }
+
+      setImportStatus({ 
+        type: 'success', 
+        message: result.message 
+      });
+
+      // Refresh equipment data
+      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+
+      toast({
+        title: "Import Completed",
+        description: result.message,
+      });
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Clear status after 5 seconds
+      setTimeout(() => setImportStatus(null), 5000);
+
+    } catch (error) {
+      setImportStatus({ type: 'error', message: 'Import failed' });
+      toast({
+        title: "Error",
+        description: "Failed to import equipment data",
+        variant: "destructive",
+      });
     }
   };
 
@@ -655,6 +750,48 @@ export default function Settings() {
 
           {/* Equipment Tab */}
           <TabsContent value="equipment" className="space-y-6">
+            {/* Excel Import/Export Section */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle>Bulk Equipment Management</CardTitle>
+                <CardDescription>Import and export equipment data using Excel files</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 mb-4">
+                  <Button 
+                    onClick={exportEquipmentToExcel} 
+                    variant="outline"
+                    className="border-green-600 text-green-400 hover:bg-green-600 hover:text-white"
+                    data-testid="button-export-equipment"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export to Excel
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls"
+                    style={{ display: 'none' }}
+                    onChange={handleExcelImport}
+                  />
+                  <Button 
+                    onClick={() => fileInputRef.current?.click()} 
+                    variant="outline"
+                    className="border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white"
+                    data-testid="button-import-equipment"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import from Excel
+                  </Button>
+                </div>
+                {importStatus && (
+                  <Alert className={importStatus.type === 'success' ? 'border-green-600' : 'border-red-600'}>
+                    <AlertDescription>{importStatus.message}</AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <div className="flex items-center justify-between">

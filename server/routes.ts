@@ -14,9 +14,17 @@ import {
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import multer from 'multer';
+import * as XLSX from 'xlsx';
 import "./types"; // Import type declarations
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+// Configure multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Auth middleware
 function authenticateToken(req: Request, res: Response, next: NextFunction) {
@@ -322,6 +330,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating equipment:", error);
       res.status(400).json({ message: "Failed to update equipment" });
+    }
+  });
+
+  // Equipment Excel Import/Export routes
+  app.post("/api/equipment/import", authenticateToken, upload.single('excel'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      let imported = 0;
+      let errors = 0;
+      const importResults = [];
+
+      for (const row of jsonData as any[]) {
+        try {
+          // Map Excel columns to equipment fields
+          const equipmentData = {
+            name: row.Name || row.name || '',
+            type: row.Type || row.type || 'Equipment',
+            make: row.Make || row.make || null,
+            model: row.Model || row.model || null,
+            assetNumber: row['Asset Number'] || row.assetNumber || row.asset_number || null,
+            serialNumber: row['Serial Number'] || row.serialNumber || row.serial_number || null,
+            status: row.Status || row.status || 'available',
+          };
+
+          if (!equipmentData.name.trim()) {
+            importResults.push({ row: imported + errors + 1, error: 'Name is required' });
+            errors++;
+            continue;
+          }
+
+          await storage.createEquipment(equipmentData);
+          importResults.push({ row: imported + errors + 1, success: true });
+          imported++;
+        } catch (error) {
+          importResults.push({ row: imported + errors + 1, error: error instanceof Error ? error.message : 'Unknown error' });
+          errors++;
+        }
+      }
+
+      res.json({
+        message: `Import completed: ${imported} successful, ${errors} errors`,
+        imported,
+        errors,
+        results: importResults
+      });
+    } catch (error) {
+      console.error("Error importing equipment:", error);
+      res.status(500).json({ message: "Failed to import equipment" });
+    }
+  });
+
+  app.get("/api/equipment/export", authenticateToken, async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      
+      // Transform equipment data for Excel export
+      const exportData = equipment.map(eq => ({
+        'Name': eq.name,
+        'Type': eq.type,
+        'Make': eq.make || '',
+        'Model': eq.model || '',
+        'Asset Number': eq.assetNumber || '',
+        'Serial Number': eq.serialNumber || '',
+        'Status': eq.status,
+        'Current Project': eq.currentProjectId || '',
+        'Created Date': eq.createdAt ? new Date(eq.createdAt).toLocaleDateString() : '',
+        'Updated Date': eq.updatedAt ? new Date(eq.updatedAt).toLocaleDateString() : ''
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 25 }, // Name
+        { wch: 15 }, // Type
+        { wch: 15 }, // Make
+        { wch: 15 }, // Model
+        { wch: 15 }, // Asset Number
+        { wch: 15 }, // Serial Number
+        { wch: 12 }, // Status
+        { wch: 20 }, // Current Project
+        { wch: 12 }, // Created Date
+        { wch: 12 }, // Updated Date
+      ];
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipment');
+
+      // Generate Excel file buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Set headers for file download
+      const timestamp = new Date().toISOString().split('T')[0];
+      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.xlsx"`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error exporting equipment:", error);
+      res.status(500).json({ message: "Failed to export equipment" });
     }
   });
 

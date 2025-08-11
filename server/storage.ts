@@ -110,6 +110,44 @@ export class MemStorage implements IStorage {
     this.projects.set(project1.id, project1);
     this.projects.set(project2.id, project2);
     
+    // Constant storage projects for equipment management
+    const warehouse: Project = {
+      id: "warehouse",
+      projectNumber: "STORE-WH-001",
+      name: "Demo Warehouse",
+      location: "Main Storage Facility",
+      gpsLatitude: null,
+      gpsLongitude: null,
+      kmzFileUrl: null,
+      description: "Equipment storage facility - awaiting project assignment",
+      status: "active",
+      progress: 100,
+      startDate: new Date('2020-01-01'),
+      endDate: new Date('2030-12-31'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    const maintenance: Project = {
+      id: "maintenance",
+      projectNumber: "STORE-MAINT-001",
+      name: "Maintenance Shop",
+      location: "Service Center",
+      gpsLatitude: null,
+      gpsLongitude: null,
+      kmzFileUrl: null,
+      description: "Equipment maintenance, repairs, and retired assets storage",
+      status: "active",
+      progress: 100,
+      startDate: new Date('2020-01-01'),
+      endDate: new Date('2030-12-31'),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.projects.set(warehouse.id, warehouse);
+    this.projects.set(maintenance.id, maintenance);
+    
     // Create sample employees
     const employees = [
       { id: "emp-001", name: "John Smith", role: "Heavy Equipment Operator", status: "available", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&h=50" },
@@ -283,6 +321,8 @@ export class MemStorage implements IStorage {
       description: project.description || null,
       status: project.status || "active",
       progress: project.progress || 0,
+      startDate: project.startDate || new Date(),
+      endDate: project.endDate || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

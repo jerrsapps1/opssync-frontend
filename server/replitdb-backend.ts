@@ -156,6 +156,22 @@ async function initData() {
         progress: 10,
         startDate: "2024-04-01", 
         endDate: "2024-07-31",
+      },
+      {
+        id: "warehouse",
+        name: "Demo Warehouse",
+        status: "active",
+        progress: 100,
+        startDate: "2020-01-01",
+        endDate: "2030-12-31",
+      },
+      {
+        id: "maintenance",
+        name: "Maintenance Shop",
+        status: "active",
+        progress: 100,
+        startDate: "2020-01-01", 
+        endDate: "2030-12-31",
       }
     ]);
   }
