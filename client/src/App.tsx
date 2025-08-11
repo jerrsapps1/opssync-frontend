@@ -1017,8 +1017,14 @@ function Header() {
         {/* Navigation Buttons */}
         <HStack spacing={2} mr={4}>
           <Button
-            variant={currentView === 'dashboard' ? 'solid' : 'ghost'}
-            colorScheme={currentView === 'dashboard' ? 'blue' : 'whiteAlpha'}
+            variant={currentView === 'dashboard' ? 'solid' : 'outline'}
+            bg={currentView === 'dashboard' ? 'white' : 'transparent'}
+            color={currentView === 'dashboard' ? 'brand.700' : 'white'}
+            borderColor="white"
+            _hover={{ 
+              bg: currentView === 'dashboard' ? 'gray.100' : 'whiteAlpha.200',
+              color: currentView === 'dashboard' ? 'brand.700' : 'white'
+            }}
             size="sm"
             onClick={navigateToDashboard}
           >
@@ -1026,8 +1032,14 @@ function Header() {
           </Button>
           
           <Button
-            variant={currentView === 'projects' ? 'solid' : 'ghost'}
-            colorScheme={currentView === 'projects' ? 'blue' : 'whiteAlpha'}
+            variant={currentView === 'projects' ? 'solid' : 'outline'}
+            bg={currentView === 'projects' ? 'white' : 'transparent'}
+            color={currentView === 'projects' ? 'brand.700' : 'white'}
+            borderColor="white"
+            _hover={{ 
+              bg: currentView === 'projects' ? 'gray.100' : 'whiteAlpha.200',
+              color: currentView === 'projects' ? 'brand.700' : 'white'
+            }}
             size="sm"
             onClick={() => navigateTo('projects')}
           >
@@ -1035,8 +1047,14 @@ function Header() {
           </Button>
 
           <Button
-            variant={currentView === 'employees' ? 'solid' : 'ghost'}
-            colorScheme={currentView === 'employees' ? 'blue' : 'whiteAlpha'}
+            variant={currentView === 'employees' ? 'solid' : 'outline'}
+            bg={currentView === 'employees' ? 'white' : 'transparent'}
+            color={currentView === 'employees' ? 'brand.700' : 'white'}
+            borderColor="white"
+            _hover={{ 
+              bg: currentView === 'employees' ? 'gray.100' : 'whiteAlpha.200',
+              color: currentView === 'employees' ? 'brand.700' : 'white'
+            }}
             size="sm"
             onClick={() => navigateTo('employees')}
           >
@@ -1044,8 +1062,14 @@ function Header() {
           </Button>
 
           <Button
-            variant={currentView === 'equipment' ? 'solid' : 'ghost'}
-            colorScheme={currentView === 'equipment' ? 'blue' : 'whiteAlpha'}
+            variant={currentView === 'equipment' ? 'solid' : 'outline'}
+            bg={currentView === 'equipment' ? 'white' : 'transparent'}
+            color={currentView === 'equipment' ? 'brand.700' : 'white'}
+            borderColor="white"
+            _hover={{ 
+              bg: currentView === 'equipment' ? 'gray.100' : 'whiteAlpha.200',
+              color: currentView === 'equipment' ? 'brand.700' : 'white'
+            }}
             size="sm"
             onClick={() => navigateTo('equipment')}
           >
