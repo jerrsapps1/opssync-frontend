@@ -46,18 +46,25 @@ The application uses Replit Database (@replit/database) for simple, persistent s
 
 For development, a MockReplitDB class simulates the Replit Database behavior. In production, simply replace the MockReplitDB with the actual @replit/database import.
 
-## Simple Deployment Process
-To deploy this white-label application to a new Replit project:
+## Deployment Instructions
+To deploy this white-label TrackPro system:
 
+**Backend Setup:**
 1. Create a new Node.js Replit project
-2. Install dependencies: `npm install express cors body-parser @replit/database`
-3. Replace MockReplitDB with actual Replit Database:
-   ```javascript
-   import { Database } from "@replit/database";
-   const db = new Database();
-   ```
-4. Set Replit to run: `node server/index.js`
-5. Update brandConfig for client customization
+2. Use the provided Express + Replit Database backend code
+3. Dependencies automatically installed: `express`, `cors`, `body-parser`, `@replit/database`
+4. Run with: `npm run dev` or `node server/index.js`
+
+**Frontend Integration:**
+1. Replace existing App.jsx with the complete implementation
+2. System includes: Dark theme, white-label branding, drag & drop UI, conflict polling
+3. Customize brandConfig for instant client rebranding
+
+**Usage:**
+- Drag employees and equipment between projects
+- Red alert banners appear for assignment conflicts
+- 15-second automatic conflict detection
+- Dismissible alerts (reappear on reload until resolved)
 
 ## Authentication and Authorization
 The codebase is prepared for authentication implementation with session-based architecture. The Express server includes cookie parsing middleware and the database configuration suggests session storage capabilities through connect-pg-simple integration.
