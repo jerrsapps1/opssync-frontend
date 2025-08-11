@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { setupVite, serveStatic, log } from "./vite";
-import { createServer } from "http";
+import { registerRoutes } from "./routes";
 
 const app = express();
 app.use(express.json());
@@ -414,7 +414,8 @@ app.get("/api/analytics", async (req, res) => {
   // Initialize sample data
   await initData();
   
-  const server = createServer(app);
+  // Register all routes (including auth)
+  const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

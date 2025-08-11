@@ -10,6 +10,7 @@ import {
   type UpdateEquipmentAssignment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 
 export interface IStorage {
   // Users
@@ -63,6 +64,7 @@ export class MemStorage implements IStorage {
     
     // Initialize with some sample data
     this.initializeSampleData();
+    this.initializeTestUser().catch(console.error);
   }
 
   private initializeSampleData() {
@@ -176,6 +178,32 @@ export class MemStorage implements IStorage {
       };
       this.alerts.set(alertItem.id, alertItem);
     });
+  }
+
+  private async initializeTestUser() {
+    try {
+      // Create test user for demo purposes
+      const hashedPassword = await bcrypt.hash("demo123", 10);
+      
+      const testUser: User = {
+        id: "test-user-001",
+        username: "demo",
+        password: hashedPassword,
+        brandConfig: JSON.stringify({
+          appName: "TrackPro Demo",
+          primaryColor: "#3B82F6",
+          secondaryColor: "#10B981",
+          logoUrl: ""
+        }),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      this.users.set(testUser.id, testUser);
+      console.log("Test user 'demo' created successfully");
+    } catch (error) {
+      console.error("Failed to create test user:", error);
+    }
   }
 
   // Users
