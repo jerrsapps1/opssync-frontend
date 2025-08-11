@@ -479,11 +479,9 @@ function MainApp() {
 
   return (
     <>
-      <Header />
       {showAlert && (
         <ConflictAlert conflicts={conflicts} onClose={() => setShowAlert(false)} />
       )}
-      {/* rest of your app: Header, DragDropContext, Panels */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Flex height="calc(100vh - 72px)" direction="row">
           <ProjectList />
@@ -499,6 +497,7 @@ export default function App() {
   return (
     <ChakraProvider theme={theme}>
       <AppProvider>
+        <Header />
         <MainApp />
       </AppProvider>
     </ChakraProvider>
