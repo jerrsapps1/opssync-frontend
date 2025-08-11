@@ -44,7 +44,7 @@ import {
   Badge,
   Progress,
 } from "@chakra-ui/react";
-import { HamburgerIcon, SettingsIcon } from "@chakra-ui/icons";
+import { HamburgerIcon, SettingsIcon, StarIcon } from "@chakra-ui/icons";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ObjectUploader } from "./components/ObjectUploader";
 
@@ -1318,12 +1318,17 @@ function EmployeeList() {
                       mb={2}
                       bg={snapshot.isDragging ? "brand.500" : "brand.600"}
                       rounded="md"
-                      boxShadow={snapshot.isDragging ? "lg" : "sm"}
+                      boxShadow={snapshot.isDragging ? "2xl" : "sm"}
+                      transform={snapshot.isDragging ? "rotate(-2deg) scale(1.05)" : "none"}
+                      transition="all 0.2s ease-in-out"
+                      _hover={{
+                        transform: "scale(1.02)",
+                        boxShadow: "lg"
+                      }}
                       color="white"
                       userSelect="none"
                       cursor="grab"
                       _active={{ cursor: "grabbing" }}
-                      transition="all 0.2s"
                       position="relative"
                     >
                       <HStack justify="space-between">
@@ -1331,6 +1336,19 @@ function EmployeeList() {
                           <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
                           <Text fontSize="xs" color="gray.300">{emp.role}</Text>
                         </VStack>
+                        <IconButton
+                          size="xs"
+                          variant="ghost"
+                          color="brand.200"
+                          _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
+                          transition="all 0.2s"
+                          icon={<StarIcon />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSkillEndorsement('employee', emp.id, emp.name);
+                          }}
+                          aria-label="Endorse employee performance"
+                        />
                         {selectedProjectId && emp.currentProjectId === selectedProjectId && (
                           <Box
                             bg="green.400"
@@ -1469,12 +1487,17 @@ function EquipmentList() {
                       mb={2}
                       bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
                       rounded="md"
-                      boxShadow={snapshot.isDragging ? "lg" : "sm"}
+                      boxShadow={snapshot.isDragging ? "2xl" : "sm"}
                       color="white"
                       userSelect="none"
                       cursor="grab"
+                      transform={snapshot.isDragging ? "rotate(2deg) scale(1.05)" : "none"}
+                      transition="all 0.2s ease-in-out"
+                      _hover={{
+                        transform: "scale(1.02)",
+                        boxShadow: "lg"
+                      }}
                       _active={{ cursor: "grabbing" }}
-                      transition="all 0.2s"
                       position="relative"
                     >
                       <HStack justify="space-between">
@@ -1482,6 +1505,19 @@ function EquipmentList() {
                           <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
                           <Text fontSize="xs" color="gray.300">{eq.type}</Text>
                         </VStack>
+                        <IconButton
+                          size="xs"
+                          variant="ghost"
+                          color="purple.100"
+                          _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
+                          transition="all 0.2s"
+                          icon={<StarIcon />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSkillEndorsement('equipment', eq.id, eq.name);
+                          }}
+                          aria-label="Endorse equipment performance"
+                        />
                         {selectedProjectId && eq.currentProjectId === selectedProjectId && (
                           <Box
                             bg="purple.400"
@@ -1572,6 +1608,20 @@ function MainApp() {
   const { moveEmployee, moveEquipment } = useApp();
   const [conflicts, setConflicts] = useConflictPolling(15000);
   const [dismissedConflicts, setDismissedConflicts] = useState(false);
+  const [endorsementAnimation, setEndorsementAnimation] = useState<{show: boolean, text: string, type: string}>({show: false, text: '', type: ''});
+  
+  const handleSkillEndorsement = (type: string, id: string, name: string) => {
+    setEndorsementAnimation({
+      show: true,
+      text: `${name} endorsed!`,
+      type: type
+    });
+    
+    // Hide animation after 2 seconds
+    setTimeout(() => {
+      setEndorsementAnimation({show: false, text: '', type: ''});
+    }, 2000);
+  };
 
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
@@ -1618,12 +1668,41 @@ function MainApp() {
   }, [conflicts]);
 
   return (
-    <Box>
+    <Box position="relative">
       {!dismissedConflicts && (
         <ConflictAlert
           conflicts={conflicts}
           onClose={() => setDismissedConflicts(true)}
         />
+      )}
+
+      {/* Endorsement Animation Pop-up */}
+      {endorsementAnimation.show && (
+        <Box
+          position="fixed"
+          top="50%"
+          left="50%"
+          transform="translate(-50%, -50%)"
+          zIndex={9999}
+          bg="rgba(0,0,0,0.8)"
+          color="yellow.300"
+          p={6}
+          rounded="lg"
+          textAlign="center"
+          minWidth="200px"
+          animation="endorsementPulse 2s ease-in-out"
+          boxShadow="0 0 40px rgba(255, 235, 59, 0.6)"
+        >
+          <VStack spacing={2}>
+            <StarIcon boxSize={8} color="yellow.300" />
+            <Text fontSize="lg" fontWeight="bold">
+              {endorsementAnimation.text}
+            </Text>
+            <Text fontSize="sm" color="gray.300">
+              Performance Recognized!
+            </Text>
+          </VStack>
+        </Box>
       )}
 
       <DragDropContext onDragEnd={onDragEnd}>

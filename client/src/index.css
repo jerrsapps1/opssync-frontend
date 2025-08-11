@@ -3,6 +3,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes endorsementPulse {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 :root {
   --background: hsl(222, 84%, 4.9%);
   --foreground: hsl(210, 40%, 98%);
