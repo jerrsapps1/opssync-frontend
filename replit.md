@@ -22,6 +22,13 @@ The application features enterprise-grade conflict management with:
   - Proper handling of unassigned state using null instead of string values
   - Both employee and equipment drag-and-drop now work correctly with real-time updates
 
+- **Resolved Equipment Identity Issue**: Fixed critical data consistency problem
+  - Identified and resolved multiple conflicting data initialization sources
+  - Synchronized equipment profiles across all storage systems (MemStorage, MockReplitDB, ReplitDB backend)
+  - Equipment profiles now maintain consistent identities during drag operations
+  - Full equipment details (make, model, serial numbers, asset numbers) preserved throughout interface
+  - Eliminated profile switching where equipment would appear to change identity during assignments
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

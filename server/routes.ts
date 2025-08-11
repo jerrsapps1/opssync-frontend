@@ -271,13 +271,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/equipment", async (req, res) => {
     try {
       const equipment = await storage.getEquipment();
-      console.log(`[IDENTITY DEBUG] /api/equipment endpoint returning:`, equipment);
-      console.log(`[IDENTITY DEBUG] eq-001 specifically:`, equipment.find(eq => eq.id === 'eq-001'));
-      console.log(`[IDENTITY DEBUG] eq-002 specifically:`, equipment.find(eq => eq.id === 'eq-002'));
-      console.log(`[IDENTITY DEBUG] eq-003 specifically:`, equipment.find(eq => eq.id === 'eq-003'));
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
       res.json(equipment);
     } catch (error) {
       console.error("Error fetching equipment:", error);
@@ -311,10 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/equipment/:id/assignment", async (req, res) => {
     try {
-      console.log(`[IDENTITY DEBUG] PATCH request for equipment ${req.params.id} with:`, req.body);
       const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
       const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
-      console.log(`[IDENTITY DEBUG] Response equipment:`, equipment);
       res.json(equipment);
     } catch (error) {
       console.error("Error updating equipment assignment:", error);

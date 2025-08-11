@@ -443,7 +443,6 @@ export class MemStorage implements IStorage {
 
   async updateEquipmentAssignment(id: string, assignment: UpdateEquipmentAssignment): Promise<Equipment> {
     const equipment = this.equipment.get(id);
-    console.log(`[IDENTITY DEBUG] Starting assignment for equipment ${id}:`, equipment);
     if (!equipment) {
       throw new Error(`Equipment with id ${id} not found`);
     }
@@ -455,9 +454,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     
-    console.log(`[IDENTITY DEBUG] Updated equipment before saving:`, updatedEquipment);
     this.equipment.set(id, updatedEquipment);
-    console.log(`[IDENTITY DEBUG] Equipment after saving:`, this.equipment.get(id));
     
     // Create activity
     const projectName = assignment.currentProjectId 

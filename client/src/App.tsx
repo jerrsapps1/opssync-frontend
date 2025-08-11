@@ -343,17 +343,9 @@ function AppProvider({ children }: { children: React.ReactNode }) {
           throw new Error("Failed to load data");
         }
         
-        const projects = await projRes.json();
-        const employees = await empRes.json();
-        const equipment = await eqRes.json();
-        
-        console.log(`[FRONTEND DEBUG] Initial data loaded:`);
-        console.log(`[FRONTEND DEBUG] Equipment from API:`, equipment);
-        console.log(`[FRONTEND DEBUG] Equipment eq-004 specifically:`, equipment.find(eq => eq.id === 'eq-004'));
-        
-        setProjects(projects);
-        setEmployees(employees);
-        setEquipment(equipment);
+        setProjects(await projRes.json());
+        setEmployees(await empRes.json());
+        setEquipment(await eqRes.json());
       } catch (e: any) {
         toast({
           title: "Error loading data",
@@ -396,8 +388,6 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   // Update equipment assignment (project)
   async function moveEquipment(eqId: string, newProjectId: string | null) {
     try {
-      console.log(`[FRONTEND DEBUG] Moving equipment ${eqId} to project ${newProjectId}`);
-      
       const res = await fetch(`/api/equipment/${eqId}/assignment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -405,22 +395,9 @@ function AppProvider({ children }: { children: React.ReactNode }) {
       });
       if (!res.ok) throw new Error("Failed to update equipment");
       const updatedEquipment = await res.json();
-      
-      console.log(`[FRONTEND DEBUG] Received updated equipment:`, updatedEquipment);
-      
-      setEquipment((eqs) => {
-        const updated = eqs.map((e) => {
-          if (e.id === eqId) {
-            console.log(`[FRONTEND DEBUG] Updating equipment ${eqId}:`);
-            console.log(`[FRONTEND DEBUG]   From:`, e);
-            console.log(`[FRONTEND DEBUG]   To:`, updatedEquipment);
-            return updatedEquipment;
-          }
-          return e;
-        });
-        console.log(`[FRONTEND DEBUG] Final equipment array:`, updated);
-        return updated;
-      });
+      setEquipment((eqs) =>
+        eqs.map((e) => (e.id === eqId ? updatedEquipment : e))
+      );
     } catch (e: any) {
       toast({
         title: "Error updating equipment",
