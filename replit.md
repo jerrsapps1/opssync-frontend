@@ -11,9 +11,16 @@ The application features enterprise-grade conflict management with:
 - **Advanced White-Label System** - Complete brand customization with logo upload and comprehensive configuration
 - **Object Storage Integration** - Professional file upload system for company logos and assets
 - **Enhanced Settings System** - Comprehensive 5-tab settings page for detailed operational management
-- **Refined Drag & Drop** - Fine-tuned drag and drop with direct project assignment and unassigned zones
+- **Fully Functional Drag & Drop** - Complete drag and drop system with proper API integration for both employee and equipment assignments
 - **Live Data Creation** - Projects, employees, and equipment created in settings automatically appear in dashboard
 - **Integrated Workflow** - Seamless connection between settings management and operational dashboard
+
+## Recent Changes (January 2025)
+- **Fixed Drag-and-Drop Functionality**: Resolved critical issues with project assignment system
+  - Fixed API endpoint routing from `/api/employees/{id}` to `/api/employees/{id}/assignment`
+  - Corrected project ID parsing to handle multi-part IDs (proj-001, proj-002, etc.)
+  - Proper handling of unassigned state using null instead of string values
+  - Both employee and equipment drag-and-drop now work correctly with real-time updates
 
 # User Preferences
 
