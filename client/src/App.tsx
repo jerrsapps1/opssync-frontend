@@ -108,12 +108,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await res.json();
         setUser(userData);
         if (userData.brandConfig) {
-          setBrandConfig({ ...defaultBrandConfig, ...userData.brandConfig });
+          try {
+            const parsedBrandConfig = typeof userData.brandConfig === 'string' 
+              ? JSON.parse(userData.brandConfig) 
+              : userData.brandConfig;
+            setBrandConfig({ ...defaultBrandConfig, ...parsedBrandConfig });
+          } catch (error) {
+            console.error('Error parsing brand config:', error);
+            setBrandConfig(defaultBrandConfig);
+          }
         }
       } else {
         localStorage.removeItem('authToken');
       }
     } catch (error) {
+      console.error('Token validation error:', error);
       localStorage.removeItem('authToken');
     }
     setLoading(false);
@@ -131,7 +140,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('authToken', token);
       setUser(userData);
       if (userData.brandConfig) {
-        setBrandConfig({ ...defaultBrandConfig, ...userData.brandConfig });
+        try {
+          const parsedBrandConfig = typeof userData.brandConfig === 'string' 
+            ? JSON.parse(userData.brandConfig) 
+            : userData.brandConfig;
+          setBrandConfig({ ...defaultBrandConfig, ...parsedBrandConfig });
+        } catch (error) {
+          console.error('Error parsing brand config:', error);
+          setBrandConfig(defaultBrandConfig);
+        }
       }
       return true;
     }
@@ -210,8 +227,10 @@ function useConflictPolling(interval = 15000) {
       }
     };
 
-    fetchConflicts();
-    const intervalId = setInterval(fetchConflicts, interval);
+    fetchConflicts().catch(console.error);
+    const intervalId = setInterval(() => {
+      fetchConflicts().catch(console.error);
+    }, interval);
     return () => clearInterval(intervalId);
   }, [interval]);
 
@@ -252,7 +271,7 @@ function AppProvider({ children }: { children: React.ReactNode }) {
         });
       }
     }
-    fetchData();
+    fetchData().catch(console.error);
   }, [toast]);
 
   // Update employee assignment (project)
