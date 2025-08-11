@@ -388,6 +388,8 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   // Update equipment assignment (project)
   async function moveEquipment(eqId: string, newProjectId: string | null) {
     try {
+      console.log(`[FRONTEND DEBUG] Moving equipment ${eqId} to project ${newProjectId}`);
+      
       const res = await fetch(`/api/equipment/${eqId}/assignment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -395,9 +397,22 @@ function AppProvider({ children }: { children: React.ReactNode }) {
       });
       if (!res.ok) throw new Error("Failed to update equipment");
       const updatedEquipment = await res.json();
-      setEquipment((eqs) =>
-        eqs.map((e) => (e.id === eqId ? updatedEquipment : e))
-      );
+      
+      console.log(`[FRONTEND DEBUG] Received updated equipment:`, updatedEquipment);
+      
+      setEquipment((eqs) => {
+        const updated = eqs.map((e) => {
+          if (e.id === eqId) {
+            console.log(`[FRONTEND DEBUG] Updating equipment ${eqId}:`);
+            console.log(`[FRONTEND DEBUG]   From:`, e);
+            console.log(`[FRONTEND DEBUG]   To:`, updatedEquipment);
+            return updatedEquipment;
+          }
+          return e;
+        });
+        console.log(`[FRONTEND DEBUG] Final equipment array:`, updated);
+        return updated;
+      });
     } catch (e: any) {
       toast({
         title: "Error updating equipment",
