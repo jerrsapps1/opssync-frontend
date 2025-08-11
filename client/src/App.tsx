@@ -981,38 +981,72 @@ function ProjectList() {
       
       <VStack align="start" spacing={2}>
         {projects.map((proj: any) => (
-          <Box
-            key={proj.id}
-            px={3}
-            py={2}
-            bg={selectedProjectId === proj.id ? "brand.500" : "brand.600"}
-            border="2px solid"
-            borderColor={selectedProjectId === proj.id ? "brand.300" : "transparent"}
-            rounded="md"
-            width="100%"
-            cursor="pointer"
-            transition="all 0.2s"
-            _hover={{ bg: selectedProjectId === proj.id ? "brand.400" : "brand.500" }}
-            onClick={() => handleProjectClick(proj)}
-            onDoubleClick={() => navigateToProject(proj.id)}
-          >
-            <VStack align="start" spacing={1}>
-              <HStack justify="space-between" w="full">
-                <Text fontSize="sm" fontWeight="bold" color="white">
-                  {proj.name}
-                </Text>
-                {selectedProjectId === proj.id && (
-                  <Text fontSize="xs" color="brand.200">
-                    ✓
+          <Droppable key={proj.id} droppableId={`project-${proj.id}`}>
+            {(provided, snapshot) => (
+              <Box
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                px={3}
+                py={2}
+                bg={snapshot.isDraggingOver ? "green.600" : (selectedProjectId === proj.id ? "brand.500" : "brand.600")}
+                border="2px solid"
+                borderColor={snapshot.isDraggingOver ? "green.400" : (selectedProjectId === proj.id ? "brand.300" : "transparent")}
+                rounded="md"
+                width="100%"
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{ bg: selectedProjectId === proj.id ? "brand.400" : "brand.500" }}
+                onClick={() => handleProjectClick(proj)}
+                onDoubleClick={() => navigateToProject(proj.id)}
+                minHeight="60px"
+              >
+                <VStack align="start" spacing={1}>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" fontWeight="bold" color="white">
+                      {proj.name}
+                    </Text>
+                    {selectedProjectId === proj.id && (
+                      <Text fontSize="xs" color="brand.200">
+                        ✓
+                      </Text>
+                    )}
+                  </HStack>
+                  <Text fontSize="xs" color="gray.300">
+                    {proj.status}
                   </Text>
-                )}
-              </HStack>
-              <Text fontSize="xs" color="gray.300">
-                {proj.status}
-              </Text>
-            </VStack>
-          </Box>
+                </VStack>
+                {provided.placeholder}
+              </Box>
+            )}
+          </Droppable>
         ))}
+        
+        {/* Unassigned Drop Zone */}
+        <Droppable droppableId="project-unassigned">
+          {(provided, snapshot) => (
+            <Box
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              px={3}
+              py={2}
+              bg={snapshot.isDraggingOver ? "red.600" : "#2A2A3D"}
+              border="2px dashed"
+              borderColor={snapshot.isDraggingOver ? "red.400" : "#4A4A5E"}
+              rounded="md"
+              width="100%"
+              minHeight="60px"
+              transition="all 0.2s"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text fontSize="sm" color="gray.400" textAlign="center">
+                {snapshot.isDraggingOver ? "Release to unassign" : "Unassigned"}
+              </Text>
+              {provided.placeholder}
+            </Box>
+          )}
+        </Droppable>
       </VStack>
       
       <Text fontSize="xs" color="gray.500" mt={3} textAlign="center">
@@ -1095,7 +1129,7 @@ function EmployeeList() {
               {emps.map((emp: any, index: number) => (
                 <Draggable
                   key={emp.id}
-                  draggableId={`emp-${emp.id}`}
+                  draggableId={`employee-${emp.id}`}
                   index={index}
                 >
                   {(provided, snapshot) => (
@@ -1246,7 +1280,7 @@ function EquipmentList() {
               {eqs.map((eq: any, index: number) => (
                 <Draggable
                   key={eq.id}
-                  draggableId={`eq-${eq.id}`}
+                  draggableId={`equipment-${eq.id}`}
                   index={index}
                 >
                   {(provided, snapshot) => (
@@ -1371,17 +1405,31 @@ function MainApp() {
 
     if (sourceId === destId) return;
 
-    // Extract item type and new project ID
+    console.log("Drag end:", { sourceId, destId, draggableId });
+
+    // Extract item type and project IDs
     const [itemType, sourceProjectId] = sourceId.split("-");
-    const [, destProjectId] = destId.split("-");
-    const itemId = draggableId.split("-")[1];
+    const [destType, destProjectId] = destId.split("-");
+    const itemId = draggableId.replace(`${itemType}-`, "");
 
-    const newProjectId = destProjectId === "unassigned" ? null : destProjectId;
+    // Handle different destination types
+    let newProjectId = null;
+    if (destType === "project") {
+      newProjectId = destProjectId;
+    } else if (destProjectId !== "unassigned") {
+      newProjectId = destProjectId;
+    }
 
-    if (itemType === "employee") {
-      moveEmployee(itemId, newProjectId);
-    } else if (itemType === "equipment") {
-      moveEquipment(itemId, newProjectId);
+    console.log("Moving item:", { itemType, itemId, newProjectId });
+
+    try {
+      if (itemType === "employee") {
+        moveEmployee(itemId, newProjectId);
+      } else if (itemType === "equipment") {
+        moveEquipment(itemId, newProjectId);
+      }
+    } catch (error) {
+      console.error("Error moving item:", error);
     }
   };
 
