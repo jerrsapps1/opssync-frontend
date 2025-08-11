@@ -34,6 +34,14 @@ import {
   HStack,
   Spacer,
   Stack,
+  SimpleGrid,
+  Select,
+  Textarea,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  Badge,
 } from "@chakra-ui/react";
 import { HamburgerIcon, SettingsIcon } from "@chakra-ui/icons";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -1406,166 +1414,483 @@ function MainApp() {
   );
 }
 
-/** ======= System Settings Page ======= **/
+/** ======= Enhanced Settings Page ======= **/
 function SettingsPage() {
   const { navigateToDashboard } = useNavigation();
   const { projects, employees, equipment } = useApp();
-  const [activeSection, setActiveSection] = useState('projects');
-  
-  const sections = [
-    { id: 'projects', label: 'Project Management', icon: '🏗️' },
-    { id: 'employees', label: 'Employee Profiles', icon: '👥' },
+  const [activeTab, setActiveTab] = useState('projects');
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+
+  const tabs = [
+    { id: 'projects', label: 'Project Details', icon: '🏗️' },
+    { id: 'team', label: 'Team Management', icon: '👥' },
     { id: 'equipment', label: 'Equipment Settings', icon: '🚜' },
-    { id: 'system', label: 'System Configuration', icon: '⚙️' }
+    { id: 'company-contacts', label: 'Company Contacts', icon: '🏢' },
+    { id: 'project-contacts', label: 'Project Contacts', icon: '📞' }
   ];
 
   return (
-    <Box p={6}>
+    <Box p={6} minH="100vh">
       <HStack mb={6} spacing={4}>
         <Button onClick={navigateToDashboard} variant="outline" size="sm">
           ← Back to Dashboard
         </Button>
-        <Heading>System Settings</Heading>
+        <Heading color="white">Settings & Configuration</Heading>
       </HStack>
 
-      <Flex gap={6}>
-        {/* Sidebar */}
-        <Box width="250px">
-          <VStack spacing={2} align="stretch">
-            {sections.map((section) => (
-              <Button
-                key={section.id}
-                variant={activeSection === section.id ? 'solid' : 'ghost'}
-                justifyContent="flex-start"
-                onClick={() => setActiveSection(section.id)}
-                leftIcon={<Text>{section.icon}</Text>}
-                size="sm"
-              >
-                {section.label}
-              </Button>
-            ))}
+      {/* Tab Navigation */}
+      <Box mb={6}>
+        <HStack spacing={1} bg="#1E1E2F" p={1} borderRadius="md" wrap="wrap">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? 'solid' : 'ghost'}
+              colorScheme={activeTab === tab.id ? 'brand' : 'gray'}
+              onClick={() => setActiveTab(tab.id)}
+              leftIcon={<Text>{tab.icon}</Text>}
+              size="sm"
+              minW="fit-content"
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </HStack>
+      </Box>
+
+      {/* Tab Content */}
+      <Box bg="#1E1E2F" p={6} borderRadius="md" minH="600px">
+        {activeTab === 'projects' && (
+          <VStack spacing={6} align="stretch">
+            <HStack justify="space-between">
+              <Heading size="lg" color="white">Project Details Management</Heading>
+              <Button colorScheme="brand" size="sm">+ Add New Project</Button>
+            </HStack>
+            
+            <Flex gap={6}>
+              {/* Project List */}
+              <Box w="300px">
+                <Text fontWeight="bold" mb={3} color="gray.300">Select Project to Edit</Text>
+                <VStack spacing={2} align="stretch">
+                  {projects.map(project => (
+                    <Box
+                      key={project.id}
+                      p={3}
+                      bg={selectedProject?.id === project.id ? "brand.600" : "#2D2D44"}
+                      border="1px solid"
+                      borderColor={selectedProject?.id === project.id ? "brand.400" : "#4A4A5E"}
+                      borderRadius="md"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      _hover={{ bg: "brand.500" }}
+                      onClick={() => setSelectedProject(project)}
+                    >
+                      <Text fontWeight="bold" color="white" fontSize="sm">{project.name}</Text>
+                      <Text color="gray.400" fontSize="xs">{project.status} • {project.location}</Text>
+                    </Box>
+                  ))}
+                </VStack>
+              </Box>
+
+              {/* Project Details Form */}
+              <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
+                {selectedProject ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Edit: {selectedProject.name}</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name</Text>
+                        <Input value={selectedProject.name} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
+                        <Select bg="#1E1E2F" color="white" value={selectedProject.status}>
+                          <option style={{background: '#1E1E2F'}} value="Planning">Planning</option>
+                          <option style={{background: '#1E1E2F'}} value="In Progress">In Progress</option>
+                          <option style={{background: '#1E1E2F'}} value="On Hold">On Hold</option>
+                          <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
+                        </Select>
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location</Text>
+                        <Input value={selectedProject.location} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
+                        <Input value={selectedProject.budget} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
+                        <Input type="date" value={selectedProject.startDate} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
+                        <Input type="date" value={selectedProject.dueDate} bg="#1E1E2F" color="white" />
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
+                      <Textarea value={selectedProject.description} bg="#1E1E2F" color="white" rows={3} />
+                    </Box>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Progress (%)</Text>
+                      <Slider value={selectedProject.progress} colorScheme="brand">
+                        <SliderTrack>
+                          <SliderFilledTrack />
+                        </SliderTrack>
+                        <SliderThumb />
+                      </Slider>
+                      <Text color="gray.400" fontSize="sm" mt={1}>{selectedProject.progress}% Complete</Text>
+                    </Box>
+                    
+                    <HStack>
+                      <Button colorScheme="brand">Save Changes</Button>
+                      <Button variant="outline">Cancel</Button>
+                      <Spacer />
+                      <Button colorScheme="red" variant="outline">Delete Project</Button>
+                    </HStack>
+                  </VStack>
+                ) : (
+                  <Box textAlign="center" py={12}>
+                    <Text color="gray.400">Select a project from the list to edit its details</Text>
+                  </Box>
+                )}
+              </Box>
+            </Flex>
           </VStack>
-        </Box>
+        )}
 
-        {/* Content */}
-        <Box flex="1" bg="#1E1E2F" p={6} borderRadius="md">
-          {activeSection === 'projects' && (
-            <VStack spacing={4} align="stretch">
-              <Heading size="md">Project Management</Heading>
-              <Text color="gray.400">
-                Manage project settings, default configurations, and project templates.
-              </Text>
-              
-              <Box p={4} bg="#2D2D44" borderRadius="md">
-                <Text fontWeight="bold" mb={2}>Active Projects: {projects.length}</Text>
-                <VStack spacing={2} align="start">
-                  {projects.slice(0, 5).map(project => (
-                    <Text key={project.id} fontSize="sm">
-                      • {project.name} - {project.status}
-                    </Text>
+        {activeTab === 'team' && (
+          <VStack spacing={6} align="stretch">
+            <HStack justify="space-between">
+              <Heading size="lg" color="white">Team Management</Heading>
+              <Button colorScheme="brand" size="sm">+ Add Team Member</Button>
+            </HStack>
+            
+            <Flex gap={6}>
+              {/* Employee List */}
+              <Box w="300px">
+                <Text fontWeight="bold" mb={3} color="gray.300">Team Members</Text>
+                <VStack spacing={2} align="stretch">
+                  {employees.map(employee => (
+                    <Box
+                      key={employee.id}
+                      p={3}
+                      bg={selectedEmployee?.id === employee.id ? "green.600" : "#2D2D44"}
+                      border="1px solid"
+                      borderColor={selectedEmployee?.id === employee.id ? "green.400" : "#4A4A5E"}
+                      borderRadius="md"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      _hover={{ bg: "green.500" }}
+                      onClick={() => setSelectedEmployee(employee)}
+                    >
+                      <Text fontWeight="bold" color="white" fontSize="sm">{employee.name}</Text>
+                      <Text color="gray.400" fontSize="xs">{employee.role}</Text>
+                      <Text color="gray.500" fontSize="xs">
+                        Project: {employee.currentProjectId || 'Unassigned'}
+                      </Text>
+                    </Box>
                   ))}
-                  {projects.length > 5 && (
-                    <Text fontSize="sm" color="gray.500">
-                      ...and {projects.length - 5} more
-                    </Text>
-                  )}
                 </VStack>
               </Box>
-            </VStack>
-          )}
 
-          {activeSection === 'employees' && (
-            <VStack spacing={4} align="stretch">
-              <Heading size="md">Employee Profiles</Heading>
-              <Text color="gray.400">
-                Configure employee settings, roles, and permissions.
-              </Text>
-              
-              <Box p={4} bg="#2D2D44" borderRadius="md">
-                <Text fontWeight="bold" mb={2}>Total Employees: {employees.length}</Text>
-                <VStack spacing={2} align="start">
-                  {employees.slice(0, 5).map(employee => (
-                    <Text key={employee.id} fontSize="sm">
-                      • {employee.name} - {employee.role}
-                    </Text>
+              {/* Employee Details Form */}
+              <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
+                {selectedEmployee ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Edit: {selectedEmployee.name}</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name</Text>
+                        <Input value={selectedEmployee.name} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title</Text>
+                        <Input value={selectedEmployee.role} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
+                        <Input type="email" placeholder="employee@company.com" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
+                        <Input type="tel" placeholder="(555) 123-4567" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Hire Date</Text>
+                        <Input type="date" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
+                        <Select bg="#1E1E2F" color="white">
+                          <option style={{background: '#1E1E2F'}} value="Construction">Construction</option>
+                          <option style={{background: '#1E1E2F'}} value="Demolition">Demolition</option>
+                          <option style={{background: '#1E1E2F'}} value="Management">Management</option>
+                          <option style={{background: '#1E1E2F'}} value="Safety">Safety</option>
+                        </Select>
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Skills & Certifications</Text>
+                      <Textarea placeholder="List employee skills and certifications..." bg="#1E1E2F" color="white" rows={3} />
+                    </Box>
+                    
+                    <HStack>
+                      <Button colorScheme="green">Save Changes</Button>
+                      <Button variant="outline">Cancel</Button>
+                      <Spacer />
+                      <Button colorScheme="red" variant="outline">Remove Employee</Button>
+                    </HStack>
+                  </VStack>
+                ) : (
+                  <Box textAlign="center" py={12}>
+                    <Text color="gray.400">Select a team member to edit their details</Text>
+                  </Box>
+                )}
+              </Box>
+            </Flex>
+          </VStack>
+        )}
+
+        {activeTab === 'equipment' && (
+          <VStack spacing={6} align="stretch">
+            <HStack justify="space-between">
+              <Heading size="lg" color="white">Equipment Settings</Heading>
+              <Button colorScheme="brand" size="sm">+ Add Equipment</Button>
+            </HStack>
+            
+            <Flex gap={6}>
+              {/* Equipment List */}
+              <Box w="300px">
+                <Text fontWeight="bold" mb={3} color="gray.300">Equipment Inventory</Text>
+                <VStack spacing={2} align="stretch">
+                  {equipment.map(item => (
+                    <Box
+                      key={item.id}
+                      p={3}
+                      bg={selectedEquipment?.id === item.id ? "purple.600" : "#2D2D44"}
+                      border="1px solid"
+                      borderColor={selectedEquipment?.id === item.id ? "purple.400" : "#4A4A5E"}
+                      borderRadius="md"
+                      cursor="pointer"
+                      transition="all 0.2s"
+                      _hover={{ bg: "purple.500" }}
+                      onClick={() => setSelectedEquipment(item)}
+                    >
+                      <Text fontWeight="bold" color="white" fontSize="sm">{item.name}</Text>
+                      <Text color="gray.400" fontSize="xs">{item.type}</Text>
+                      <Text color="gray.500" fontSize="xs">
+                        Project: {item.currentProjectId || 'Available'}
+                      </Text>
+                    </Box>
                   ))}
-                  {employees.length > 5 && (
-                    <Text fontSize="sm" color="gray.500">
-                      ...and {employees.length - 5} more
-                    </Text>
-                  )}
                 </VStack>
               </Box>
-            </VStack>
-          )}
 
-          {activeSection === 'equipment' && (
-            <VStack spacing={4} align="stretch">
-              <Heading size="md">Equipment Settings</Heading>
-              <Text color="gray.400">
-                Manage equipment configurations, maintenance schedules, and categories.
-              </Text>
-              
-              <Box p={4} bg="#2D2D44" borderRadius="md">
-                <Text fontWeight="bold" mb={2}>Total Equipment: {equipment.length}</Text>
-                <VStack spacing={2} align="start">
-                  {equipment.slice(0, 5).map(item => (
-                    <Text key={item.id} fontSize="sm">
-                      • {item.name} - {item.status}
-                    </Text>
-                  ))}
-                  {equipment.length > 5 && (
-                    <Text fontSize="sm" color="gray.500">
-                      ...and {equipment.length - 5} more
-                    </Text>
-                  )}
+              {/* Equipment Details Form */}
+              <Box flex="1" bg="#2D2D44" p={4} borderRadius="md">
+                {selectedEquipment ? (
+                  <VStack spacing={4} align="stretch">
+                    <Heading size="md" color="white">Edit: {selectedEquipment.name}</Heading>
+                    
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name</Text>
+                        <Input value={selectedEquipment.name} bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category</Text>
+                        <Select bg="#1E1E2F" color="white" value={selectedEquipment.type}>
+                          <option style={{background: '#1E1E2F'}} value="Heavy Machinery">Heavy Machinery</option>
+                          <option style={{background: '#1E1E2F'}} value="Construction Tools">Construction Tools</option>
+                          <option style={{background: '#1E1E2F'}} value="Safety Equipment">Safety Equipment</option>
+                          <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
+                        </Select>
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
+                        <Input placeholder="SN-123456" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Purchase Date</Text>
+                        <Input type="date" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Warranty Expires</Text>
+                        <Input type="date" bg="#1E1E2F" color="white" />
+                      </Box>
+                      
+                      <Box>
+                        <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
+                        <Select bg="#1E1E2F" color="white">
+                          <option style={{background: '#1E1E2F'}} value="Excellent">Excellent</option>
+                          <option style={{background: '#1E1E2F'}} value="Good">Good</option>
+                          <option style={{background: '#1E1E2F'}} value="Fair">Fair</option>
+                          <option style={{background: '#1E1E2F'}} value="Needs Maintenance">Needs Maintenance</option>
+                        </Select>
+                      </Box>
+                    </SimpleGrid>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Maintenance Notes</Text>
+                      <Textarea placeholder="Maintenance history and notes..." bg="#1E1E2F" color="white" rows={3} />
+                    </Box>
+                    
+                    <HStack>
+                      <Button colorScheme="purple">Save Changes</Button>
+                      <Button variant="outline">Cancel</Button>
+                      <Spacer />
+                      <Button colorScheme="red" variant="outline">Remove Equipment</Button>
+                    </HStack>
+                  </VStack>
+                ) : (
+                  <Box textAlign="center" py={12}>
+                    <Text color="gray.400">Select equipment to edit its details</Text>
+                  </Box>
+                )}
+              </Box>
+            </Flex>
+          </VStack>
+        )}
+
+        {activeTab === 'company-contacts' && (
+          <VStack spacing={6} align="stretch">
+            <HStack justify="space-between">
+              <Heading size="lg" color="white">Company Contacts</Heading>
+              <Button colorScheme="brand" size="sm">+ Add Contact</Button>
+            </HStack>
+            
+            <SimpleGrid columns={2} spacing={6}>
+              <Box bg="#2D2D44" p={4} borderRadius="md">
+                <Text fontWeight="bold" color="white" mb={3}>Key Personnel</Text>
+                <VStack spacing={3} align="stretch">
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">CEO - John Anderson</Text>
+                    <Text color="gray.400" fontSize="xs">j.anderson@company.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 001-1001</Text>
+                  </Box>
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">Operations Manager - Sarah Wilson</Text>
+                    <Text color="gray.400" fontSize="xs">s.wilson@company.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 001-1002</Text>
+                  </Box>
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">Safety Director - Mike Johnson</Text>
+                    <Text color="gray.400" fontSize="xs">m.johnson@company.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 001-1003</Text>
+                  </Box>
                 </VStack>
               </Box>
-            </VStack>
-          )}
-
-          {activeSection === 'system' && (
-            <VStack spacing={4} align="stretch">
-              <Heading size="md">System Configuration</Heading>
-              <Text color="gray.400">
-                Configure system-wide settings, notifications, and integrations.
-              </Text>
               
-              <VStack spacing={4} align="stretch">
-                <Box p={4} bg="#2D2D44" borderRadius="md">
-                  <Text fontWeight="bold" mb={2}>Conflict Detection</Text>
-                  <Text fontSize="sm" color="gray.300">
-                    Real-time monitoring every 15 seconds for assignment conflicts
-                  </Text>
-                  <Button size="xs" mt={2} variant="outline">
-                    Configure Alerts
-                  </Button>
+              <Box bg="#2D2D44" p={4} borderRadius="md">
+                <Text fontWeight="bold" color="white" mb={3}>Vendors & Suppliers</Text>
+                <VStack spacing={3} align="stretch">
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">ABC Equipment Rentals</Text>
+                    <Text color="gray.400" fontSize="xs">rentals@abcequipment.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 200-2001</Text>
+                  </Box>
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">Materials Plus Supply</Text>
+                    <Text color="gray.400" fontSize="xs">orders@materialsplus.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 200-2002</Text>
+                  </Box>
+                  <Box p={3} bg="#1E1E2F" borderRadius="md">
+                    <Text fontWeight="bold" color="white" fontSize="sm">Safety First Solutions</Text>
+                    <Text color="gray.400" fontSize="xs">info@safetyfirst.com</Text>
+                    <Text color="gray.400" fontSize="xs">(555) 200-2003</Text>
+                  </Box>
+                </VStack>
+              </Box>
+            </SimpleGrid>
+            
+            <Box bg="#2D2D44" p={4} borderRadius="md">
+              <Text fontWeight="bold" color="white" mb={3}>Emergency Contacts</Text>
+              <SimpleGrid columns={3} spacing={4}>
+                <Box p={3} bg="#1E1E2F" borderRadius="md" border="2px solid red.400">
+                  <Text fontWeight="bold" color="red.300" fontSize="sm">Emergency Services</Text>
+                  <Text color="white" fontSize="lg" fontWeight="bold">911</Text>
                 </Box>
+                <Box p={3} bg="#1E1E2F" borderRadius="md">
+                  <Text fontWeight="bold" color="white" fontSize="sm">Site Security</Text>
+                  <Text color="gray.400" fontSize="xs">(555) 911-1111</Text>
+                </Box>
+                <Box p={3} bg="#1E1E2F" borderRadius="md">
+                  <Text fontWeight="bold" color="white" fontSize="sm">Medical Emergency</Text>
+                  <Text color="gray.400" fontSize="xs">(555) 911-1112</Text>
+                </Box>
+              </SimpleGrid>
+            </Box>
+          </VStack>
+        )}
 
-                <Box p={4} bg="#2D2D44" borderRadius="md">
-                  <Text fontWeight="bold" mb={2}>Data Backup</Text>
-                  <Text fontSize="sm" color="gray.300">
-                    Automatic backup of projects, employees, and equipment data
-                  </Text>
-                  <Button size="xs" mt={2} variant="outline">
-                    Backup Settings
-                  </Button>
+        {activeTab === 'project-contacts' && (
+          <VStack spacing={6} align="stretch">
+            <HStack justify="space-between">
+              <Heading size="lg" color="white">Project Contacts</Heading>
+              <Button colorScheme="brand" size="sm">+ Add Project Contact</Button>
+            </HStack>
+            
+            <VStack spacing={4} align="stretch">
+              {projects.map(project => (
+                <Box key={project.id} bg="#2D2D44" p={4} borderRadius="md">
+                  <Text fontWeight="bold" color="white" mb={3} fontSize="lg">{project.name}</Text>
+                  
+                  <SimpleGrid columns={3} spacing={4}>
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Project Manager</Text>
+                      <Box p={3} bg="#1E1E2F" borderRadius="md">
+                        <Text fontWeight="bold" color="white" fontSize="sm">David Martinez</Text>
+                        <Text color="gray.400" fontSize="xs">d.martinez@company.com</Text>
+                        <Text color="gray.400" fontSize="xs">(555) 300-3001</Text>
+                      </Box>
+                    </Box>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Site Supervisor</Text>
+                      <Box p={3} bg="#1E1E2F" borderRadius="md">
+                        <Text fontWeight="bold" color="white" fontSize="sm">Lisa Chen</Text>
+                        <Text color="gray.400" fontSize="xs">l.chen@company.com</Text>
+                        <Text color="gray.400" fontSize="xs">(555) 300-3002</Text>
+                      </Box>
+                    </Box>
+                    
+                    <Box>
+                      <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Client Contact</Text>
+                      <Box p={3} bg="#1E1E2F" borderRadius="md">
+                        <Text fontWeight="bold" color="white" fontSize="sm">Robert Taylor</Text>
+                        <Text color="gray.400" fontSize="xs">r.taylor@client.com</Text>
+                        <Text color="gray.400" fontSize="xs">(555) 400-4001</Text>
+                      </Box>
+                    </Box>
+                  </SimpleGrid>
                 </Box>
-
-                <Box p={4} bg="#2D2D44" borderRadius="md">
-                  <Text fontWeight="bold" mb={2}>API Integration</Text>
-                  <Text fontSize="sm" color="gray.300">
-                    Connect with external systems and third-party services
-                  </Text>
-                  <Button size="xs" mt={2} variant="outline">
-                    Manage Integrations
-                  </Button>
-                </Box>
-              </VStack>
+              ))}
             </VStack>
-          )}
-        </Box>
-      </Flex>
+          </VStack>
+        )}
+      </Box>
     </Box>
   );
 }
