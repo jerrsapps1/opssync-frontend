@@ -1458,24 +1458,10 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
   const { equipment, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
-  // Group equipment by project or unassigned
-  const grouped: any = {};
-  projects.forEach((p: any) => (grouped[p.id] = []));
-  grouped["unassigned"] = [];
-  equipment.forEach((eq: any) => {
-    (eq.currentProjectId && grouped[eq.currentProjectId]
-      ? grouped[eq.currentProjectId]
-      : grouped["unassigned"]
-    ).push(eq);
-  });
-
-  // Filter groups based on selected project
-  const filteredGroups = selectedProjectId 
-    ? { [selectedProjectId]: grouped[selectedProjectId] || [] }
-    : grouped;
-
-  // Count filtered equipment
-  const filteredCount = Object.values(filteredGroups).reduce((total: number, eqs: any) => total + eqs.length, 0);
+  // Apply project filtering if selected
+  const filteredEquipment = selectedProjectId && selectedProjectId !== 'all'
+    ? equipment.filter((eq: any) => eq.currentProjectId === selectedProjectId)
+    : equipment;
 
   return (
     <Box
@@ -1491,133 +1477,109 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
           Equipment
           {selectedProjectId && (
             <Text as="span" fontSize="xs" color="gray.400" ml={2}>
-              (Filtered: {filteredCount})
+              (Filtered: {filteredEquipment.length})
             </Text>
           )}
         </Heading>
-        {selectedProjectId && filteredCount === 0 && (
+        {selectedProjectId && filteredEquipment.length === 0 && (
           <Text fontSize="xs" color="yellow.400">
             No equipment assigned
           </Text>
         )}
       </HStack>
       
-      {Object.entries(filteredGroups).map(([projId, eqs]: [string, any]) => (
-        <Droppable key={projId} droppableId={`equipment-${projId}`}>
-          {(provided, snapshot) => (
-            <Box
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              mb={6}
-              p={3}
-              bg={snapshot.isDraggingOver ? "purple.800" : "#2A2A3D"}
-              border="2px dashed"
-              borderColor={snapshot.isDraggingOver ? "purple.400" : "#4A4A5E"}
-              rounded="md"
-              minHeight="80px"
-              transition="all 0.2s"
-            >
-              <HStack justify="space-between" mb={2}>
-                <Text fontWeight="bold" color="white">
-                  {projId === "unassigned"
-                    ? "Unassigned"
-                    : projects.find((p: any) => p.id === projId)?.name}
-                </Text>
-                {selectedProjectId === projId && (
-                  <Text fontSize="xs" color="purple.200" fontWeight="bold">
-                    SELECTED PROJECT
-                  </Text>
-                )}
-              </HStack>
-              
-              {eqs.map((eq: any, index: number) => (
-                <Draggable
-                  key={eq.id}
-                  draggableId={`equipment-${eq.id}`}
-                  index={index}
-                >
-                  {(provided, snapshot) => (
-                    <Box
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      p={2}
-                      mb={2}
-                      bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
-                      rounded="md"
-                      boxShadow={snapshot.isDragging ? "2xl" : "sm"}
-                      color="white"
-                      userSelect="none"
-                      cursor="grab"
-                      transform={snapshot.isDragging ? "rotate(2deg) scale(1.05)" : "none"}
-                      transition="all 0.2s ease-in-out"
-                      _hover={{
-                        transform: "scale(1.02)",
-                        boxShadow: "lg"
-                      }}
-                      _active={{ cursor: "grabbing" }}
-                      position="relative"
-                    >
-                      <HStack justify="space-between">
-                        <VStack align="start" spacing={0}>
-                          <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
-                          <Text fontSize="xs" color="gray.300">{eq.type}</Text>
-                        </VStack>
-                        <IconButton
-                          size="xs"
-                          variant="ghost"
-                          color="purple.100"
-                          _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
-                          transition="all 0.2s"
-                          icon={<StarIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEndorse('equipment', eq.id, eq.name);
-                          }}
-                          aria-label="Endorse equipment performance"
-                        />
-                        {selectedProjectId && eq.currentProjectId === selectedProjectId && (
-                          <Box
-                            bg="purple.400"
-                            color="white"
-                            borderRadius="full"
-                            w={4}
-                            h={4}
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
+      <Droppable droppableId="equipment-all">
+        {(provided, snapshot) => (
+          <Box
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            p={3}
+            bg={snapshot.isDraggingOver ? "purple.800" : "#2A2A3D"}
+            border="2px dashed"
+            borderColor={snapshot.isDraggingOver ? "purple.400" : "#4A4A5E"}
+            rounded="md"
+            minHeight="200px"
+            transition="all 0.2s"
+          >
+            {filteredEquipment.map((eq: any, index: number) => (
+              <Draggable
+                key={eq.id}
+                draggableId={`equipment-${eq.id}`}
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <Box
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    p={2}
+                    mb={2}
+                    bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
+                    rounded="md"
+                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
+                    color="white"
+                    userSelect="none"
+                    cursor="grab"
+                    transform={snapshot.isDragging ? "rotate(2deg) scale(1.05)" : "none"}
+                    transition="all 0.2s ease-in-out"
+                    _hover={{
+                      transform: "scale(1.02)",
+                      boxShadow: "lg"
+                    }}
+                    _active={{ cursor: "grabbing" }}
+                    position="relative"
+                  >
+                    <HStack justify="space-between">
+                      <VStack align="start" spacing={0}>
+                        <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
+                        <Text fontSize="xs" color="gray.300">{eq.type}</Text>
+                        {/* Assignment status badge */}
+                        {eq.currentProjectId ? (
+                          <Badge 
+                            size="sm" 
+                            colorScheme="green" 
                             fontSize="xs"
                           >
-                            ✓
-                          </Box>
+                            {projects.find((p: any) => p.id === eq.currentProjectId)?.name || "Assigned"}
+                          </Badge>
+                        ) : (
+                          <Badge 
+                            size="sm" 
+                            colorScheme="gray" 
+                            fontSize="xs"
+                          >
+                            Unassigned
+                          </Badge>
                         )}
-                      </HStack>
-                    </Box>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-              
-              {eqs.length === 0 && (
-                <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={2}>
-                  No equipment {projId === "unassigned" ? "unassigned" : "assigned to this project"}
-                </Text>
-              )}
-            </Box>
-          )}
-        </Droppable>
-      ))}
-      
-      {selectedProjectId && filteredCount === 0 && (
-        <Box textAlign="center" py={8} bg="#2A2A3D" rounded="md">
-          <Text color="gray.400" fontSize="sm">
-            No equipment assigned to this project
-          </Text>
-          <Text color="gray.500" fontSize="xs" mt={1}>
-            Drag equipment here to assign it
-          </Text>
-        </Box>
-      )}
+                      </VStack>
+                      <IconButton
+                        size="xs"
+                        variant="ghost"
+                        color="purple.100"
+                        _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
+                        transition="all 0.2s"
+                        icon={<StarIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEndorse('equipment', eq.id, eq.name);
+                        }}
+                        aria-label="Endorse equipment performance"
+                      />
+                    </HStack>
+                  </Box>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+            
+            {filteredEquipment.length === 0 && (
+              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
+                {selectedProjectId ? "No equipment assigned to this project" : "No equipment available"}
+              </Text>
+            )}
+          </Box>
+        )}
+      </Droppable>
     </Box>
   );
 }
