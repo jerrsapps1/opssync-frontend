@@ -100,9 +100,13 @@ async function initData() {
       },
       {
         id: "eq-004",
-        name: "Dump Truck",
-        type: "Heavy Equipment",
-        status: "maintenance",
+        name: "Demo Hammer Kit",
+        type: "Demolition",
+        make: "Hilti",
+        model: "TE-60",
+        assetNumber: "AST-004",
+        serialNumber: "DHK-100",
+        status: "in-use",
         currentProjectId: "proj-002",
       },
       {

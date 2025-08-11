@@ -271,6 +271,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/equipment", async (req, res) => {
     try {
       const equipment = await storage.getEquipment();
+      console.log(`[IDENTITY DEBUG] /api/equipment endpoint returning:`, equipment);
+      console.log(`[IDENTITY DEBUG] eq-004 specifically:`, equipment.find(eq => eq.id === 'eq-004'));
       res.json(equipment);
     } catch (error) {
       console.error("Error fetching equipment:", error);

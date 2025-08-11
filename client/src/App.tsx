@@ -343,9 +343,17 @@ function AppProvider({ children }: { children: React.ReactNode }) {
           throw new Error("Failed to load data");
         }
         
-        setProjects(await projRes.json());
-        setEmployees(await empRes.json());
-        setEquipment(await eqRes.json());
+        const projects = await projRes.json();
+        const employees = await empRes.json();
+        const equipment = await eqRes.json();
+        
+        console.log(`[FRONTEND DEBUG] Initial data loaded:`);
+        console.log(`[FRONTEND DEBUG] Equipment from API:`, equipment);
+        console.log(`[FRONTEND DEBUG] Equipment eq-004 specifically:`, equipment.find(eq => eq.id === 'eq-004'));
+        
+        setProjects(projects);
+        setEmployees(employees);
+        setEquipment(equipment);
       } catch (e: any) {
         toast({
           title: "Error loading data",
