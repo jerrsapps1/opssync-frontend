@@ -54,49 +54,60 @@ function useApp() {
   return useContext(AppContext);
 }
 
+/** ======= Custom Hook for Conflict Polling ======= **/
+function useConflictPolling(intervalMs = 30000) {
+  const [conflicts, setConflicts] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchConflicts() {
+      try {
+        const res = await fetch("/api/conflicts");
+        if (!res.ok) throw new Error("Failed to fetch conflicts");
+        const data = await res.json();
+        if (isMounted) setConflicts(data);
+      } catch {
+        // ignore errors silently or add logging
+      }
+    }
+
+    fetchConflicts();
+    const id = setInterval(fetchConflicts, intervalMs);
+
+    return () => {
+      isMounted = false;
+      clearInterval(id);
+    };
+  }, [intervalMs]);
+
+  return [conflicts, setConflicts];
+}
+
 /** ======= App Provider ======= **/
 function AppProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [equipment, setEquipment] = useState([]);
-  const [conflicts, setConflicts] = useState({ 
-    employeeConflicts: [], 
-    equipmentConflicts: [],
-    supervisorConflicts: [],
-    projectsWithoutSupervisors: []
-  });
+  const [conflicts, setConflicts] = useConflictPolling();
   const [showConflictAlert, setShowConflictAlert] = useState(false);
   const toast = useToast();
 
-  // Load all data on mount and check for conflicts
+  // Load initial data on mount
   useEffect(() => {
     async function fetchData() {
       try {
-        const [projRes, empRes, eqRes, conflictRes] = await Promise.all([
+        const [projRes, empRes, eqRes] = await Promise.all([
           fetch("/api/projects"),
           fetch("/api/employees"),
           fetch("/api/equipment"),
-          fetch("/api/conflicts"),
         ]);
-        if (!projRes.ok || !empRes.ok || !eqRes.ok || !conflictRes.ok)
+        if (!projRes.ok || !empRes.ok || !eqRes.ok)
           throw new Error("Failed to load data");
         
         setProjects(await projRes.json());
         setEmployees(await empRes.json());
         setEquipment(await eqRes.json());
-        
-        const conflictData = await conflictRes.json();
-        setConflicts(conflictData);
-        
-        // Show conflict alerts if any exist
-        const totalConflicts = conflictData.employeeConflicts.length + 
-                              conflictData.equipmentConflicts.length + 
-                              conflictData.supervisorConflicts.length + 
-                              conflictData.projectsWithoutSupervisors.length;
-        
-        if (totalConflicts > 0) {
-          setShowConflictAlert(true);
-        }
       } catch (e) {
         toast({
           title: "Error loading data",
@@ -110,34 +121,33 @@ function AppProvider({ children }) {
     fetchData();
   }, [toast]);
 
-  // Check for conflicts after any assignment change
-  async function checkConflicts() {
-    try {
-      const res = await fetch("/api/conflicts");
-      if (!res.ok) throw new Error("Failed to check conflicts");
-      const conflictData = await res.json();
-      setConflicts(conflictData);
-      
-      const totalConflicts = conflictData.employeeConflicts.length + 
-                            conflictData.equipmentConflicts.length + 
-                            conflictData.supervisorConflicts.length + 
-                            conflictData.projectsWithoutSupervisors.length;
+  // Monitor conflicts from polling hook
+  useEffect(() => {
+    if (conflicts) {
+      const totalConflicts = (conflicts.employeeConflicts?.length || 0) + 
+                            (conflicts.equipmentConflicts?.length || 0) + 
+                            (conflicts.supervisorConflicts?.length || 0) + 
+                            (conflicts.projectsWithoutSupervisors?.length || 0);
       
       if (totalConflicts > 0) {
         setShowConflictAlert(true);
       } else {
         setShowConflictAlert(false);
       }
+    }
+  }, [conflicts]);
+
+  // Trigger immediate conflict check after assignment changes
+  async function checkConflicts() {
+    try {
+      const res = await fetch("/api/conflicts");
+      if (!res.ok) throw new Error("Failed to check conflicts");
+      const conflictData = await res.json();
+      setConflicts(conflictData);
     } catch (e) {
       console.error("Error checking conflicts:", e);
     }
   }
-
-  // Poll for conflicts every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(checkConflicts, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Update employee assignment (project)
   async function moveEmployee(empId, newProjectId) {
@@ -442,29 +452,29 @@ function ConflictAlertBanner() {
   
   if (!showConflictAlert) return null;
 
-  const totalConflicts = conflicts.employeeConflicts.length + 
-                        conflicts.equipmentConflicts.length + 
-                        conflicts.supervisorConflicts.length + 
-                        conflicts.projectsWithoutSupervisors.length;
+  const totalConflicts = (conflicts.employeeConflicts?.length || 0) + 
+                        (conflicts.equipmentConflicts?.length || 0) + 
+                        (conflicts.supervisorConflicts?.length || 0) + 
+                        (conflicts.projectsWithoutSupervisors?.length || 0);
 
   const conflictMessages = [];
   
-  if (conflicts.employeeConflicts.length > 0) {
+  if (conflicts.employeeConflicts?.length > 0) {
     const names = conflicts.employeeConflicts.map(emp => emp.name).join(", ");
     conflictMessages.push(`Employee conflicts: ${names}`);
   }
   
-  if (conflicts.equipmentConflicts.length > 0) {
+  if (conflicts.equipmentConflicts?.length > 0) {
     const names = conflicts.equipmentConflicts.map(eq => eq.name).join(", ");
     conflictMessages.push(`Equipment conflicts: ${names}`);
   }
   
-  if (conflicts.supervisorConflicts.length > 0) {
+  if (conflicts.supervisorConflicts?.length > 0) {
     const names = conflicts.supervisorConflicts.map(sc => sc.supervisor.name).join(", ");
     conflictMessages.push(`Supervisor conflicts: ${names}`);
   }
   
-  if (conflicts.projectsWithoutSupervisors.length > 0) {
+  if (conflicts.projectsWithoutSupervisors?.length > 0) {
     const names = conflicts.projectsWithoutSupervisors.map(p => p.name).join(", ");
     conflictMessages.push(`Projects need supervisors: ${names}`);
   }
