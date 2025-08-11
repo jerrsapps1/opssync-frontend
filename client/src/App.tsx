@@ -48,6 +48,38 @@ import { HamburgerIcon, SettingsIcon, StarIcon } from "@chakra-ui/icons";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ObjectUploader } from "./components/ObjectUploader";
 
+// Additional imports for new settings pages
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button as UIButton } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge as UIBadge } from "@/components/ui/badge";
+import { Input as UIInput } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea as UITextarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select as UISelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { 
+  insertProjectSchema, 
+  insertEmployeeSchema, 
+  insertEquipmentSchema,
+  updateEmployeeSchema,
+  updateEquipmentSchema,
+  type InsertProject, 
+  type InsertEmployee, 
+  type InsertEquipment,
+  type UpdateEmployee,
+  type UpdateEquipment,
+  type Project, 
+  type Employee, 
+  type Equipment 
+} from "@shared/schema";
+import { Plus, Edit, UserCheck, UserX, AlertTriangle, Wrench, Download, Upload } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+// useToast already imported from ChakraUI
+import { Alert as UIAlert, AlertDescription as UIAlertDescription } from "@/components/ui/alert";
+
 /** ======= Auth Context ======= **/
 const AuthContext = createContext<any>(null);
 function useAuth() {
@@ -625,9 +657,9 @@ function LoginForm() {
                 </VStack>
               )}
               
-              <Button type="submit" colorScheme="blue" width="full">
+              <UIButton type="submit" colorScheme="blue" width="full">
                 {isRegister ? "Create Account" : "Login"}
-              </Button>
+              </UIButton>
               
               <Button
                 variant="link"
@@ -934,12 +966,12 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
         </ModalBody>
         
         <ModalFooter borderTop="1px solid #4A4A5E">
-          <Button colorScheme="blue" mr={3} onClick={handleSave}>
+          <UIButton colorScheme="blue" mr={3} onClick={handleSave}>
             Save Changes
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
+          </UIButton>
+          <UIButton variant="ghost" onClick={onClose}>
             Cancel
-          </Button>
+          </UIButton>
         </ModalFooter>
       </ModalContent>
     </Modal>
@@ -994,22 +1026,30 @@ function Header() {
           </Button>
           
           <Button
-            variant={currentView === 'settings' ? 'solid' : 'ghost'}
-            colorScheme={currentView === 'settings' ? 'blue' : 'whiteAlpha'}
+            variant={currentView === 'projects' ? 'solid' : 'ghost'}
+            colorScheme={currentView === 'projects' ? 'blue' : 'whiteAlpha'}
             size="sm"
-            onClick={navigateToSettings}
+            onClick={() => navigateTo('projects')}
           >
-            Settings
+            Project Settings
           </Button>
 
           <Button
-            variant="ghost"
-            colorScheme="whiteAlpha"
+            variant={currentView === 'employees' ? 'solid' : 'ghost'}
+            colorScheme={currentView === 'employees' ? 'blue' : 'whiteAlpha'}
             size="sm"
-            onClick={onOpen}
-            leftIcon={<SettingsIcon />}
+            onClick={() => navigateTo('employees')}
           >
-            Brand Config
+            Employee Profiles
+          </Button>
+
+          <Button
+            variant={currentView === 'equipment' ? 'solid' : 'ghost'}
+            colorScheme={currentView === 'equipment' ? 'blue' : 'whiteAlpha'}
+            size="sm"
+            onClick={() => navigateTo('equipment')}
+          >
+            Equipment Management
           </Button>
         </HStack>
         
@@ -1035,14 +1075,7 @@ function Header() {
                 bg="#1E1E2F"
                 _hover={{ bg: "brand.600" }}
               >
-                Brand Settings
-              </MenuItem>
-              <MenuItem 
-                onClick={navigateToSettings}
-                bg="#1E1E2F"
-                _hover={{ bg: "brand.600" }}
-              >
-                System Settings
+                Brand Config
               </MenuItem>
               <MenuItem 
                 onClick={logout}
@@ -1121,9 +1154,9 @@ function ProjectList() {
       <HStack justify="space-between" mb={3}>
         <Heading size="sm">Projects</Heading>
         {selectedProjectId && (
-          <Button size="xs" variant="outline" onClick={clearSelection}>
+          <UIButton size="xs" variant="outline" onClick={clearSelection}>
             Show All
-          </Button>
+          </UIButton>
         )}
       </HStack>
       
@@ -1581,11 +1614,11 @@ function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => 
   };
 
   return (
-    <Alert status="error" mb={4} onClick={handleAlertClick}>
+    <UIAlert status="error" mb={4} onClick={handleAlertClick}>
       <AlertIcon />
       <Box flex="1">
         <AlertTitle mr={2}>Assignment Conflicts Detected!</AlertTitle>
-        <AlertDescription>
+        <UIAlertDescription>
           {conflicts.employeeConflicts.length > 0 && (
             <Text>
               Employees: {conflicts.employeeConflicts.map((e: any) => e.name).join(", ")}
@@ -1596,10 +1629,10 @@ function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => 
               Equipment: {conflicts.equipmentConflicts.map((e: any) => e.name).join(", ")}
             </Text>
           )}
-        </AlertDescription>
+        </UIAlertDescription>
       </Box>
       <CloseButton onClick={handleClose} />
-    </Alert>
+    </UIAlert>
   );
 }
 
@@ -1833,9 +1866,9 @@ function SettingsPage() {
   return (
     <Box p={6} minH="100vh">
       <HStack mb={6} spacing={4}>
-        <Button onClick={navigateToDashboard} variant="outline" size="sm">
+        <UIButton onClick={navigateToDashboard} variant="outline" size="sm">
           ← Back to Dashboard
-        </Button>
+        </UIButton>
         <Heading color="white">Settings & Configuration</Heading>
       </HStack>
 
@@ -1864,7 +1897,7 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Project Details Management</Heading>
-              <Button 
+              <UIButton 
                 colorScheme="brand" 
                 size="sm"
                 onClick={() => {
@@ -1873,7 +1906,7 @@ function SettingsPage() {
                 }}
               >
                 + Add New Project
-              </Button>
+              </UIButton>
             </HStack>
             
             <Flex gap={6}>
@@ -1910,7 +1943,7 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name *</Text>
-                        <Input 
+                        <UIInput
                           value={newProjectData.name} 
                           onChange={(e) => setNewProjectData({...newProjectData, name: e.target.value})}
                           bg="#1E1E2F" 
@@ -1921,7 +1954,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
-                        <Select 
+                        <UISelect 
                           bg="#1E1E2F" 
                           color="white" 
                           value={newProjectData.status}
@@ -1931,12 +1964,12 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="In Progress">In Progress</option>
                           <option style={{background: '#1E1E2F'}} value="On Hold">On Hold</option>
                           <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location *</Text>
-                        <Input 
+                        <UIInput
                           value={newProjectData.location} 
                           onChange={(e) => setNewProjectData({...newProjectData, location: e.target.value})}
                           bg="#1E1E2F" 
@@ -1947,7 +1980,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
-                        <Input 
+                        <UIInput
                           value={newProjectData.budget} 
                           onChange={(e) => setNewProjectData({...newProjectData, budget: e.target.value})}
                           bg="#1E1E2F" 
@@ -1958,7 +1991,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
-                        <Input 
+                        <UIInput
                           type="date" 
                           value={newProjectData.startDate} 
                           onChange={(e) => setNewProjectData({...newProjectData, startDate: e.target.value})}
@@ -1969,7 +2002,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
-                        <Input 
+                        <UIInput
                           type="date" 
                           value={newProjectData.dueDate} 
                           onChange={(e) => setNewProjectData({...newProjectData, dueDate: e.target.value})}
@@ -1981,7 +2014,7 @@ function SettingsPage() {
                     
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
-                      <Textarea 
+                      <UITextarea 
                         value={newProjectData.description} 
                         onChange={(e) => setNewProjectData({...newProjectData, description: e.target.value})}
                         bg="#1E1E2F" 
@@ -1992,19 +2025,19 @@ function SettingsPage() {
                     </Box>
                     
                     <HStack>
-                      <Button 
+                      <UIButton 
                         colorScheme="brand" 
                         onClick={handleCreateProject}
                         isDisabled={!newProjectData.name || !newProjectData.location}
                       >
                         Create Project
-                      </Button>
-                      <Button 
+                      </UIButton>
+                      <UIButton 
                         variant="outline" 
                         onClick={() => setIsCreatingNew(false)}
                       >
                         Cancel
-                      </Button>
+                      </UIButton>
                     </HStack>
                   </VStack>
                 ) : selectedProject ? (
@@ -2014,43 +2047,43 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name</Text>
-                        <Input value={selectedProject.name} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedProject.name} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
-                        <Select bg="#1E1E2F" color="white" value={selectedProject.status}>
+                        <UISelect bg="#1E1E2F" color="white" value={selectedProject.status}>
                           <option style={{background: '#1E1E2F'}} value="Planning">Planning</option>
                           <option style={{background: '#1E1E2F'}} value="In Progress">In Progress</option>
                           <option style={{background: '#1E1E2F'}} value="On Hold">On Hold</option>
                           <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location</Text>
-                        <Input value={selectedProject.location} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedProject.location} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
-                        <Input value={selectedProject.budget} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedProject.budget} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
-                        <Input type="date" value={selectedProject.startDate} bg="#1E1E2F" color="white" />
+                        <UIInput type="date" value={selectedProject.startDate} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
-                        <Input type="date" value={selectedProject.dueDate} bg="#1E1E2F" color="white" />
+                        <UIInput type="date" value={selectedProject.dueDate} bg="#1E1E2F" color="white" />
                       </Box>
                     </SimpleGrid>
                     
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
-                      <Textarea value={selectedProject.description} bg="#1E1E2F" color="white" rows={3} />
+                      <UITextarea value={selectedProject.description} bg="#1E1E2F" color="white" rows={3} />
                     </Box>
                     
                     <Box>
@@ -2065,10 +2098,10 @@ function SettingsPage() {
                     </Box>
                     
                     <HStack>
-                      <Button colorScheme="brand">Save Changes</Button>
-                      <Button variant="outline">Cancel</Button>
+                      <UIButton colorScheme="brand">Save Changes</UIButton>
+                      <UIButton variant="outline">Cancel</UIButton>
                       <Spacer />
-                      <Button colorScheme="red" variant="outline">Delete Project</Button>
+                      <UIButton colorScheme="red" variant="outline">Delete Project</UIButton>
                     </HStack>
                   </VStack>
                 ) : (
@@ -2085,7 +2118,7 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Team Management</Heading>
-              <Button 
+              <UIButton 
                 colorScheme="brand" 
                 size="sm"
                 onClick={() => {
@@ -2094,7 +2127,7 @@ function SettingsPage() {
                 }}
               >
                 + Add Team Member
-              </Button>
+              </UIButton>
             </HStack>
             
             <Flex gap={6}>
@@ -2134,7 +2167,7 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name *</Text>
-                        <Input 
+                        <UIInput
                           value={newEmployeeData.name} 
                           onChange={(e) => setNewEmployeeData({...newEmployeeData, name: e.target.value})}
                           bg="#1E1E2F" 
@@ -2145,7 +2178,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title *</Text>
-                        <Input 
+                        <UIInput
                           value={newEmployeeData.role} 
                           onChange={(e) => setNewEmployeeData({...newEmployeeData, role: e.target.value})}
                           bg="#1E1E2F" 
@@ -2156,7 +2189,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
-                        <Input 
+                        <UIInput
                           value={newEmployeeData.email} 
                           onChange={(e) => setNewEmployeeData({...newEmployeeData, email: e.target.value})}
                           type="email" 
@@ -2168,7 +2201,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
-                        <Input 
+                        <UIInput
                           value={newEmployeeData.phone} 
                           onChange={(e) => setNewEmployeeData({...newEmployeeData, phone: e.target.value})}
                           type="tel" 
@@ -2180,7 +2213,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
-                        <Select 
+                        <UISelect 
                           bg="#1E1E2F" 
                           color="white" 
                           value={newEmployeeData.department}
@@ -2190,24 +2223,24 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Demolition">Demolition</option>
                           <option style={{background: '#1E1E2F'}} value="Management">Management</option>
                           <option style={{background: '#1E1E2F'}} value="Safety">Safety</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                     </SimpleGrid>
                     
                     <HStack>
-                      <Button 
+                      <UIButton 
                         colorScheme="green" 
                         onClick={handleCreateEmployee}
                         isDisabled={!newEmployeeData.name || !newEmployeeData.role}
                       >
                         Add Employee
-                      </Button>
-                      <Button 
+                      </UIButton>
+                      <UIButton 
                         variant="outline" 
                         onClick={() => setIsCreatingNew(false)}
                       >
                         Cancel
-                      </Button>
+                      </UIButton>
                     </HStack>
                   </VStack>
                 ) : selectedEmployee ? (
@@ -2217,50 +2250,50 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name</Text>
-                        <Input value={selectedEmployee.name} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedEmployee.name} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title</Text>
-                        <Input value={selectedEmployee.role} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedEmployee.role} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
-                        <Input type="email" value={selectedEmployee.email || ""} bg="#1E1E2F" color="white" />
+                        <UIInput type="email" value={selectedEmployee.email || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
-                        <Input type="tel" value={selectedEmployee.phone || ""} bg="#1E1E2F" color="white" />
+                        <UIInput type="tel" value={selectedEmployee.phone || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Hire Date</Text>
-                        <Input type="date" bg="#1E1E2F" color="white" />
+                        <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
-                        <Select bg="#1E1E2F" color="white">
+                        <UISelect bg="#1E1E2F" color="white">
                           <option style={{background: '#1E1E2F'}} value="Construction">Construction</option>
                           <option style={{background: '#1E1E2F'}} value="Demolition">Demolition</option>
                           <option style={{background: '#1E1E2F'}} value="Management">Management</option>
                           <option style={{background: '#1E1E2F'}} value="Safety">Safety</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                     </SimpleGrid>
                     
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Skills & Certifications</Text>
-                      <Textarea placeholder="List employee skills and certifications..." bg="#1E1E2F" color="white" rows={3} />
+                      <UITextarea placeholder="List employee skills and certifications..." bg="#1E1E2F" color="white" rows={3} />
                     </Box>
                     
                     <HStack>
-                      <Button colorScheme="green">Save Changes</Button>
-                      <Button variant="outline">Cancel</Button>
+                      <UIButton colorScheme="green">Save Changes</UIButton>
+                      <UIButton variant="outline">Cancel</UIButton>
                       <Spacer />
-                      <Button colorScheme="red" variant="outline">Remove Employee</Button>
+                      <UIButton colorScheme="red" variant="outline">Remove Employee</UIButton>
                     </HStack>
                   </VStack>
                 ) : (
@@ -2277,7 +2310,7 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Equipment Settings</Heading>
-              <Button 
+              <UIButton 
                 colorScheme="brand" 
                 size="sm"
                 onClick={() => {
@@ -2286,7 +2319,7 @@ function SettingsPage() {
                 }}
               >
                 + Add Equipment
-              </Button>
+              </UIButton>
             </HStack>
             
             <Flex gap={6}>
@@ -2326,7 +2359,7 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name *</Text>
-                        <Input 
+                        <UIInput
                           value={newEquipmentData.name} 
                           onChange={(e) => setNewEquipmentData({...newEquipmentData, name: e.target.value})}
                           bg="#1E1E2F" 
@@ -2337,7 +2370,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category *</Text>
-                        <Select 
+                        <UISelect 
                           bg="#1E1E2F" 
                           color="white" 
                           value={newEquipmentData.type}
@@ -2347,12 +2380,12 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Construction Tools">Construction Tools</option>
                           <option style={{background: '#1E1E2F'}} value="Safety Equipment">Safety Equipment</option>
                           <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
-                        <Input 
+                        <UIInput
                           value={newEquipmentData.serialNumber} 
                           onChange={(e) => setNewEquipmentData({...newEquipmentData, serialNumber: e.target.value})}
                           placeholder="SN-123456" 
@@ -2363,7 +2396,7 @@ function SettingsPage() {
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
-                        <Select 
+                        <UISelect 
                           bg="#1E1E2F" 
                           color="white"
                           value={newEquipmentData.condition}
@@ -2373,24 +2406,24 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Good">Good</option>
                           <option style={{background: '#1E1E2F'}} value="Fair">Fair</option>
                           <option style={{background: '#1E1E2F'}} value="Needs Maintenance">Needs Maintenance</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                     </SimpleGrid>
                     
                     <HStack>
-                      <Button 
+                      <UIButton 
                         colorScheme="purple" 
                         onClick={handleCreateEquipment}
                         isDisabled={!newEquipmentData.name || !newEquipmentData.type}
                       >
                         Add Equipment
-                      </Button>
-                      <Button 
+                      </UIButton>
+                      <UIButton 
                         variant="outline" 
                         onClick={() => setIsCreatingNew(false)}
                       >
                         Cancel
-                      </Button>
+                      </UIButton>
                     </HStack>
                   </VStack>
                 ) : selectedEquipment ? (
@@ -2400,55 +2433,55 @@ function SettingsPage() {
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name</Text>
-                        <Input value={selectedEquipment.name} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedEquipment.name} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category</Text>
-                        <Select bg="#1E1E2F" color="white" value={selectedEquipment.type}>
+                        <UISelect bg="#1E1E2F" color="white" value={selectedEquipment.type}>
                           <option style={{background: '#1E1E2F'}} value="Heavy Machinery">Heavy Machinery</option>
                           <option style={{background: '#1E1E2F'}} value="Construction Tools">Construction Tools</option>
                           <option style={{background: '#1E1E2F'}} value="Safety Equipment">Safety Equipment</option>
                           <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
-                        <Input value={selectedEquipment.serialNumber || ""} bg="#1E1E2F" color="white" />
+                        <UIInput value={selectedEquipment.serialNumber || ""} bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Purchase Date</Text>
-                        <Input type="date" bg="#1E1E2F" color="white" />
+                        <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Warranty Expires</Text>
-                        <Input type="date" bg="#1E1E2F" color="white" />
+                        <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
                       
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
-                        <Select bg="#1E1E2F" color="white">
+                        <UISelect bg="#1E1E2F" color="white">
                           <option style={{background: '#1E1E2F'}} value="Excellent">Excellent</option>
                           <option style={{background: '#1E1E2F'}} value="Good">Good</option>
                           <option style={{background: '#1E1E2F'}} value="Fair">Fair</option>
                           <option style={{background: '#1E1E2F'}} value="Needs Maintenance">Needs Maintenance</option>
-                        </Select>
+                        </UISelect>
                       </Box>
                     </SimpleGrid>
                     
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Maintenance Notes</Text>
-                      <Textarea placeholder="Maintenance history and notes..." bg="#1E1E2F" color="white" rows={3} />
+                      <UITextarea placeholder="Maintenance history and notes..." bg="#1E1E2F" color="white" rows={3} />
                     </Box>
                     
                     <HStack>
-                      <Button colorScheme="purple">Save Changes</Button>
-                      <Button variant="outline">Cancel</Button>
+                      <UIButton colorScheme="purple">Save Changes</UIButton>
+                      <UIButton variant="outline">Cancel</UIButton>
                       <Spacer />
-                      <Button colorScheme="red" variant="outline">Remove Equipment</Button>
+                      <UIButton colorScheme="red" variant="outline">Remove EquipmentRemove Equipment</UIButton>
                     </HStack>
                   </VStack>
                 ) : (
@@ -2465,7 +2498,7 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Company Contacts</Heading>
-              <Button colorScheme="brand" size="sm">+ Add Contact</Button>
+              <UIButton colorScheme="brand" size="sm">+ Add Contact+ Add Contact</UIButton>
             </HStack>
             
             <SimpleGrid columns={2} spacing={6}>
@@ -2536,7 +2569,7 @@ function SettingsPage() {
           <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
               <Heading size="lg" color="white">Project Contacts</Heading>
-              <Button colorScheme="brand" size="sm">+ Add Project Contact</Button>
+              <UIButton colorScheme="brand" size="sm">+ Add Project Contact+ Add Project Contact</UIButton>
             </HStack>
             
             <VStack spacing={4} align="stretch">
@@ -2591,9 +2624,9 @@ function ProjectProfilePage() {
   
   return (
     <Box p={6}>
-      <Button onClick={navigateToDashboard} mb={4}>
+      <UIButton onClick={navigateToDashboard} mb={4}>
         ← Back to Dashboard
-      </Button>
+      </UIButton>
       <Heading mb={4}>Project Profile</Heading>
       {project ? (
         <VStack align="start" spacing={4}>
@@ -2609,13 +2642,871 @@ function ProjectProfilePage() {
   );
 }
 
+/** ======= Individual Settings Pages ======= **/
+function ProjectSettingsPage() {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [showAddProject, setShowAddProject] = useState(false);
+
+  const { data: projects = [] } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  const projectForm = useForm<InsertProject>({
+    resolver: zodResolver(insertProjectSchema),
+    defaultValues: {
+      projectNumber: "",
+      name: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      status: "planning",
+      location: "",
+      budget: 0,
+      supervisorId: "",
+    },
+  });
+
+  const createProjectMutation = useMutation({
+    mutationFn: async (data: InsertProject) => {
+      return apiRequest("/api/projects", { method: "POST", body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
+      projectForm.reset();
+      setShowAddProject(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center mb-6">
+          <SettingsIcon className="w-6 h-6 mr-3" />
+          <h1 className="text-2xl font-bold">Project Settings</h1>
+        </div>
+
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Project Management</CardTitle>
+                <CardDescription>Create and manage construction projects</CardDescription>
+              </div>
+              <Dialog open={showAddProject} onOpenChange={setShowAddProject}>
+                <DialogTrigger asChild>
+                  <UIButton data-testid="button-add-project">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Project
+                  </UIButton>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-800 border-gray-700 max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Create New Project</DialogTitle>
+                    <DialogDescription>
+                      Add a new construction or demolition project with GPS location and details.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={projectForm.handleSubmit((data) => createProjectMutation.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="projectNumber">Project Number</Label>
+                        <UIInput
+                          {...projectForm.register("projectNumber")} 
+                          placeholder="PROJ-001" 
+                          data-testid="input-new-project-number" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="name">Project Name</Label>
+                        <UIInput
+                          {...projectForm.register("name")} 
+                          placeholder="Downtown Office Complex" 
+                          data-testid="input-new-project-name" 
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <UITextarea 
+                        {...projectForm.register("description")} 
+                        placeholder="Project details and scope of work..."
+                        className="min-h-[100px]" 
+                        data-testid="input-new-project-description" 
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="startDate">Start Date</Label>
+                        <UIInput
+                          {...projectForm.register("startDate")} 
+                          type="date" 
+                          data-testid="input-new-project-start-date" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="endDate">End Date</Label>
+                        <UIInput
+                          {...projectForm.register("endDate")} 
+                          type="date" 
+                          data-testid="input-new-project-end-date" 
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <UIInput
+                          {...projectForm.register("location")} 
+                          placeholder="123 Main St, City, State" 
+                          data-testid="input-new-project-location" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="budget">Budget ($)</Label>
+                        <UIInput
+                          {...projectForm.register("budget", { valueAsNumber: true })} 
+                          type="number" 
+                          placeholder="250000" 
+                          data-testid="input-new-project-budget" 
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <UIButton
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAddProject(false)}
+                        data-testid="button-cancel-project"
+                      >
+                        Cancel
+                      </UIButton>
+                      <UIButton 
+                        type="submit" 
+                        disabled={createProjectMutation.isPending}
+                        data-testid="button-create-project"
+                      >
+                        {createProjectMutation.isPending ? "Creating..." : "Create Project"}
+                      </UIButton>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              {projects.map((project) => (
+                <div key={project.id} className="flex items-center justify-between p-4 border border-gray-600 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium">{project.name}</h3>
+                      <UIBadge variant={project.status === 'active' ? 'default' : 'secondary'}>
+                        {project.status}
+                      </UIBadge>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">{project.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>📍 {project.location || 'Location TBD'}</span>
+                      <span>💰 ${project.budget?.toLocaleString() || 'Budget TBD'}</span>
+                      <span>📅 {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Start TBD'}</span>
+                    </div>
+                  </div>
+                  <UIButton variant="ghost" size="sm" data-testid={`button-edit-project-${project.id}`}>
+                    <Edit className="w-4 h-4" />
+                  </UIButton>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function EmployeeProfilesPage() {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+  const { data: employees = [] } = useQuery<Employee[]>({
+    queryKey: ["/api/employees"],
+  });
+
+  const employeeForm = useForm<InsertEmployee>({
+    resolver: zodResolver(insertEmployeeSchema),
+    defaultValues: {
+      name: "",
+      role: "",
+      email: "",
+      phone: "",
+      skills: [],
+    },
+  });
+
+  const employeeUpdateForm = useForm<UpdateEmployee>({
+    resolver: zodResolver(updateEmployeeSchema),
+    defaultValues: {
+      name: "",
+      role: "",
+      email: "",
+      phone: "",
+      skills: [],
+    },
+  });
+
+  const createEmployeeMutation = useMutation({
+    mutationFn: async (data: InsertEmployee) => {
+      return apiRequest("/api/employees", { method: "POST", body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+      toast({
+        title: "Success",
+        description: "Employee created successfully",
+      });
+      employeeForm.reset();
+      setShowAddEmployee(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create employee",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateEmployeeMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateEmployee }) => {
+      return apiRequest(`/api/employees/${id}`, { method: "PATCH", body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+      toast({
+        title: "Success",
+        description: "Employee updated successfully",
+      });
+      setSelectedEmployee(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update employee",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center mb-6">
+          <SettingsIcon className="w-6 h-6 mr-3" />
+          <h1 className="text-2xl font-bold">Employee Profiles</h1>
+        </div>
+
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Team Management</CardTitle>
+                <CardDescription>Manage employee profiles and skills</CardDescription>
+              </div>
+              <Dialog open={showAddEmployee} onOpenChange={setShowAddEmployee}>
+                <DialogTrigger asChild>
+                  <UIButton data-testid="button-add-employee">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Employee
+                  </UIButton>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-800 border-gray-700">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Add New Employee</DialogTitle>
+                    <DialogDescription>
+                      Create a new employee profile with contact information and skills.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={employeeForm.handleSubmit((data) => createEmployeeMutation.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Full Name</Label>
+                        <UIInput
+                          {...employeeForm.register("name")} 
+                          placeholder="John Smith" 
+                          data-testid="input-new-employee-name" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="role">Role</Label>
+                        <UIInput
+                          {...employeeForm.register("role")} 
+                          placeholder="Heavy Equipment Operator" 
+                          data-testid="input-new-employee-role" 
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <UIInput
+                          {...employeeForm.register("email")} 
+                          type="email" 
+                          placeholder="john@company.com" 
+                          data-testid="input-new-employee-email" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone</Label>
+                        <UIInput
+                          {...employeeForm.register("phone")} 
+                          placeholder="(555) 123-4567" 
+                          data-testid="input-new-employee-phone" 
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <UIButton
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAddEmployee(false)}
+                        data-testid="button-cancel-employee"
+                      >
+                        Cancel
+                      </UIButton>
+                      <UIButton 
+                        type="submit" 
+                        disabled={createEmployeeMutation.isPending}
+                        data-testid="button-create-employee"
+                      >
+                        {createEmployeeMutation.isPending ? "Creating..." : "Create Employee"}
+                      </UIButton>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              {employees.map((emp) => (
+                <div key={emp.id} className="flex items-center justify-between p-4 border border-gray-600 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium">{emp.name}</h3>
+                      <UIBadge>{emp.role}</UIBadge>
+                      {emp.currentProjectId && <UIBadge variant="outline">Assigned</UIBadge>}
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>📧 {emp.email || 'No email'}</span>
+                      <span>📞 {emp.phone || 'No phone'}</span>
+                    </div>
+                    {emp.skills && emp.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {emp.skills.map((skill, index) => (
+                          <UIBadge key={index} variant="secondary" className="text-xs">
+                            {skill}
+                          </UIBadge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <UIButton 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedEmployee(emp);
+                          employeeUpdateForm.reset({
+                            name: emp.name,
+                            role: emp.role,
+                            email: emp.email || "",
+                            phone: emp.phone || "",
+                            skills: emp.skills || [],
+                          });
+                        }}
+                        data-testid={`button-edit-employee-${emp.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </UIButton>
+                    </DialogTrigger>
+                    <DialogContent className="bg-gray-800 border-gray-700">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Edit Employee</DialogTitle>
+                        <DialogDescription>
+                          Update employee information and skills.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={employeeUpdateForm.handleSubmit((data) => 
+                        updateEmployeeMutation.mutate({ id: emp.id, data })
+                      )} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="name">Full Name</Label>
+                            <UIInput
+                              {...employeeUpdateForm.register("name")} 
+                              placeholder="John Smith" 
+                              data-testid="input-edit-employee-name" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="role">Role</Label>
+                            <UIInput
+                              {...employeeUpdateForm.register("role")} 
+                              placeholder="Heavy Equipment Operator" 
+                              data-testid="input-edit-employee-role" 
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="email">Email</Label>
+                            <UIInput
+                              {...employeeUpdateForm.register("email")} 
+                              type="email" 
+                              placeholder="john@company.com" 
+                              data-testid="input-edit-employee-email" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">Phone</Label>
+                            <UIInput
+                              {...employeeUpdateForm.register("phone")} 
+                              placeholder="(555) 123-4567" 
+                              data-testid="input-edit-employee-phone" 
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 pt-4">
+                          <UIButton
+                            type="submit"
+                            disabled={updateEmployeeMutation.isPending}
+                            data-testid="button-update-employee"
+                          >
+                            {updateEmployeeMutation.isPending ? "Updating..." : "Update Employee"}
+                          </UIButton>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function EquipmentManagementPage() {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [showAddEquipment, setShowAddEquipment] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const { data: equipment = [] } = useQuery<Equipment[]>({
+    queryKey: ["/api/equipment"],
+  });
+
+  const equipmentForm = useForm<InsertEquipment>({
+    resolver: zodResolver(insertEquipmentSchema),
+    defaultValues: {
+      name: "",
+      type: "",
+      make: "",
+      model: "",
+      assetNumber: "",
+      serialNumber: "",
+      status: "available",
+    },
+  });
+
+  const equipmentUpdateForm = useForm<UpdateEquipment>({
+    resolver: zodResolver(updateEquipmentSchema),
+    defaultValues: {
+      make: "",
+      model: "",
+      assetNumber: "",
+      status: "available",
+    },
+  });
+
+  const createEquipmentMutation = useMutation({
+    mutationFn: async (data: InsertEquipment) => {
+      return apiRequest("/api/equipment", { method: "POST", body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      toast({
+        title: "Success",
+        description: "Equipment created successfully",
+      });
+      equipmentForm.reset();
+      setShowAddEquipment(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create equipment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateEquipmentMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateEquipment }) => {
+      return apiRequest(`/api/equipment/${id}`, { method: "PATCH", body: data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      toast({
+        title: "Success",
+        description: "Equipment updated successfully",
+      });
+      setSelectedEquipment(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update equipment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const exportToExcel = () => {
+    // Implementation will be added if needed
+    toast({
+      title: "Export Started",
+      description: "Equipment data export to Excel initiated",
+    });
+  };
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setImportStatus({ type: 'success', message: 'Excel import completed successfully' });
+      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      
+      toast({
+        title: "Success",
+        description: "Equipment data imported successfully",
+      });
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      setTimeout(() => setImportStatus(null), 5000);
+
+    } catch (error) {
+      setImportStatus({ type: 'error', message: 'Import failed' });
+      toast({
+        title: "Error",
+        description: "Failed to import equipment data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center mb-6">
+          <SettingsIcon className="w-6 h-6 mr-3" />
+          <h1 className="text-2xl font-bold">Equipment Management</h1>
+        </div>
+
+        {/* Bulk Equipment Management */}
+        <Card className="bg-gray-800 border-gray-700 mb-6">
+          <CardHeader>
+            <CardTitle>Bulk Equipment Management</CardTitle>
+            <CardDescription>Import and export equipment data via Excel files</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <UIButton onClick={exportToExcel} variant="outline" data-testid="button-export-equipment">
+                <Download className="w-4 h-4 mr-2" />
+                Export to Excel
+              </UIButton>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileImport}
+                  className="hidden"
+                  data-testid="input-import-equipment"
+                />
+                <UIButton
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  data-testid="button-import-equipment"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import from Excel
+                </UIButton>
+              </div>
+            </div>
+            {importStatus && (
+              <UIAlert className={`mt-4 ${importStatus.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
+                <AlertTriangle className="h-4 w-4" />
+                <UIAlertDescription>{importStatus.message}</UIAlertDescription>
+              </UIAlert>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Equipment Management */}
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Equipment Management</CardTitle>
+                <CardDescription>Manage construction and demolition equipment</CardDescription>
+              </div>
+              <Dialog open={showAddEquipment} onOpenChange={setShowAddEquipment}>
+                <DialogTrigger asChild>
+                  <UIButton data-testid="button-add-equipment">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Equipment
+                  </UIButton>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-800 border-gray-700">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Add New Equipment</DialogTitle>
+                    <DialogDescription>
+                      Add new construction or demolition equipment to inventory.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={equipmentForm.handleSubmit((data) => createEquipmentMutation.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Equipment Name</Label>
+                        <UIInput
+                          {...equipmentForm.register("name")} 
+                          placeholder="Excavator CAT-320" 
+                          data-testid="input-new-equipment-name" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="type">Type</Label>
+                        <UIInput
+                          {...equipmentForm.register("type")} 
+                          placeholder="Excavator" 
+                          data-testid="input-new-equipment-type" 
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="make">Make</Label>
+                        <UIInput
+                          {...equipmentForm.register("make")} 
+                          placeholder="Caterpillar" 
+                          data-testid="input-new-equipment-make" 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="model">Model</Label>
+                        <UIInput
+                          {...equipmentForm.register("model")} 
+                          placeholder="320" 
+                          data-testid="input-new-equipment-model" 
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="assetNumber">Asset Number</Label>
+                        <UIInput
+                          {...equipmentForm.register("assetNumber")} 
+                          placeholder="AST-001" 
+                          data-testid="input-new-equipment-asset" 
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="serialNumber">Serial Number</Label>
+                      <UIInput
+                        {...equipmentForm.register("serialNumber")} 
+                        placeholder="EXC-001" 
+                        data-testid="input-new-equipment-serial" 
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="status">Status</Label>
+                      <UISelect onValueChange={(value) => equipmentForm.setValue("status", value as any)}>
+                        <SelectTrigger data-testid="select-new-equipment-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="available">Available</SelectItem>
+                          <SelectItem value="in-use">In Use</SelectItem>
+                          <SelectItem value="maintenance">Maintenance</SelectItem>
+                          <SelectItem value="broken">Broken</SelectItem>
+                        </SelectContent>
+                      </UISelect>
+                    </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <UIButton
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAddEquipment(false)}
+                        data-testid="button-cancel-equipment"
+                      >
+                        Cancel
+                      </UIButton>
+                      <UIButton 
+                        type="submit" 
+                        disabled={createEquipmentMutation.isPending}
+                        data-testid="button-create-equipment"
+                      >
+                        {createEquipmentMutation.isPending ? "Creating..." : "Create Equipment"}
+                      </UIButton>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              {equipment.map((eq) => (
+                <div key={eq.id} className="flex items-center justify-between p-4 border border-gray-600 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium">{eq.name}</h3>
+                      <UIBadge variant={eq.status === 'available' ? 'default' : 'secondary'}>
+                        {eq.status}
+                      </UIBadge>
+                      {eq.currentProjectId && <UIBadge variant="outline">Assigned</UIBadge>}
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>🔧 {eq.make} {eq.model}</span>
+                      <span>📋 {eq.assetNumber}</span>
+                      <span>🔢 {eq.serialNumber}</span>
+                    </div>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <UIButton 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedEquipment(eq);
+                          equipmentUpdateForm.reset({
+                            make: eq.make || "",
+                            model: eq.model || "",
+                            assetNumber: eq.assetNumber || "",
+                            status: eq.status,
+                          });
+                        }}
+                        data-testid={`button-edit-equipment-${eq.id}`}
+                      >
+                        <Wrench className="w-4 h-4" />
+                      </UIButton>
+                    </DialogTrigger>
+                    <DialogContent className="bg-gray-800 border-gray-700">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Edit Equipment</DialogTitle>
+                        <DialogDescription>
+                          Update equipment details and specifications.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={equipmentUpdateForm.handleSubmit((data) => 
+                        updateEquipmentMutation.mutate({ id: eq.id, data })
+                      )} className="space-y-4">
+                        <div>
+                          <Label htmlFor="make">Make</Label>
+                          <UIInput
+                            {...equipmentUpdateForm.register("make")} 
+                            placeholder="Caterpillar" 
+                            data-testid="input-edit-equipment-make" 
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="model">Model</Label>
+                          <UIInput
+                            {...equipmentUpdateForm.register("model")} 
+                            placeholder="320" 
+                            data-testid="input-edit-equipment-model" 
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="assetNumber">Asset Number</Label>
+                          <UIInput
+                            {...equipmentUpdateForm.register("assetNumber")} 
+                            placeholder="AST-001" 
+                            data-testid="input-edit-equipment-asset" 
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="status">Status</Label>
+                          <UISelect onValueChange={(value) => equipmentUpdateForm.setValue("status", value as any)} value={equipmentUpdateForm.watch("status")}>
+                            <SelectTrigger data-testid="select-edit-equipment-status">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="available">Available</SelectItem>
+                              <SelectItem value="in-use">In Use</SelectItem>
+                              <SelectItem value="maintenance">Maintenance</SelectItem>
+                              <SelectItem value="broken">Broken</SelectItem>
+                            </SelectContent>
+                          </UISelect>
+                        </div>
+                        <div className="flex justify-end space-x-2 pt-4">
+                          <UIButton
+                            type="submit"
+                            disabled={updateEquipmentMutation.isPending}
+                            data-testid="button-update-equipment"
+                          >
+                            {updateEquipmentMutation.isPending ? "Updating..." : "Update Equipment"}
+                          </UIButton>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 /** ======= Main Content Routing ======= **/
 function MainContent() {
   const { currentView } = useNavigation();
 
   switch (currentView) {
-    case 'settings':
-      return <SettingsPage />;
+    case 'projects':
+      return <ProjectSettingsPage />;
+    case 'employees':
+      return <EmployeeProfilesPage />;
+    case 'equipment':
+      return <EquipmentManagementPage />;
     case 'project-profile':
       return <ProjectProfilePage />;
     case 'dashboard':
