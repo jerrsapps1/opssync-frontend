@@ -8,6 +8,11 @@ import {
   Image,
   Text,
   VStack,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
   useToast,
 } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -54,7 +59,13 @@ function AppProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [equipment, setEquipment] = useState([]);
-  const [conflicts, setConflicts] = useState({ employeeConflicts: [], equipmentConflicts: [] });
+  const [conflicts, setConflicts] = useState({ 
+    employeeConflicts: [], 
+    equipmentConflicts: [],
+    supervisorConflicts: [],
+    projectsWithoutSupervisors: []
+  });
+  const [showConflictAlert, setShowConflictAlert] = useState(false);
   const toast = useToast();
 
   // Load all data on mount and check for conflicts
@@ -78,14 +89,13 @@ function AppProvider({ children }) {
         setConflicts(conflictData);
         
         // Show conflict alerts if any exist
-        if (conflictData.employeeConflicts.length > 0 || conflictData.equipmentConflicts.length > 0) {
-          toast({
-            title: "Conflicts Detected",
-            description: `${conflictData.employeeConflicts.length} employee conflicts, ${conflictData.equipmentConflicts.length} equipment conflicts`,
-            status: "warning",
-            duration: 8000,
-            isClosable: true,
-          });
+        const totalConflicts = conflictData.employeeConflicts.length + 
+                              conflictData.equipmentConflicts.length + 
+                              conflictData.supervisorConflicts.length + 
+                              conflictData.projectsWithoutSupervisors.length;
+        
+        if (totalConflicts > 0) {
+          setShowConflictAlert(true);
         }
       } catch (e) {
         toast({
@@ -108,19 +118,26 @@ function AppProvider({ children }) {
       const conflictData = await res.json();
       setConflicts(conflictData);
       
-      if (conflictData.employeeConflicts.length > 0 || conflictData.equipmentConflicts.length > 0) {
-        toast({
-          title: "Assignment Conflicts",
-          description: `Found ${conflictData.employeeConflicts.length + conflictData.equipmentConflicts.length} conflicts`,
-          status: "warning",
-          duration: 6000,
-          isClosable: true,
-        });
+      const totalConflicts = conflictData.employeeConflicts.length + 
+                            conflictData.equipmentConflicts.length + 
+                            conflictData.supervisorConflicts.length + 
+                            conflictData.projectsWithoutSupervisors.length;
+      
+      if (totalConflicts > 0) {
+        setShowConflictAlert(true);
+      } else {
+        setShowConflictAlert(false);
       }
     } catch (e) {
       console.error("Error checking conflicts:", e);
     }
   }
+
+  // Poll for conflicts every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(checkConflicts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Update employee assignment (project)
   async function moveEmployee(empId, newProjectId) {
@@ -201,6 +218,8 @@ function AppProvider({ children }) {
         employees, 
         equipment, 
         conflicts,
+        showConflictAlert,
+        setShowConflictAlert,
         moveEmployee, 
         moveEquipment,
         checkConflicts 
@@ -417,6 +436,59 @@ function EquipmentList() {
   );
 }
 
+/** ======= Conflict Alert Banner ======= **/
+function ConflictAlertBanner() {
+  const { conflicts, showConflictAlert, setShowConflictAlert } = useApp();
+  
+  if (!showConflictAlert) return null;
+
+  const totalConflicts = conflicts.employeeConflicts.length + 
+                        conflicts.equipmentConflicts.length + 
+                        conflicts.supervisorConflicts.length + 
+                        conflicts.projectsWithoutSupervisors.length;
+
+  const conflictMessages = [];
+  
+  if (conflicts.employeeConflicts.length > 0) {
+    const names = conflicts.employeeConflicts.map(emp => emp.name).join(", ");
+    conflictMessages.push(`Employee conflicts: ${names}`);
+  }
+  
+  if (conflicts.equipmentConflicts.length > 0) {
+    const names = conflicts.equipmentConflicts.map(eq => eq.name).join(", ");
+    conflictMessages.push(`Equipment conflicts: ${names}`);
+  }
+  
+  if (conflicts.supervisorConflicts.length > 0) {
+    const names = conflicts.supervisorConflicts.map(sc => sc.supervisor.name).join(", ");
+    conflictMessages.push(`Supervisor conflicts: ${names}`);
+  }
+  
+  if (conflicts.projectsWithoutSupervisors.length > 0) {
+    const names = conflicts.projectsWithoutSupervisors.map(p => p.name).join(", ");
+    conflictMessages.push(`Projects need supervisors: ${names}`);
+  }
+
+  return (
+    <Alert status="warning" mb={4}>
+      <AlertIcon />
+      <Box flex="1">
+        <AlertTitle>Assignment Conflicts Detected!</AlertTitle>
+        <AlertDescription display="block">
+          {totalConflicts} conflict{totalConflicts > 1 ? 's' : ''} found: {conflictMessages.join(" • ")}
+        </AlertDescription>
+      </Box>
+      <CloseButton 
+        alignSelf="flex-start" 
+        position="relative" 
+        right={-1} 
+        top={-1} 
+        onClick={() => setShowConflictAlert(false)}
+      />
+    </Alert>
+  );
+}
+
 /** ======= Main App with Drag & Drop ======= **/
 function MainApp() {
   const { moveEmployee, moveEquipment } = useApp();
@@ -455,6 +527,7 @@ function MainApp() {
   return (
     <>
       <Header />
+      <ConflictAlertBanner />
       <DragDropContext onDragEnd={onDragEnd}>
         <Flex height="calc(100vh - 72px)">
           <ProjectList />
