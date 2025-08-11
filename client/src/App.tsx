@@ -37,6 +37,7 @@ import {
 } from "@chakra-ui/react";
 import { HamburgerIcon, SettingsIcon } from "@chakra-ui/icons";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { ObjectUploader } from "./components/ObjectUploader";
 
 /** ======= Auth Context ======= **/
 const AuthContext = createContext<any>(null);
@@ -489,11 +490,16 @@ function LoginForm() {
   );
 }
 
-/** ======= Settings Modal ======= **/
+/** ======= Enhanced Settings Modal ======= **/
 function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { brandConfig, updateBrandConfig } = useAuth();
   const [formData, setFormData] = useState(brandConfig);
+  const [activeTab, setActiveTab] = useState(0);
   const toast = useToast();
+  
+  useEffect(() => {
+    setFormData(brandConfig);
+  }, [brandConfig, isOpen]);
 
   const handleSave = async () => {
     const success = await updateBrandConfig(formData);
@@ -517,56 +523,269 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     }
   };
 
+  const handleColorChange = (field: string, color: string) => {
+    setFormData(prev => ({ ...prev, [field]: color }));
+  };
+
+  const handleLogoUpload = (logoUrl: string) => {
+    // Convert storage URL to public serving URL
+    const publicUrl = logoUrl.replace(
+      "https://storage.googleapis.com/",
+      "/public-objects/"
+    ).replace(/^\/[^\/]+\//, "");
+    
+    setFormData(prev => ({ ...prev, logoUrl: `/public-objects/${publicUrl}` }));
+  };
+
+  const tabs = [
+    { label: "Brand Identity", icon: "🎨" },
+    { label: "Company Info", icon: "🏢" },
+    { label: "Colors & Theme", icon: "🌈" },
+    { label: "Logo & Assets", icon: "📷" }
+  ];
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
-      <ModalContent bg="#1E1E2F" color="#E0E0E0">
-        <ModalHeader>White-Label Settings</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4}>
-            <FormControl>
-              <FormLabel>App Name</FormLabel>
-              <Input
-                value={formData.appName}
-                onChange={(e) => setFormData({...formData, appName: e.target.value})}
-              />
-            </FormControl>
-            
-            <FormControl>
-              <FormLabel>Primary Color</FormLabel>
-              <Input
-                type="color"
-                value={formData.primaryColor}
-                onChange={(e) => setFormData({...formData, primaryColor: e.target.value})}
-              />
-            </FormControl>
-            
-            <FormControl>
-              <FormLabel>Secondary Color</FormLabel>
-              <Input
-                type="color"
-                value={formData.secondaryColor}
-                onChange={(e) => setFormData({...formData, secondaryColor: e.target.value})}
-              />
-            </FormControl>
-            
-            <FormControl>
-              <FormLabel>Logo URL</FormLabel>
-              <Input
-                value={formData.logoUrl}
-                onChange={(e) => setFormData({...formData, logoUrl: e.target.value})}
-              />
-            </FormControl>
+      <ModalContent bg="#1E1E2F" color="#E0E0E0" maxH="90vh">
+        <ModalHeader borderBottom="1px solid #4A4A5E">
+          <VStack align="start" spacing={1}>
+            <Text fontSize="xl" fontWeight="bold">White-Label Settings</Text>
+            <Text fontSize="sm" color="gray.400">
+              Customize your app's brand identity and appearance
+            </Text>
           </VStack>
+        </ModalHeader>
+        <ModalCloseButton />
+        
+        <ModalBody pb={6} overflow="hidden">
+          <Flex height="500px">
+            {/* Sidebar Navigation */}
+            <Box width="200px" mr={6} borderRight="1px solid #4A4A5E" pr={4}>
+              <VStack spacing={2} align="stretch">
+                {tabs.map((tab, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    onClick={() => setActiveTab(index)}
+                    bg={activeTab === index ? "brand.600" : "transparent"}
+                    color={activeTab === index ? "white" : "gray.300"}
+                    _hover={{ bg: activeTab === index ? "brand.500" : "gray.700" }}
+                    leftIcon={<Text>{tab.icon}</Text>}
+                    size="sm"
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </VStack>
+            </Box>
+
+            {/* Content Area */}
+            <Box flex="1" overflowY="auto">
+              {activeTab === 0 && (
+                <VStack spacing={6} align="stretch">
+                  <Heading size="md" color="white">Brand Identity</Heading>
+                  
+                  <FormControl>
+                    <FormLabel>Application Name</FormLabel>
+                    <Input
+                      value={formData.appName}
+                      onChange={(e) => setFormData({...formData, appName: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="Your Company Name"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      This name appears in the header and throughout the app
+                    </Text>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Tagline</FormLabel>
+                    <Input
+                      value={formData.tagline || ""}
+                      onChange={(e) => setFormData({...formData, tagline: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="Professional Asset Management"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Optional tagline displayed with your brand
+                    </Text>
+                  </FormControl>
+                </VStack>
+              )}
+
+              {activeTab === 1 && (
+                <VStack spacing={6} align="stretch">
+                  <Heading size="md" color="white">Company Information</Heading>
+                  
+                  <FormControl>
+                    <FormLabel>Company Name</FormLabel>
+                    <Input
+                      value={formData.companyName || ""}
+                      onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="Your Company Ltd."
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Industry</FormLabel>
+                    <Input
+                      value={formData.industry || ""}
+                      onChange={(e) => setFormData({...formData, industry: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="Construction, Demolition, Equipment Rental"
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Website</FormLabel>
+                    <Input
+                      value={formData.website || ""}
+                      onChange={(e) => setFormData({...formData, website: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="https://yourcompany.com"
+                    />
+                  </FormControl>
+                </VStack>
+              )}
+
+              {activeTab === 2 && (
+                <VStack spacing={6} align="stretch">
+                  <Heading size="md" color="white">Colors & Theme</Heading>
+                  
+                  <FormControl>
+                    <FormLabel>Primary Brand Color</FormLabel>
+                    <HStack>
+                      <Input
+                        type="color"
+                        value={formData.primaryColor}
+                        onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                        width="60px"
+                        height="40px"
+                        padding="4px"
+                        bg="transparent"
+                        border="1px solid #4A4A5E"
+                      />
+                      <Input
+                        value={formData.primaryColor}
+                        onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                        bg="#2D2D44"
+                        border="1px solid #4A4A5E"
+                        _focus={{ borderColor: brandConfig.primaryColor }}
+                      />
+                    </HStack>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Used for buttons, headers, and accent elements
+                    </Text>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Secondary Color</FormLabel>
+                    <HStack>
+                      <Input
+                        type="color"
+                        value={formData.secondaryColor || "#4A5568"}
+                        onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                        width="60px"
+                        height="40px"
+                        padding="4px"
+                        bg="transparent"
+                        border="1px solid #4A4A5E"
+                      />
+                      <Input
+                        value={formData.secondaryColor || "#4A5568"}
+                        onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                        bg="#2D2D44"
+                        border="1px solid #4A4A5E"
+                        _focus={{ borderColor: brandConfig.primaryColor }}
+                      />
+                    </HStack>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Used for secondary elements and borders
+                    </Text>
+                  </FormControl>
+
+                  <Box p={4} bg="#2D2D44" borderRadius="md" border="1px solid #4A4A5E">
+                    <Text fontSize="sm" fontWeight="bold" mb={2}>Color Preview</Text>
+                    <HStack spacing={4}>
+                      <Box w={16} h={8} bg={formData.primaryColor} borderRadius="md" />
+                      <Box w={16} h={8} bg={formData.secondaryColor || "#4A5568"} borderRadius="md" />
+                      <Text fontSize="xs" color="gray.500">
+                        Primary & Secondary
+                      </Text>
+                    </HStack>
+                  </Box>
+                </VStack>
+              )}
+
+              {activeTab === 3 && (
+                <VStack spacing={6} align="stretch">
+                  <Heading size="md" color="white">Logo & Visual Assets</Heading>
+                  
+                  <FormControl>
+                    <FormLabel>Company Logo</FormLabel>
+                    <VStack spacing={4} align="stretch">
+                      {formData.logoUrl && (
+                        <Box p={4} bg="#2D2D44" borderRadius="md" border="1px solid #4A4A5E">
+                          <Text fontSize="sm" mb={2}>Current Logo:</Text>
+                          <Image
+                            src={formData.logoUrl}
+                            alt="Current logo"
+                            maxH="80px"
+                            maxW="200px"
+                            objectFit="contain"
+                          />
+                        </Box>
+                      )}
+                      
+                      <ObjectUploader onComplete={handleLogoUpload}>
+                        📁 Upload New Logo
+                      </ObjectUploader>
+                      
+                      <Text fontSize="xs" color="gray.500">
+                        Recommended: PNG or SVG format, max 5MB, optimized for 40px height
+                      </Text>
+                    </VStack>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Logo URL (Alternative)</FormLabel>
+                    <Input
+                      value={formData.logoUrl}
+                      onChange={(e) => setFormData({...formData, logoUrl: e.target.value})}
+                      bg="#2D2D44"
+                      border="1px solid #4A4A5E"
+                      _focus={{ borderColor: brandConfig.primaryColor }}
+                      placeholder="https://example.com/logo.png"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Or provide a direct URL to your logo image
+                    </Text>
+                  </FormControl>
+                </VStack>
+              )}
+            </Box>
+          </Flex>
         </ModalBody>
         
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button colorScheme="blue" onClick={handleSave}>
+        <ModalFooter borderTop="1px solid #4A4A5E">
+          <Button colorScheme="blue" mr={3} onClick={handleSave}>
             Save Changes
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
           </Button>
         </ModalFooter>
       </ModalContent>
