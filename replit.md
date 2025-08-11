@@ -34,7 +34,23 @@ The codebase is prepared for authentication implementation with session-based ar
 The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables. Supports both light and dark themes with a focus on the dark theme for operational environments. The theme system includes semantic color tokens and consistent spacing/typography scales.
 
 ## White Label Configuration
-The application includes a brand configuration system allowing customization of app name, colors, and branding elements through environment variables and a centralized brand config file.
+The application includes a comprehensive white-label system that can be customized by modifying the `brandConfig` object in `client/src/App.tsx`. Simple changes to this configuration will rebrand the entire application:
+
+```javascript
+const brandConfig = {
+  appName: "TrackPro",              // Your company name
+  primaryColor: "#4A90E2",          // Main brand color (buttons, accents)
+  secondaryColor: "#BB86FC",        // Secondary color (highlights, equipment)
+  logoUrl: "https://...",           // Your company logo URL
+};
+```
+
+This single configuration automatically updates:
+- Header branding and logo
+- Application name throughout the UI
+- Color scheme for all components
+- Theme tokens and semantic colors
+- Brand identity across all three panels
 
 # External Dependencies
 
