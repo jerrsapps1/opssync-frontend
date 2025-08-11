@@ -54,22 +54,39 @@ function AppProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [conflicts, setConflicts] = useState({ employeeConflicts: [], equipmentConflicts: [] });
   const toast = useToast();
 
-  // Load all data on mount
+  // Load all data on mount and check for conflicts
   useEffect(() => {
     async function fetchData() {
       try {
-        const [projRes, empRes, eqRes] = await Promise.all([
+        const [projRes, empRes, eqRes, conflictRes] = await Promise.all([
           fetch("/api/projects"),
           fetch("/api/employees"),
           fetch("/api/equipment"),
+          fetch("/api/conflicts"),
         ]);
-        if (!projRes.ok || !empRes.ok || !eqRes.ok)
+        if (!projRes.ok || !empRes.ok || !eqRes.ok || !conflictRes.ok)
           throw new Error("Failed to load data");
+        
         setProjects(await projRes.json());
         setEmployees(await empRes.json());
         setEquipment(await eqRes.json());
+        
+        const conflictData = await conflictRes.json();
+        setConflicts(conflictData);
+        
+        // Show conflict alerts if any exist
+        if (conflictData.employeeConflicts.length > 0 || conflictData.equipmentConflicts.length > 0) {
+          toast({
+            title: "Conflicts Detected",
+            description: `${conflictData.employeeConflicts.length} employee conflicts, ${conflictData.equipmentConflicts.length} equipment conflicts`,
+            status: "warning",
+            duration: 8000,
+            isClosable: true,
+          });
+        }
       } catch (e) {
         toast({
           title: "Error loading data",
@@ -83,6 +100,28 @@ function AppProvider({ children }) {
     fetchData();
   }, [toast]);
 
+  // Check for conflicts after any assignment change
+  async function checkConflicts() {
+    try {
+      const res = await fetch("/api/conflicts");
+      if (!res.ok) throw new Error("Failed to check conflicts");
+      const conflictData = await res.json();
+      setConflicts(conflictData);
+      
+      if (conflictData.employeeConflicts.length > 0 || conflictData.equipmentConflicts.length > 0) {
+        toast({
+          title: "Assignment Conflicts",
+          description: `Found ${conflictData.employeeConflicts.length + conflictData.equipmentConflicts.length} conflicts`,
+          status: "warning",
+          duration: 6000,
+          isClosable: true,
+        });
+      }
+    } catch (e) {
+      console.error("Error checking conflicts:", e);
+    }
+  }
+
   // Update employee assignment (project)
   async function moveEmployee(empId, newProjectId) {
     try {
@@ -92,11 +131,23 @@ function AppProvider({ children }) {
         body: JSON.stringify({ currentProjectId: newProjectId }),
       });
       if (!res.ok) throw new Error("Failed to update employee");
+      
       setEmployees((emps) =>
         emps.map((e) =>
           e.id === empId ? { ...e, currentProjectId: newProjectId } : e
         )
       );
+      
+      // Check for conflicts after assignment change
+      setTimeout(checkConflicts, 500);
+      
+      toast({
+        title: "Employee Updated",
+        description: "Assignment updated successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
     } catch (e) {
       toast({
         title: "Error updating employee",
@@ -117,9 +168,21 @@ function AppProvider({ children }) {
         body: JSON.stringify({ currentProjectId: newProjectId }),
       });
       if (!res.ok) throw new Error("Failed to update equipment");
+      
       setEquipment((eqs) =>
         eqs.map((e) => (e.id === eqId ? { ...e, currentProjectId: newProjectId } : e))
       );
+      
+      // Check for conflicts after assignment change
+      setTimeout(checkConflicts, 500);
+      
+      toast({
+        title: "Equipment Updated",
+        description: "Assignment updated successfully",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
     } catch (e) {
       toast({
         title: "Error updating equipment",
@@ -133,7 +196,15 @@ function AppProvider({ children }) {
 
   return (
     <AppContext.Provider
-      value={{ projects, employees, equipment, moveEmployee, moveEquipment }}
+      value={{ 
+        projects, 
+        employees, 
+        equipment, 
+        conflicts,
+        moveEmployee, 
+        moveEquipment,
+        checkConflicts 
+      }}
     >
       {children}
     </AppContext.Provider>

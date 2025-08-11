@@ -22,10 +22,16 @@ The server runs on Express.js with TypeScript, following a simplified RESTful AP
 
 ### API Endpoints Provided:
 - **Persistent Storage**: Replit Database integration for reliable data persistence
-- **CRUD Read Operations**: GET endpoints for employees, equipment, and projects
+- **CRUD Read Operations**: GET endpoints for employees, equipment, projects, supervisors
 - **Assignment Updates**: PATCH endpoints to update employee/equipment project assignments via drag-and-drop
 - **Entity Creation**: POST endpoints to create new employees, equipment, and projects
-- **Conflict Detection**: GET /api/conflicts endpoint returning duplicate assignments (extensible for business rules)
+- **Enhanced Conflict Detection**: GET /api/conflicts endpoint returning:
+  - Employee assignment conflicts
+  - Equipment assignment conflicts  
+  - Supervisor conflicts (supervising multiple projects)
+  - Projects without supervisors
+- **Supervisor Management**: PATCH endpoint to assign supervisors to projects
+- **Business Analytics**: GET /api/analytics endpoint with operational metrics and KPIs
 
 Real-time updates are handled through standard HTTP requests with client-side polling via React Query, ensuring immediate UI updates when assignments change.
 

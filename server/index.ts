@@ -41,6 +41,7 @@ async function initData() {
         skills: ["Excavator", "Bulldozer"],
         currentProjectId: "proj-001",
         avatarUrl: null,
+        isSupervisor: false,
       },
       {
         id: "emp-002", 
@@ -49,6 +50,7 @@ async function initData() {
         skills: ["Project Management", "Safety"],
         currentProjectId: "proj-001",
         avatarUrl: null,
+        isSupervisor: true,
       },
       {
         id: "emp-003",
@@ -57,6 +59,7 @@ async function initData() {
         skills: ["Controlled Demolition", "Safety"],
         currentProjectId: null,
         avatarUrl: null,
+        isSupervisor: false,
       },
       {
         id: "emp-004",
@@ -65,6 +68,7 @@ async function initData() {
         skills: ["Maintenance", "Repairs"],
         currentProjectId: "proj-002",
         avatarUrl: null,
+        isSupervisor: false,
       },
       {
         id: "emp-005",
@@ -73,6 +77,7 @@ async function initData() {
         skills: ["Surveying", "Planning"],
         currentProjectId: null,
         avatarUrl: null,
+        isSupervisor: true,
       }
     ]);
   }
@@ -126,6 +131,9 @@ async function initData() {
         progress: 65,
         startDate: "2024-01-15",
         endDate: "2024-06-30",
+        supervisorId: "emp-002",
+        budget: 850000,
+        location: "Downtown District",
       },
       {
         id: "proj-002", 
@@ -134,6 +142,9 @@ async function initData() {
         progress: 35,
         startDate: "2024-02-01",
         endDate: "2024-08-15",
+        supervisorId: null,
+        budget: 1200000,
+        location: "Highway 101 Intersection",
       },
       {
         id: "proj-003",
@@ -142,6 +153,9 @@ async function initData() {
         progress: 10,
         startDate: "2024-04-01", 
         endDate: "2024-07-31",
+        supervisorId: "emp-005",
+        budget: 450000,
+        location: "Industrial Zone East",
       }
     ]);
   }
@@ -290,19 +304,33 @@ app.post("/api/projects", async (req, res) => {
   res.status(201).json(newProj);
 });
 
-/** ====== Conflicts endpoint ====== **/
+/** ====== Enhanced Conflicts endpoint ====== **/
 app.get("/api/conflicts", async (req, res) => {
   const employees = (await db.get(EMPLOYEES_KEY)) || [];
   const equipment = (await db.get(EQUIPMENT_KEY)) || [];
+  const projects = (await db.get(PROJECTS_KEY)) || [];
 
   const empProjectMap: Record<string, string> = {};
   const empConflicts: any[] = [];
+  const supervisorConflicts: any[] = [];
+  
   employees.forEach((emp: any) => {
     if (emp.currentProjectId) {
       if (empProjectMap[emp.id]) {
         empConflicts.push(emp);
       } else {
         empProjectMap[emp.id] = emp.currentProjectId;
+      }
+    }
+    
+    // Check supervisor conflicts (supervisor assigned to multiple projects)
+    if (emp.isSupervisor) {
+      const projectsSupervised = projects.filter((p: any) => p.supervisorId === emp.id);
+      if (projectsSupervised.length > 1) {
+        supervisorConflicts.push({
+          supervisor: emp,
+          projects: projectsSupervised
+        });
       }
     }
   });
@@ -319,7 +347,67 @@ app.get("/api/conflicts", async (req, res) => {
     }
   });
 
-  res.json({ employeeConflicts: empConflicts, equipmentConflicts: eqConflicts });
+  // Check for projects without supervisors
+  const projectsWithoutSupervisors = projects.filter((p: any) => 
+    p.status === 'active' && !p.supervisorId
+  );
+
+  res.json({ 
+    employeeConflicts: empConflicts, 
+    equipmentConflicts: eqConflicts,
+    supervisorConflicts: supervisorConflicts,
+    projectsWithoutSupervisors: projectsWithoutSupervisors
+  });
+});
+
+/** ====== Supervisor Management endpoints ====== **/
+app.get("/api/supervisors", async (req, res) => {
+  const employees = (await db.get(EMPLOYEES_KEY)) || [];
+  const supervisors = employees.filter((emp: any) => emp.isSupervisor);
+  res.json(supervisors);
+});
+
+app.patch("/api/projects/:id/supervisor", async (req, res) => {
+  const projects = (await db.get(PROJECTS_KEY)) || [];
+  const projectId = req.params.id;
+  const { supervisorId } = req.body;
+
+  let found = false;
+  const updatedProjects = projects.map((proj: any) => {
+    if (proj.id === projectId) {
+      found = true;
+      return { ...proj, supervisorId };
+    }
+    return proj;
+  });
+  
+  if (!found) return res.status(404).json({ error: "Project not found" });
+
+  await db.set(PROJECTS_KEY, updatedProjects);
+  const updatedProject = updatedProjects.find((p: any) => p.id === projectId);
+  res.json(updatedProject);
+});
+
+/** ====== Analytics endpoint ====== **/
+app.get("/api/analytics", async (req, res) => {
+  const employees = (await db.get(EMPLOYEES_KEY)) || [];
+  const equipment = (await db.get(EQUIPMENT_KEY)) || [];
+  const projects = (await db.get(PROJECTS_KEY)) || [];
+
+  const analytics = {
+    totalEmployees: employees.length,
+    assignedEmployees: employees.filter((e: any) => e.currentProjectId).length,
+    totalSupervisors: employees.filter((e: any) => e.isSupervisor).length,
+    totalEquipment: equipment.length,
+    assignedEquipment: equipment.filter((e: any) => e.currentProjectId).length,
+    operationalEquipment: equipment.filter((e: any) => e.status === 'operational').length,
+    activeProjects: projects.filter((p: any) => p.status === 'active').length,
+    totalProjects: projects.length,
+    averageProjectProgress: projects.reduce((acc: number, p: any) => acc + p.progress, 0) / projects.length || 0,
+    projectsBudgetTotal: projects.reduce((acc: number, p: any) => acc + (p.budget || 0), 0)
+  };
+
+  res.json(analytics);
 });
 
 (async () => {
