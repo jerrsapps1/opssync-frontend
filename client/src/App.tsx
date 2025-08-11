@@ -42,6 +42,7 @@ import {
   SliderFilledTrack,
   SliderThumb,
   Badge,
+  Progress,
 } from "@chakra-ui/react";
 import { HamburgerIcon, SettingsIcon } from "@chakra-ui/icons";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -1058,6 +1059,38 @@ function Header() {
   );
 }
 
+/** ======= Helper Functions ======= **/
+function calculateProjectDuration(startDate: Date | null, endDate: Date | null): string {
+  if (!startDate || !endDate) return 'Duration TBD';
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 30) {
+    return `${diffDays} days`;
+  } else if (diffDays < 365) {
+    const months = Math.round(diffDays / 30);
+    return `${months} month${months !== 1 ? 's' : ''}`;
+  } else {
+    const years = Math.round(diffDays / 365);
+    return `${years} year${years !== 1 ? 's' : ''}`;
+  }
+}
+
+function getProjectTimeStatus(startDate: Date | null, endDate: Date | null): 'upcoming' | 'active' | 'overdue' | 'completed' {
+  if (!startDate || !endDate) return 'active';
+  
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (now < start) return 'upcoming';
+  if (now > end) return 'overdue';
+  return 'active';
+}
+
 /** ======= Project List (Left Panel) ======= **/
 function ProjectList() {
   const { projects } = useApp();
@@ -1124,9 +1157,38 @@ function ProjectList() {
                       </Text>
                     )}
                   </HStack>
-                  <Text fontSize="xs" color="gray.300">
-                    {proj.status}
-                  </Text>
+                  
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="xs" color="gray.300" textTransform="capitalize">
+                      {proj.status}
+                    </Text>
+                    <Text 
+                      fontSize="xs" 
+                      color={
+                        getProjectTimeStatus(proj.startDate, proj.endDate) === 'overdue' ? 'red.300' :
+                        getProjectTimeStatus(proj.startDate, proj.endDate) === 'upcoming' ? 'blue.300' :
+                        'green.300'
+                      }
+                    >
+                      {calculateProjectDuration(proj.startDate, proj.endDate)}
+                    </Text>
+                  </HStack>
+                  
+                  {proj.progress !== undefined && (
+                    <Box w="full">
+                      <Progress 
+                        value={proj.progress} 
+                        size="xs" 
+                        colorScheme={
+                          getProjectTimeStatus(proj.startDate, proj.endDate) === 'overdue' ? 'red' : 'green'
+                        }
+                        bg="gray.600"
+                      />
+                      <Text fontSize="xs" color="gray.400" mt={1}>
+                        {proj.progress}% complete
+                      </Text>
+                    </Box>
+                  )}
                 </VStack>
                 {provided.placeholder}
               </Box>

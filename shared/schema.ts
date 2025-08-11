@@ -14,6 +14,8 @@ export const projects = pgTable("projects", {
   description: text("description"),
   status: text("status").notNull().default("active"), // active, planning, completed, paused
   progress: integer("progress").notNull().default(0), // 0-100
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

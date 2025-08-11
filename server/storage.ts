@@ -84,6 +84,8 @@ export class MemStorage implements IStorage {
       description: "Large-scale renovation of downtown shopping center with modern infrastructure updates",
       status: "active",
       progress: 65,
+      startDate: new Date('2024-11-01'),
+      endDate: new Date('2025-03-15'),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -99,6 +101,8 @@ export class MemStorage implements IStorage {
       description: "Controlled demolition of old residential complex for new development",
       status: "planning",
       progress: 15,
+      startDate: new Date('2025-02-01'),
+      endDate: new Date('2025-05-30'),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
