@@ -436,7 +436,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>GPS Latitude</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="47.6062" data-testid="input-new-gps-latitude" />
+                                    <Input {...field} value={field.value || ""} placeholder="47.6062" data-testid="input-new-gps-latitude" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -449,7 +449,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>GPS Longitude</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="-122.3321" data-testid="input-new-gps-longitude" />
+                                    <Input {...field} value={field.value || ""} placeholder="-122.3321" data-testid="input-new-gps-longitude" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -463,7 +463,7 @@ export default function Settings() {
                               <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} placeholder="Project description..." data-testid="textarea-new-project-description" />
+                                  <Textarea {...field} value={field.value || ""} placeholder="Project description..." data-testid="textarea-new-project-description" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -575,7 +575,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>Email</FormLabel>
                                   <FormControl>
-                                    <Input {...field} type="email" placeholder="john@company.com" data-testid="input-new-employee-email" />
+                                    <Input {...field} value={field.value || ""} type="email" placeholder="john@company.com" data-testid="input-new-employee-email" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -588,7 +588,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>Phone</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="(555) 123-4567" data-testid="input-new-employee-phone" />
+                                    <Input {...field} value={field.value || ""} placeholder="(555) 123-4567" data-testid="input-new-employee-phone" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -834,7 +834,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>Make</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="Caterpillar" data-testid="input-new-equipment-make" />
+                                    <Input {...field} value={field.value || ""} placeholder="Caterpillar" data-testid="input-new-equipment-make" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -849,7 +849,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>Model</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="320" data-testid="input-new-equipment-model" />
+                                    <Input {...field} value={field.value || ""} placeholder="320" data-testid="input-new-equipment-model" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -862,7 +862,7 @@ export default function Settings() {
                                 <FormItem>
                                   <FormLabel>Asset Number</FormLabel>
                                   <FormControl>
-                                    <Input {...field} placeholder="AST-001" data-testid="input-new-equipment-asset" />
+                                    <Input {...field} value={field.value || ""} placeholder="AST-001" data-testid="input-new-equipment-asset" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -876,7 +876,7 @@ export default function Settings() {
                               <FormItem>
                                 <FormLabel>Serial Number</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="EXC-001" data-testid="input-new-equipment-serial" />
+                                  <Input {...field} value={field.value || ""} placeholder="EXC-001" data-testid="input-new-equipment-serial" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -984,7 +984,7 @@ export default function Settings() {
                                     <FormItem>
                                       <FormLabel>Make</FormLabel>
                                       <FormControl>
-                                        <Input {...field} placeholder="Caterpillar" data-testid="input-edit-equipment-make" />
+                                        <Input {...field} value={field.value || ""} placeholder="Caterpillar" data-testid="input-edit-equipment-make" />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -997,7 +997,7 @@ export default function Settings() {
                                     <FormItem>
                                       <FormLabel>Model</FormLabel>
                                       <FormControl>
-                                        <Input {...field} placeholder="320" data-testid="input-edit-equipment-model" />
+                                        <Input {...field} value={field.value || ""} placeholder="320" data-testid="input-edit-equipment-model" />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -1010,7 +1010,7 @@ export default function Settings() {
                                     <FormItem>
                                       <FormLabel>Asset Number</FormLabel>
                                       <FormControl>
-                                        <Input {...field} placeholder="AST-001" data-testid="input-edit-equipment-asset" />
+                                        <Input {...field} value={field.value || ""} placeholder="AST-001" data-testid="input-edit-equipment-asset" />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
