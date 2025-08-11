@@ -1,16 +1,23 @@
 import { 
-  projects, employees, equipment, activities, alerts,
+  projects, employees, equipment, activities, alerts, users,
   type Project, type InsertProject,
   type Employee, type InsertEmployee, 
   type Equipment, type InsertEquipment,
   type Activity, type InsertActivity,
   type Alert, type InsertAlert,
+  type User, type InsertUser,
   type UpdateEmployeeAssignment,
   type UpdateEquipmentAssignment
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // Users
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUserBrandConfig(id: string, brandConfig: any): Promise<User>;
+  
   // Projects
   getProjects(): Promise<Project[]>;
   getProject(id: string): Promise<Project | undefined>;
@@ -39,6 +46,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private users: Map<string, User>;
   private projects: Map<string, Project>;
   private employees: Map<string, Employee>;
   private equipment: Map<string, Equipment>;
@@ -46,6 +54,7 @@ export class MemStorage implements IStorage {
   private alerts: Map<string, Alert>;
 
   constructor() {
+    this.users = new Map();
     this.projects = new Map();
     this.employees = new Map();
     this.equipment = new Map();
@@ -169,6 +178,44 @@ export class MemStorage implements IStorage {
     });
   }
 
+  // Users
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const users = Array.from(this.users.values());
+    return users.find(user => user.username === username);
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const id = randomUUID();
+    const newUser: User = {
+      ...userData,
+      id,
+      brandConfig: userData.brandConfig ? JSON.stringify(userData.brandConfig) : null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  async updateUserBrandConfig(id: string, brandConfig: any): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser: User = {
+      ...user,
+      brandConfig: JSON.stringify(brandConfig),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
   // Projects
   async getProjects(): Promise<Project[]> {
     return Array.from(this.projects.values());
@@ -183,6 +230,8 @@ export class MemStorage implements IStorage {
     const newProject: Project = {
       ...project,
       id,
+      status: project.status || "active",
+      progress: project.progress || 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -204,6 +253,11 @@ export class MemStorage implements IStorage {
     const newEmployee: Employee = {
       ...employee,
       id,
+      status: employee.status || "available",
+      email: employee.email || null,
+      phone: employee.phone || null,
+      avatarUrl: employee.avatarUrl || null,
+      currentProjectId: employee.currentProjectId || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -260,6 +314,9 @@ export class MemStorage implements IStorage {
     const newEquipment: Equipment = {
       ...equipment,
       id,
+      status: equipment.status || "available",
+      serialNumber: equipment.serialNumber || null,
+      currentProjectId: equipment.currentProjectId || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -305,7 +362,11 @@ export class MemStorage implements IStorage {
   // Activities
   async getRecentActivities(limit: number = 10): Promise<Activity[]> {
     return this.activities
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      })
       .slice(0, limit);
   }
 
@@ -314,6 +375,7 @@ export class MemStorage implements IStorage {
     const newActivity: Activity = {
       ...activity,
       id,
+      projectId: activity.projectId || null,
       createdAt: new Date(),
     };
     this.activities.push(newActivity);
@@ -330,6 +392,9 @@ export class MemStorage implements IStorage {
     const newAlert: Alert = {
       ...alert,
       id,
+      priority: alert.priority || "medium",
+      isRead: alert.isRead || false,
+      isDismissed: alert.isDismissed || false,
       createdAt: new Date(),
     };
     this.alerts.set(id, newAlert);

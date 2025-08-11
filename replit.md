@@ -6,7 +6,9 @@ The application features enterprise-grade conflict management with:
 - **Real-time Conflict Detection** - 15-second polling to detect assignment conflicts
 - **Professional Alert System** - Dismissible red alert banners highlighting conflicting employees/equipment by name
 - **Three-Panel Layout** - Streamlined drag-and-drop interface for project assignments
-- **White-Label Ready** - Simple brandConfig customization for instant client deployment
+- **JWT Authentication** - Secure login/logout with token-based authentication
+- **Settings Panel** - Hamburger menu with white-label configuration during account setup
+- **White-Label Ready** - Complete brand customization with real-time theme updates
 
 # User Preferences
 
@@ -67,29 +69,41 @@ To deploy this white-label TrackPro system:
 - Dismissible alerts (reappear on reload until resolved)
 
 ## Authentication and Authorization
-The codebase is prepared for authentication implementation with session-based architecture. The Express server includes cookie parsing middleware and the database configuration suggests session storage capabilities through connect-pg-simple integration.
+The application features a complete JWT-based authentication system with:
+- **User Registration** - Account creation with white-label brand configuration during setup
+- **Secure Login** - JWT token authentication with 7-day expiration
+- **Token Validation** - Automatic token validation and refresh functionality
+- **Settings Management** - In-app brand configuration updates via settings modal
+- **Protected Routes** - Authentication middleware for secure API endpoints
+- **User Storage** - Complete user management with encrypted password storage using bcryptjs
 
 ## Styling and Theme System
 The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables. Supports both light and dark themes with a focus on the dark theme for operational environments. The theme system includes semantic color tokens and consistent spacing/typography scales.
 
 ## White Label Configuration
-The application includes a comprehensive white-label system that can be customized by modifying the `brandConfig` object in `client/src/App.tsx`. Simple changes to this configuration will rebrand the entire application:
+The application includes a comprehensive white-label system with three configuration methods:
 
-```javascript
-const brandConfig = {
-  appName: "YourAppName",           // Your company name
-  primaryColor: "#yourPrimaryColor", // Main brand color (buttons, accents)
-  secondaryColor: "#yourSecondaryColor", // Secondary color (highlights, equipment)
-  logoUrl: "https://yourdomain.com/your-logo.svg", // Your company logo URL
-};
-```
+### 1. Account Registration Setup
+During user registration, clients can configure their brand settings:
+- App name and branding
+- Primary and secondary colors
+- Company logo URL
+- Real-time theme preview
 
-This single configuration automatically updates:
-- Header branding and logo
+### 2. Settings Panel Access
+After login, users can update branding via:
+- Hamburger menu in top-right corner
+- Settings modal with live color pickers
+- Instant theme updates without restart
+- Persistent brand configuration storage
+
+### 3. Dynamic Theme System
+The brand configuration automatically updates:
+- Header branding and logo display
 - Application name throughout the UI
 - Color scheme for all components
 - Theme tokens and semantic colors
-- Brand identity across all three panels
+- Real-time CSS custom property updates
 
 # External Dependencies
 

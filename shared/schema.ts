@@ -58,6 +58,15 @@ export const alerts = pgTable("alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  brandConfig: text("brand_config"), // JSON string for brand configuration
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -72,6 +81,12 @@ export const insertEmployeeSchema = createInsertSchema(employees).omit({
 });
 
 export const insertEquipmentSchema = createInsertSchema(equipment).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -111,6 +126,9 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type UpdateEmployeeAssignment = z.infer<typeof updateEmployeeAssignmentSchema>;
 export type UpdateEquipmentAssignment = z.infer<typeof updateEquipmentAssignmentSchema>;
