@@ -12,6 +12,8 @@ The application features enterprise-grade conflict management with:
 - **Object Storage Integration** - Professional file upload system for company logos and assets
 - **Enhanced Settings System** - Comprehensive 5-tab settings page for detailed operational management
 - **Refined Drag & Drop** - Fine-tuned drag and drop with direct project assignment and unassigned zones
+- **Live Data Creation** - Projects, employees, and equipment created in settings automatically appear in dashboard
+- **Integrated Workflow** - Seamless connection between settings management and operational dashboard
 
 # User Preferences
 
