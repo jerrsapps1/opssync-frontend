@@ -89,8 +89,6 @@ function AppProvider({ children }) {
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [equipment, setEquipment] = useState([]);
-  const [conflicts, setConflicts] = useConflictPolling();
-  const [showConflictAlert, setShowConflictAlert] = useState(false);
   const toast = useToast();
 
   // Load initial data on mount
@@ -121,33 +119,7 @@ function AppProvider({ children }) {
     fetchData();
   }, [toast]);
 
-  // Monitor conflicts from polling hook
-  useEffect(() => {
-    if (conflicts) {
-      const totalConflicts = (conflicts.employeeConflicts?.length || 0) + 
-                            (conflicts.equipmentConflicts?.length || 0) + 
-                            (conflicts.supervisorConflicts?.length || 0) + 
-                            (conflicts.projectsWithoutSupervisors?.length || 0);
-      
-      if (totalConflicts > 0) {
-        setShowConflictAlert(true);
-      } else {
-        setShowConflictAlert(false);
-      }
-    }
-  }, [conflicts]);
 
-  // Trigger immediate conflict check after assignment changes
-  async function checkConflicts() {
-    try {
-      const res = await fetch("/api/conflicts");
-      if (!res.ok) throw new Error("Failed to check conflicts");
-      const conflictData = await res.json();
-      setConflicts(conflictData);
-    } catch (e) {
-      console.error("Error checking conflicts:", e);
-    }
-  }
 
   // Update employee assignment (project)
   async function moveEmployee(empId, newProjectId) {
@@ -164,9 +136,6 @@ function AppProvider({ children }) {
           e.id === empId ? { ...e, currentProjectId: newProjectId } : e
         )
       );
-      
-      // Check for conflicts after assignment change
-      setTimeout(checkConflicts, 500);
       
       toast({
         title: "Employee Updated",
@@ -200,9 +169,6 @@ function AppProvider({ children }) {
         eqs.map((e) => (e.id === eqId ? { ...e, currentProjectId: newProjectId } : e))
       );
       
-      // Check for conflicts after assignment change
-      setTimeout(checkConflicts, 500);
-      
       toast({
         title: "Equipment Updated",
         description: "Assignment updated successfully",
@@ -227,12 +193,8 @@ function AppProvider({ children }) {
         projects, 
         employees, 
         equipment, 
-        conflicts,
-        showConflictAlert,
-        setShowConflictAlert,
         moveEmployee, 
-        moveEquipment,
-        checkConflicts 
+        moveEquipment
       }}
     >
       {children}
@@ -480,7 +442,9 @@ function ConflictAlert({ conflicts, onClose }) {
 
 /** ======= Main App with Drag & Drop ======= **/
 function MainApp() {
-  const { conflicts, showConflictAlert, setShowConflictAlert, moveEmployee, moveEquipment } = useApp();
+  const { moveEmployee, moveEquipment } = useApp();
+  const [conflicts, setConflicts] = useConflictPolling(15000); // poll every 15 sec
+  const [showAlert, setShowAlert] = useState(true);
 
   function onDragEnd(result) {
     const { source, destination, draggableId } = result;
@@ -516,14 +480,12 @@ function MainApp() {
   return (
     <>
       <Header />
-      {showConflictAlert && conflicts && (
-        <ConflictAlert 
-          conflicts={conflicts} 
-          onClose={() => setShowConflictAlert(false)} 
-        />
+      {showAlert && (
+        <ConflictAlert conflicts={conflicts} onClose={() => setShowAlert(false)} />
       )}
+      {/* rest of your app: Header, DragDropContext, Panels */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <Flex height="calc(100vh - 72px)">
+        <Flex height="calc(100vh - 72px)" direction="row">
           <ProjectList />
           <EmployeeList />
           <EquipmentList />
