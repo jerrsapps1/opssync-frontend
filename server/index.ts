@@ -7,6 +7,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 /** Mock Replit DB for development **/
+// For production deployment, replace this with:
+// import { Database } from "@replit/database";
+// const db = new Database();
+
 class MockReplitDB {
   private data: Record<string, any> = {};
 

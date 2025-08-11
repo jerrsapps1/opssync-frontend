@@ -18,14 +18,27 @@ The client application uses React 18 with TypeScript, built using Vite for devel
 Routing is handled by Wouter for lightweight client-side navigation. The application follows a component-based architecture with separation of concerns between UI components, business logic hooks, and data fetching utilities.
 
 ## Backend Architecture
-The server runs on Express.js with TypeScript, following a RESTful API design pattern. The application uses a layered architecture with route handlers, storage abstraction layer, and database integration. Currently implements an in-memory storage system that can be easily replaced with persistent database storage.
+The server runs on Express.js with TypeScript, following a simplified RESTful API design pattern. The application uses a streamlined architecture with direct API endpoints and Replit Database integration for persistent storage.
 
-The backend provides endpoints for CRUD operations on projects, employees, equipment, activities, and alerts. Real-time updates are handled through standard HTTP requests with client-side polling via React Query.
+The backend provides endpoints for CRUD operations on projects, employees, and equipment with drag-and-drop assignment functionality. Real-time updates are handled through standard HTTP requests with client-side polling via React Query.
 
 ## Data Storage Solutions
-The application uses Drizzle ORM with PostgreSQL configuration for database operations. The schema defines five main entities: projects, employees, equipment, activities, and alerts. The current implementation includes a memory storage class (MemStorage) that serves as a temporary solution before database integration.
+The application uses Replit Database (@replit/database) for simple, persistent storage. The implementation includes three main data collections: employees, equipment, and projects. Each entity uses UUID primary keys and includes assignment tracking through currentProjectId fields.
 
-Database schema includes proper relationships between entities, with employees and equipment having foreign key references to projects for assignment tracking. All entities include created/updated timestamps and use UUID primary keys for scalability.
+For development, a MockReplitDB class simulates the Replit Database behavior. In production, simply replace the MockReplitDB with the actual @replit/database import.
+
+## Simple Deployment Process
+To deploy this white-label application to a new Replit project:
+
+1. Create a new Node.js Replit project
+2. Install dependencies: `npm install express cors body-parser @replit/database`
+3. Replace MockReplitDB with actual Replit Database:
+   ```javascript
+   import { Database } from "@replit/database";
+   const db = new Database();
+   ```
+4. Set Replit to run: `node server/index.js`
+5. Update brandConfig for client customization
 
 ## Authentication and Authorization
 The codebase is prepared for authentication implementation with session-based architecture. The Express server includes cookie parsing middleware and the database configuration suggests session storage capabilities through connect-pg-simple integration.
