@@ -10,6 +10,8 @@ The application features enterprise-grade conflict management with:
 - **Enhanced Navigation Header** - Professional navigation bar with branded buttons and dual settings access
 - **Advanced White-Label System** - Complete brand customization with logo upload and comprehensive configuration
 - **Object Storage Integration** - Professional file upload system for company logos and assets
+- **Enhanced Settings System** - Comprehensive 5-tab settings page for detailed operational management
+- **Refined Drag & Drop** - Fine-tuned drag and drop with direct project assignment and unassigned zones
 
 # User Preferences
 
@@ -123,6 +125,25 @@ The brand configuration automatically updates:
 - Color scheme for all components
 - Theme tokens and semantic colors
 - Real-time CSS custom property updates
+
+## Enhanced Settings Management System
+The application features a comprehensive settings interface with dual access methods:
+
+### 1. Enhanced Settings Page (5-Tab System)
+Professional tabbed settings interface accessible via header navigation:
+- **Project Details** - Complete project information management with forms for editing project specifics
+- **Team Management** - Employee profile management with contact details and role assignments  
+- **Equipment Settings** - Equipment configuration, maintenance tracking, and condition management
+- **Company Contacts** - Key personnel, vendor contacts, and emergency contact directory
+- **Project Contacts** - Project-specific contact management organized by project
+
+### 2. Refined Drag & Drop System
+Improved drag and drop functionality with:
+- **Consistent ID Architecture** - Standardized employee/equipment draggable IDs for reliable operations
+- **Direct Project Assignment** - Drag items directly onto projects in the left panel for instant assignment
+- **Dedicated Unassigned Zone** - Special drop zone for removing project assignments
+- **Enhanced Visual Feedback** - Clear hover states and drag indicators during operations
+- **Error Handling** - Console logging and try-catch blocks for debugging drag operations
 
 # External Dependencies
 
