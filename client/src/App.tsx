@@ -446,54 +446,33 @@ function EquipmentList() {
   );
 }
 
-/** ======= Conflict Alert Banner ======= **/
-function ConflictAlertBanner() {
-  const { conflicts, showConflictAlert, setShowConflictAlert } = useApp();
-  
-  if (!showConflictAlert) return null;
-
-  const totalConflicts = (conflicts.employeeConflicts?.length || 0) + 
-                        (conflicts.equipmentConflicts?.length || 0) + 
-                        (conflicts.supervisorConflicts?.length || 0) + 
-                        (conflicts.projectsWithoutSupervisors?.length || 0);
-
-  const conflictMessages = [];
-  
-  if (conflicts.employeeConflicts?.length > 0) {
-    const names = conflicts.employeeConflicts.map(emp => emp.name).join(", ");
-    conflictMessages.push(`Employee conflicts: ${names}`);
-  }
-  
-  if (conflicts.equipmentConflicts?.length > 0) {
-    const names = conflicts.equipmentConflicts.map(eq => eq.name).join(", ");
-    conflictMessages.push(`Equipment conflicts: ${names}`);
-  }
-  
-  if (conflicts.supervisorConflicts?.length > 0) {
-    const names = conflicts.supervisorConflicts.map(sc => sc.supervisor.name).join(", ");
-    conflictMessages.push(`Supervisor conflicts: ${names}`);
-  }
-  
-  if (conflicts.projectsWithoutSupervisors?.length > 0) {
-    const names = conflicts.projectsWithoutSupervisors.map(p => p.name).join(", ");
-    conflictMessages.push(`Projects need supervisors: ${names}`);
-  }
+/** ======= Conflict Alert Component ======= **/
+function ConflictAlert({ conflicts, onClose }) {
+  if (
+    !conflicts ||
+    (!conflicts.employeeConflicts.length && !conflicts.equipmentConflicts.length)
+  )
+    return null;
 
   return (
-    <Alert status="warning" mb={4}>
+    <Alert status="error" mb={4} borderRadius="md" boxShadow="md">
       <AlertIcon />
       <Box flex="1">
-        <AlertTitle>Assignment Conflicts Detected!</AlertTitle>
-        <AlertDescription display="block">
-          {totalConflicts} conflict{totalConflicts > 1 ? 's' : ''} found: {conflictMessages.join(" • ")}
+        <AlertTitle>Conflict Alert!</AlertTitle>
+        <AlertDescription>
+          Employees assigned multiple times:{" "}
+          {conflicts.employeeConflicts.map((e) => e.name).join(", ") || "None"}
+          <br />
+          Equipment assigned multiple times:{" "}
+          {conflicts.equipmentConflicts.map((e) => e.name).join(", ") || "None"}
         </AlertDescription>
       </Box>
-      <CloseButton 
-        alignSelf="flex-start" 
-        position="relative" 
-        right={-1} 
-        top={-1} 
-        onClick={() => setShowConflictAlert(false)}
+      <CloseButton
+        position="absolute"
+        right="8px"
+        top="8px"
+        onClick={onClose}
+        color="white"
       />
     </Alert>
   );
@@ -501,7 +480,7 @@ function ConflictAlertBanner() {
 
 /** ======= Main App with Drag & Drop ======= **/
 function MainApp() {
-  const { moveEmployee, moveEquipment } = useApp();
+  const { conflicts, showConflictAlert, setShowConflictAlert, moveEmployee, moveEquipment } = useApp();
 
   function onDragEnd(result) {
     const { source, destination, draggableId } = result;
@@ -537,7 +516,12 @@ function MainApp() {
   return (
     <>
       <Header />
-      <ConflictAlertBanner />
+      {showConflictAlert && conflicts && (
+        <ConflictAlert 
+          conflicts={conflicts} 
+          onClose={() => setShowConflictAlert(false)} 
+        />
+      )}
       <DragDropContext onDragEnd={onDragEnd}>
         <Flex height="calc(100vh - 72px)">
           <ProjectList />
