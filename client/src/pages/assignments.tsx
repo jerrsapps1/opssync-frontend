@@ -74,6 +74,24 @@ export default function Assignments() {
     const sourceParts = source.droppableId.split("-");
     const destParts = destination.droppableId.split("-");
 
+    // Handle equipment from single list to project assignment
+    if (source.droppableId === "equipment-list" && destination.droppableId.startsWith("project-")) {
+      if (type === "eq") {
+        const newProjectId = destParts.slice(1).join("-");
+        moveEquipmentMutation.mutate({ 
+          eqId: id, 
+          newProjectId: newProjectId === "unassigned" ? null : newProjectId 
+        });
+        toast({
+          title: "Equipment Assignment",
+          description: newProjectId !== "unassigned" 
+            ? "Equipment assigned to project successfully" 
+            : "Equipment unassigned successfully",
+        });
+      }
+      return;
+    }
+
     if (
       type === "emp" &&
       sourceParts[0] === "employee" &&
