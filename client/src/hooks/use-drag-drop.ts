@@ -66,7 +66,23 @@ export function useDragDrop() {
     const [assetType, assetId] = draggableId.split("-");
     
     // Extract project ID from destination droppableId
-    const projectId = destination.droppableId === "unassigned" ? null : destination.droppableId;
+    let projectId = null;
+    if (destination.droppableId === "project-unassigned") {
+      projectId = null;
+    } else if (destination.droppableId.startsWith("project-")) {
+      projectId = destination.droppableId.replace("project-", "");
+    } else {
+      projectId = destination.droppableId;
+    }
+
+    console.log("Drag and Drop Debug:", {
+      draggableId,
+      source: source.droppableId,
+      destination: destination.droppableId,
+      assetType,
+      assetId,
+      projectId
+    });
 
     if (assetType === "employee") {
       assignEmployeeMutation.mutate({ employeeId: assetId, projectId });
