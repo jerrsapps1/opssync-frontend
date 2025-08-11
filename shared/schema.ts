@@ -5,8 +5,13 @@ import { z } from "zod";
 
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectNumber: text("project_number").notNull().unique(),
   name: text("name").notNull(),
   location: text("location").notNull(),
+  gpsLatitude: text("gps_latitude"),
+  gpsLongitude: text("gps_longitude"),
+  kmzFileUrl: text("kmz_file_url"),
+  description: text("description"),
   status: text("status").notNull().default("active"), // active, planning, completed, paused
   progress: integer("progress").notNull().default(0), // 0-100
   createdAt: timestamp("created_at").defaultNow(),
@@ -20,6 +25,7 @@ export const employees = pgTable("employees", {
   email: text("email"),
   phone: text("phone"),
   avatarUrl: text("avatar_url"),
+  employmentStatus: text("employment_status").notNull().default("active"), // active, terminated, standby
   status: text("status").notNull().default("available"), // available, busy, offline
   currentProjectId: varchar("current_project_id").references(() => projects.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -30,6 +36,9 @@ export const equipment = pgTable("equipment", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   type: text("type").notNull(),
+  make: text("make"),
+  model: text("model"),
+  assetNumber: text("asset_number").unique(),
   serialNumber: text("serial_number").unique(),
   status: text("status").notNull().default("available"), // available, in-use, maintenance, broken
   currentProjectId: varchar("current_project_id").references(() => projects.id),
@@ -111,6 +120,41 @@ export const updateEquipmentAssignmentSchema = z.object({
   currentProjectId: z.string().nullable(),
 });
 
+// Update schemas for project details
+export const updateProjectSchema = z.object({
+  projectNumber: z.string().optional(),
+  name: z.string().optional(),
+  location: z.string().optional(),
+  gpsLatitude: z.string().nullable().optional(),
+  gpsLongitude: z.string().nullable().optional(),
+  kmzFileUrl: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  status: z.string().optional(),
+  progress: z.number().optional(),
+});
+
+// Update schemas for employee details
+export const updateEmployeeSchema = z.object({
+  name: z.string().optional(),
+  role: z.string().optional(),
+  email: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  avatarUrl: z.string().nullable().optional(),
+  employmentStatus: z.string().optional(),
+  status: z.string().optional(),
+});
+
+// Update schemas for equipment details
+export const updateEquipmentSchema = z.object({
+  name: z.string().optional(),
+  type: z.string().optional(),
+  make: z.string().nullable().optional(),
+  model: z.string().nullable().optional(),
+  assetNumber: z.string().nullable().optional(),
+  serialNumber: z.string().nullable().optional(),
+  status: z.string().optional(),
+});
+
 // Types
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -132,3 +176,6 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type UpdateEmployeeAssignment = z.infer<typeof updateEmployeeAssignmentSchema>;
 export type UpdateEquipmentAssignment = z.infer<typeof updateEquipmentAssignmentSchema>;
+export type UpdateProject = z.infer<typeof updateProjectSchema>;
+export type UpdateEmployee = z.infer<typeof updateEmployeeSchema>;
+export type UpdateEquipment = z.infer<typeof updateEquipmentSchema>;

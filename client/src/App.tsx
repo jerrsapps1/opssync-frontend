@@ -83,6 +83,12 @@ function useApp() {
   return useContext(AppContext);
 }
 
+/** ======= Navigation Context ======= **/
+const NavigationContext = createContext<any>(null);
+function useNavigation() {
+  return useContext(NavigationContext);
+}
+
 /** ======= Auth Provider ======= **/
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -235,6 +241,46 @@ function useConflictPolling(interval = 15000) {
   }, [interval]);
 
   return [conflicts, setConflicts];
+}
+
+/** ======= Navigation Provider ======= **/
+function NavigationProvider({ children }: { children: React.ReactNode }) {
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+
+  const navigateTo = (view: string, projectId?: string) => {
+    setCurrentView(view);
+    if (projectId) {
+      setCurrentProjectId(projectId);
+    }
+  };
+
+  const navigateToProject = (projectId: string) => {
+    setCurrentView('project-profile');
+    setCurrentProjectId(projectId);
+  };
+
+  const navigateToSettings = () => {
+    setCurrentView('settings');
+  };
+
+  const navigateToDashboard = () => {
+    setCurrentView('dashboard');
+    setCurrentProjectId(null);
+  };
+
+  return (
+    <NavigationContext.Provider value={{
+      currentView,
+      currentProjectId,
+      navigateTo,
+      navigateToProject,
+      navigateToSettings,
+      navigateToDashboard
+    }}>
+      {children}
+    </NavigationContext.Provider>
+  );
 }
 
 /** ======= App Provider ======= **/
@@ -531,6 +577,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 /** ======= Header with Branding and Auth ======= **/
 function Header() {
   const { brandConfig, user, logout } = useAuth();
+  const { navigateToSettings, navigateToDashboard, currentView } = useNavigation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -549,8 +596,15 @@ function Header() {
           alt={`${brandConfig.appName} Logo`}
           height="40px"
           mr={4}
+          cursor="pointer"
+          onClick={navigateToDashboard}
         />
-        <Heading size="md" color="white">
+        <Heading 
+          size="md" 
+          color="white" 
+          cursor="pointer" 
+          onClick={navigateToDashboard}
+        >
           {brandConfig.appName}
         </Heading>
         
@@ -569,7 +623,7 @@ function Header() {
             <MenuList bg="#1E1E2F" borderColor="brand.500">
               <MenuItem 
                 icon={<SettingsIcon />} 
-                onClick={onOpen}
+                onClick={navigateToSettings}
                 bg="#1E1E2F"
                 _hover={{ bg: "brand.600" }}
               >
@@ -587,7 +641,7 @@ function Header() {
         </HStack>
       </Flex>
       
-      <SettingsModal isOpen={isOpen} onClose={onClose} />
+      {currentView === 'dashboard' && <SettingsModal isOpen={isOpen} onClose={onClose} />}
     </>
   );
 }
@@ -595,6 +649,8 @@ function Header() {
 /** ======= Project List (Left Panel) ======= **/
 function ProjectList() {
   const { projects } = useApp();
+  const { navigateToProject } = useNavigation();
+  
   return (
     <Box
       width="200px"
@@ -617,6 +673,7 @@ function ProjectList() {
             rounded="md"
             width="100%"
             _hover={{ bg: "brand.500", cursor: "pointer" }}
+            onClick={() => navigateToProject(proj.id)}
           >
             {proj.name}
           </Box>
@@ -870,6 +927,63 @@ function MainApp() {
   );
 }
 
+/** ======= Simple Settings Component ======= **/
+function SettingsPage() {
+  const { navigateToDashboard } = useNavigation();
+  
+  return (
+    <Box p={6}>
+      <Button onClick={navigateToDashboard} mb={4}>
+        ← Back to Dashboard
+      </Button>
+      <Heading mb={4}>Settings</Heading>
+      <Text>Settings page is under construction. Use the hamburger menu Settings for brand configuration.</Text>
+    </Box>
+  );
+}
+
+/** ======= Simple Project Profile Component ======= **/
+function ProjectProfilePage() {
+  const { navigateToDashboard, currentProjectId } = useNavigation();
+  const { projects } = useApp();
+  
+  const project = projects.find(p => p.id === currentProjectId);
+  
+  return (
+    <Box p={6}>
+      <Button onClick={navigateToDashboard} mb={4}>
+        ← Back to Dashboard
+      </Button>
+      <Heading mb={4}>Project Profile</Heading>
+      {project ? (
+        <VStack align="start" spacing={4}>
+          <Text><strong>Name:</strong> {project.name}</Text>
+          <Text><strong>Location:</strong> {project.location}</Text>
+          <Text><strong>Status:</strong> {project.status}</Text>
+          <Text><strong>Progress:</strong> {project.progress}%</Text>
+        </VStack>
+      ) : (
+        <Text>Project not found</Text>
+      )}
+    </Box>
+  );
+}
+
+/** ======= Main Content Routing ======= **/
+function MainContent() {
+  const { currentView } = useNavigation();
+
+  switch (currentView) {
+    case 'settings':
+      return <SettingsPage />;
+    case 'project-profile':
+      return <ProjectProfilePage />;
+    case 'dashboard':
+    default:
+      return <MainApp />;
+  }
+}
+
 /** ======= Main App Component ======= **/
 function App() {
   return (
@@ -909,12 +1023,14 @@ function AppContent() {
 
   return (
     <ChakraProvider theme={createTheme(brandConfig)}>
-      <AppProvider>
-        <Box minH="100vh" bg="#121212" color="#E0E0E0">
-          <Header />
-          <MainApp />
-        </Box>
-      </AppProvider>
+      <NavigationProvider>
+        <AppProvider>
+          <Box minH="100vh" bg="#121212" color="#E0E0E0">
+            <Header />
+            <MainContent />
+          </Box>
+        </AppProvider>
+      </NavigationProvider>
     </ChakraProvider>
   );
 }

@@ -6,7 +6,10 @@ import {
   insertEmployeeSchema, 
   insertEquipmentSchema,
   updateEmployeeAssignmentSchema,
-  updateEquipmentAssignmentSchema
+  updateEquipmentAssignmentSchema,
+  updateProjectSchema,
+  updateEmployeeSchema,
+  updateEquipmentSchema
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -184,6 +187,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/projects/:id", async (req, res) => {
+    try {
+      const updateData = updateProjectSchema.parse(req.body);
+      const project = await storage.updateProject(req.params.id, updateData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(400).json({ message: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/projects/:id", async (req, res) => {
+    try {
+      await storage.deleteProject(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
   // Employees routes
   app.get("/api/employees", async (req, res) => {
     try {
@@ -230,11 +254,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Direct employee update route (for Chakra UI app)
+  // Employee profile update route  
   app.patch("/api/employees/:id", async (req, res) => {
     try {
-      const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
-      const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
+      const updateData = updateEmployeeSchema.parse(req.body);
+      const employee = await storage.updateEmployee(req.params.id, updateData);
       res.json(employee);
     } catch (error) {
       console.error("Error updating employee:", error);
@@ -288,11 +312,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Direct equipment update route (for Chakra UI app)
+  // Equipment profile update route
   app.patch("/api/equipment/:id", async (req, res) => {
     try {
-      const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
-      const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
+      const updateData = updateEquipmentSchema.parse(req.body);
+      const equipment = await storage.updateEquipment(req.params.id, updateData);
       res.json(equipment);
     } catch (error) {
       console.error("Error updating equipment:", error);

@@ -1,8 +1,8 @@
 import { 
   projects, employees, equipment, activities, alerts, users,
-  type Project, type InsertProject,
-  type Employee, type InsertEmployee, 
-  type Equipment, type InsertEquipment,
+  type Project, type InsertProject, type UpdateProject,
+  type Employee, type InsertEmployee, type UpdateEmployee,
+  type Equipment, type InsertEquipment, type UpdateEquipment,
   type Activity, type InsertActivity,
   type Alert, type InsertAlert,
   type User, type InsertUser,
@@ -23,17 +23,21 @@ export interface IStorage {
   getProjects(): Promise<Project[]>;
   getProject(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, updates: UpdateProject): Promise<Project>;
+  deleteProject(id: string): Promise<void>;
   
   // Employees
   getEmployees(): Promise<Employee[]>;
   getEmployee(id: string): Promise<Employee | undefined>;
   createEmployee(employee: InsertEmployee): Promise<Employee>;
+  updateEmployee(id: string, updates: UpdateEmployee): Promise<Employee>;
   updateEmployeeAssignment(id: string, assignment: UpdateEmployeeAssignment): Promise<Employee>;
   
   // Equipment
   getEquipment(): Promise<Equipment[]>;
   getEquipmentItem(id: string): Promise<Equipment | undefined>;
   createEquipment(equipment: InsertEquipment): Promise<Equipment>;
+  updateEquipment(id: string, updates: UpdateEquipment): Promise<Equipment>;
   updateEquipmentAssignment(id: string, assignment: UpdateEquipmentAssignment): Promise<Equipment>;
   
   // Activities
@@ -71,8 +75,13 @@ export class MemStorage implements IStorage {
     // Create sample projects
     const project1: Project = {
       id: "proj-001",
+      projectNumber: "PRJ-2025-001",
       name: "Downtown Mall Renovation",
       location: "Seattle, WA",
+      gpsLatitude: "47.6062",
+      gpsLongitude: "-122.3321",
+      kmzFileUrl: null,
+      description: "Large-scale renovation of downtown shopping center with modern infrastructure updates",
       status: "active",
       progress: 65,
       createdAt: new Date(),
@@ -81,8 +90,13 @@ export class MemStorage implements IStorage {
     
     const project2: Project = {
       id: "proj-002", 
+      projectNumber: "PRJ-2025-002",
       name: "Residential Complex Demo",
       location: "Portland, OR",
+      gpsLatitude: "45.5152",
+      gpsLongitude: "-122.6784",
+      kmzFileUrl: null,
+      description: "Controlled demolition of old residential complex for new development",
       status: "planning",
       progress: 15,
       createdAt: new Date(),
@@ -106,6 +120,7 @@ export class MemStorage implements IStorage {
         ...emp,
         email: null,
         phone: null,
+        employmentStatus: "active",
         currentProjectId: emp.currentProjectId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -115,10 +130,10 @@ export class MemStorage implements IStorage {
     
     // Create sample equipment
     const equipmentList = [
-      { id: "eq-001", name: "Excavator CAT-320", type: "Heavy Machinery", serialNumber: "EXC-001", status: "available" },
-      { id: "eq-002", name: "Pneumatic Drill Set", type: "Power Tools", serialNumber: "PDS-005", status: "maintenance" },
-      { id: "eq-003", name: "Bulldozer BD-450", type: "Heavy Machinery", serialNumber: "BD-450", status: "in-use", currentProjectId: "proj-001" },
-      { id: "eq-004", name: "Demo Hammer Kit", type: "Demolition", serialNumber: "DHK-100", status: "in-use", currentProjectId: "proj-002" },
+      { id: "eq-001", name: "Excavator CAT-320", type: "Heavy Machinery", make: "Caterpillar", model: "320", assetNumber: "AST-001", serialNumber: "EXC-001", status: "available" },
+      { id: "eq-002", name: "Pneumatic Drill Set", type: "Power Tools", make: "Bosch", model: "PD-500", assetNumber: "AST-002", serialNumber: "PDS-005", status: "maintenance" },
+      { id: "eq-003", name: "Bulldozer BD-450", type: "Heavy Machinery", make: "Caterpillar", model: "D6T", assetNumber: "AST-003", serialNumber: "BD-450", status: "in-use", currentProjectId: "proj-001" },
+      { id: "eq-004", name: "Demo Hammer Kit", type: "Demolition", make: "Hilti", model: "TE-60", assetNumber: "AST-004", serialNumber: "DHK-100", status: "in-use", currentProjectId: "proj-002" },
     ];
     
     equipmentList.forEach(eq => {
@@ -258,6 +273,10 @@ export class MemStorage implements IStorage {
     const newProject: Project = {
       ...project,
       id,
+      gpsLatitude: project.gpsLatitude || null,
+      gpsLongitude: project.gpsLongitude || null,
+      kmzFileUrl: project.kmzFileUrl || null,
+      description: project.description || null,
       status: project.status || "active",
       progress: project.progress || 0,
       createdAt: new Date(),
@@ -265,6 +284,38 @@ export class MemStorage implements IStorage {
     };
     this.projects.set(id, newProject);
     return newProject;
+  }
+
+  async updateProject(id: string, updates: UpdateProject): Promise<Project> {
+    const project = this.projects.get(id);
+    if (!project) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+
+    const updatedProject: Project = {
+      ...project,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.projects.set(id, updatedProject);
+    return updatedProject;
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    // First, unassign all employees and equipment from this project
+    for (const employee of this.employees.values()) {
+      if (employee.currentProjectId === id) {
+        await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
+      }
+    }
+    
+    for (const equipment of this.equipment.values()) {
+      if (equipment.currentProjectId === id) {
+        await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
+      }
+    }
+
+    this.projects.delete(id);
   }
 
   // Employees
@@ -281,6 +332,7 @@ export class MemStorage implements IStorage {
     const newEmployee: Employee = {
       ...employee,
       id,
+      employmentStatus: employee.employmentStatus || "active",
       status: employee.status || "available",
       email: employee.email || null,
       phone: employee.phone || null,
@@ -291,6 +343,21 @@ export class MemStorage implements IStorage {
     };
     this.employees.set(id, newEmployee);
     return newEmployee;
+  }
+
+  async updateEmployee(id: string, updates: UpdateEmployee): Promise<Employee> {
+    const employee = this.employees.get(id);
+    if (!employee) {
+      throw new Error(`Employee with id ${id} not found`);
+    }
+
+    const updatedEmployee: Employee = {
+      ...employee,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.employees.set(id, updatedEmployee);
+    return updatedEmployee;
   }
 
   async updateEmployeeAssignment(id: string, assignment: UpdateEmployeeAssignment): Promise<Employee> {
@@ -342,6 +409,9 @@ export class MemStorage implements IStorage {
     const newEquipment: Equipment = {
       ...equipment,
       id,
+      make: equipment.make || null,
+      model: equipment.model || null,
+      assetNumber: equipment.assetNumber || null,
       status: equipment.status || "available",
       serialNumber: equipment.serialNumber || null,
       currentProjectId: equipment.currentProjectId || null,
@@ -350,6 +420,21 @@ export class MemStorage implements IStorage {
     };
     this.equipment.set(id, newEquipment);
     return newEquipment;
+  }
+
+  async updateEquipment(id: string, updates: UpdateEquipment): Promise<Equipment> {
+    const equipment = this.equipment.get(id);
+    if (!equipment) {
+      throw new Error(`Equipment with id ${id} not found`);
+    }
+
+    const updatedEquipment: Equipment = {
+      ...equipment,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.equipment.set(id, updatedEquipment);
+    return updatedEquipment;
   }
 
   async updateEquipmentAssignment(id: string, assignment: UpdateEquipmentAssignment): Promise<Equipment> {
