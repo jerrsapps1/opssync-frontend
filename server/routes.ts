@@ -91,6 +91,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Direct employee update route (for Chakra UI app)
+  app.patch("/api/employees/:id", async (req, res) => {
+    try {
+      const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
+      const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
+      res.json(employee);
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      res.status(400).json({ message: "Failed to update employee" });
+    }
+  });
+
   // Equipment routes
   app.get("/api/equipment", async (req, res) => {
     try {
@@ -134,6 +146,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating equipment assignment:", error);
       res.status(400).json({ message: "Failed to update equipment assignment" });
+    }
+  });
+
+  // Direct equipment update route (for Chakra UI app)
+  app.patch("/api/equipment/:id", async (req, res) => {
+    try {
+      const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
+      const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
+      res.json(equipment);
+    } catch (error) {
+      console.error("Error updating equipment:", error);
+      res.status(400).json({ message: "Failed to update equipment" });
     }
   });
 
