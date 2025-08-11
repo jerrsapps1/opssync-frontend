@@ -304,8 +304,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/equipment/:id/assignment", async (req, res) => {
     try {
+      console.log(`[IDENTITY DEBUG] PATCH request for equipment ${req.params.id} with:`, req.body);
       const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
       const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
+      console.log(`[IDENTITY DEBUG] Response equipment:`, equipment);
       res.json(equipment);
     } catch (error) {
       console.error("Error updating equipment assignment:", error);

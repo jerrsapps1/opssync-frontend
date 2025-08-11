@@ -1234,7 +1234,7 @@ function ProjectList() {
 }
 
 /** ======= Employee List (Center Panel) ======= **/
-function EmployeeList() {
+function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, name: string) => void }) {
   const { employees, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
@@ -1345,7 +1345,7 @@ function EmployeeList() {
                           icon={<StarIcon />}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSkillEndorsement('employee', emp.id, emp.name);
+                            onEndorse('employee', emp.id, emp.name);
                           }}
                           aria-label="Endorse employee performance"
                         />
@@ -1396,7 +1396,7 @@ function EmployeeList() {
 }
 
 /** ======= Equipment List (Right Panel) ======= **/
-function EquipmentList() {
+function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, name: string) => void }) {
   const { equipment, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
@@ -1514,7 +1514,7 @@ function EquipmentList() {
                           icon={<StarIcon />}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSkillEndorsement('equipment', eq.id, eq.name);
+                            onEndorse('equipment', eq.id, eq.name);
                           }}
                           aria-label="Endorse equipment performance"
                         />
@@ -1708,8 +1708,8 @@ function MainApp() {
       <DragDropContext onDragEnd={onDragEnd}>
         <Flex height="calc(100vh - 120px)">
           <ProjectList />
-          <EmployeeList />
-          <EquipmentList />
+          <EmployeeList onEndorse={handleSkillEndorsement} />
+          <EquipmentList onEndorse={handleSkillEndorsement} />
         </Flex>
       </DragDropContext>
     </Box>
