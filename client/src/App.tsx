@@ -79,6 +79,7 @@ import { Plus, Edit, UserCheck, UserX, AlertTriangle, Wrench, Download, Upload }
 import { apiRequest } from "@/lib/queryClient";
 // useToast already imported from ChakraUI
 import { Alert as UIAlert, AlertDescription as UIAlertDescription } from "@/components/ui/alert";
+import * as XLSX from 'xlsx';
 
 /** ======= Auth Context ======= **/
 const AuthContext = createContext<any>(null);
@@ -3228,27 +3229,150 @@ function EquipmentManagementPage() {
     if (!file) return;
 
     try {
-      setImportStatus({ type: 'success', message: 'Excel import completed successfully' });
-      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      setImportStatus(null);
       
-      toast({
-        title: "Success",
-        description: "Equipment data imported successfully",
-      });
+      // Read the file
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      
+      // Get first worksheet
+      const worksheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[worksheetName];
+      
+      // Convert to JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+      
+      if (jsonData.length <= 1) {
+        throw new Error('No data found in the Excel file');
+      }
+      
+      // Get headers from first row
+      const headers = jsonData[0].map((h: any) => String(h).toLowerCase().trim());
+      
+      // Process each row of data
+      const equipmentToCreate: InsertEquipment[] = [];
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row || row.length === 0) continue;
+        
+        try {
+          // Map row data to equipment object with flexible column mapping
+          const equipmentData: Partial<InsertEquipment> = {
+            name: '',
+            type: '',
+            status: 'available' as const
+          };
+          
+          // Flexible mapping for different possible column names
+          headers.forEach((header, index) => {
+            const value = row[index] ? String(row[index]).trim() : '';
+            if (!value) return;
+            
+            // Map common column names to equipment fields
+            if (header.includes('name') || header.includes('equipment') || header === 'item') {
+              equipmentData.name = value;
+            } else if (header.includes('type') || header.includes('category')) {
+              equipmentData.type = value;
+            } else if (header.includes('make') || header.includes('manufacturer')) {
+              equipmentData.make = value;
+            } else if (header.includes('model')) {
+              equipmentData.model = value;
+            } else if (header.includes('asset') || header.includes('tag')) {
+              equipmentData.assetNumber = value;
+            } else if (header.includes('serial')) {
+              equipmentData.serialNumber = value;
+            } else if (header.includes('status') || header.includes('condition')) {
+              // Map status values
+              const lowerStatus = value.toLowerCase();
+              if (lowerStatus.includes('available') || lowerStatus.includes('ready')) {
+                equipmentData.status = 'available';
+              } else if (lowerStatus.includes('use') || lowerStatus.includes('active')) {
+                equipmentData.status = 'in-use';
+              } else if (lowerStatus.includes('maintenance') || lowerStatus.includes('repair')) {
+                equipmentData.status = 'maintenance';
+              } else if (lowerStatus.includes('broken') || lowerStatus.includes('damaged')) {
+                equipmentData.status = 'broken';
+              }
+            }
+          });
+          
+          // Ensure required fields have values - create equipment even with minimal data
+          if (!equipmentData.name || equipmentData.name.length === 0) {
+            // Use type or a generic name if name is missing
+            equipmentData.name = equipmentData.type || `Equipment ${i}`;
+          }
+          
+          if (!equipmentData.type || equipmentData.type.length === 0) {
+            equipmentData.type = 'General Equipment';
+          }
+          
+          equipmentToCreate.push(equipmentData as InsertEquipment);
+          successCount++;
+          
+        } catch (rowError) {
+          console.warn(`Error processing row ${i}:`, rowError);
+          errorCount++;
+        }
+      }
+      
+      // Create equipment profiles
+      for (const equipmentData of equipmentToCreate) {
+        try {
+          await createEquipmentMutation.mutateAsync(equipmentData);
+        } catch (createError) {
+          console.warn('Error creating equipment:', createError);
+          errorCount++;
+          successCount--;
+        }
+      }
+      
+      // Show results
+      if (successCount > 0) {
+        setImportStatus({ 
+          type: 'success', 
+          message: `Successfully imported ${successCount} equipment profiles${errorCount > 0 ? ` (${errorCount} rows had issues)` : ''}` 
+        });
+        
+        toast({
+          title: "Import Successful",
+          description: `Created ${successCount} equipment profiles from Excel file`,
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      } else {
+        throw new Error('No equipment profiles could be created from the Excel file');
+      }
 
+      // Clear file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
 
-      setTimeout(() => setImportStatus(null), 5000);
+      // Auto-dismiss status after 8 seconds
+      setTimeout(() => setImportStatus(null), 8000);
 
     } catch (error) {
-      setImportStatus({ type: 'error', message: 'Import failed' });
+      console.error('Import error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Import failed';
+      
+      setImportStatus({ type: 'error', message: errorMessage });
+      
       toast({
-        title: "Error",
-        description: "Failed to import equipment data",
+        title: "Import Failed",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Clear file input on error too
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+      // Auto-dismiss error after 10 seconds
+      setTimeout(() => setImportStatus(null), 10000);
     }
   };
 
