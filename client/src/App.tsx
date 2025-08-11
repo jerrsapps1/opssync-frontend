@@ -90,6 +90,12 @@ function useNavigation() {
   return useContext(NavigationContext);
 }
 
+/** ======= Project Filter Context ======= **/
+const ProjectFilterContext = createContext<any>(null);
+function useProjectFilter() {
+  return useContext(ProjectFilterContext);
+}
+
 /** ======= Auth Provider ======= **/
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -281,6 +287,29 @@ function NavigationProvider({ children }: { children: React.ReactNode }) {
     }}>
       {children}
     </NavigationContext.Provider>
+  );
+}
+
+/** ======= Project Filter Provider ======= **/
+function ProjectFilterProvider({ children }: { children: React.ReactNode }) {
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+  const selectProject = (projectId: string | null) => {
+    setSelectedProjectId(projectId);
+  };
+
+  const clearSelection = () => {
+    setSelectedProjectId(null);
+  };
+
+  return (
+    <ProjectFilterContext.Provider value={{
+      selectedProjectId,
+      selectProject,
+      clearSelection
+    }}>
+      {children}
+    </ProjectFilterContext.Provider>
   );
 }
 
@@ -912,6 +941,17 @@ function Header() {
 function ProjectList() {
   const { projects } = useApp();
   const { navigateToProject } = useNavigation();
+  const { selectedProjectId, selectProject, clearSelection } = useProjectFilter();
+
+  const handleProjectClick = (project: any) => {
+    if (selectedProjectId === project.id) {
+      // If clicking the same project, clear selection
+      clearSelection();
+    } else {
+      // Select the project for filtering
+      selectProject(project.id);
+    }
+  };
   
   return (
     <Box
@@ -922,25 +962,54 @@ function ProjectList() {
       overflowY="auto"
       bg="#1E1E2F"
     >
-      <Heading size="sm" mb={3}>
-        Projects
-      </Heading>
+      <HStack justify="space-between" mb={3}>
+        <Heading size="sm">Projects</Heading>
+        {selectedProjectId && (
+          <Button size="xs" variant="outline" onClick={clearSelection}>
+            Show All
+          </Button>
+        )}
+      </HStack>
+      
       <VStack align="start" spacing={2}>
         {projects.map((proj: any) => (
           <Box
             key={proj.id}
             px={3}
-            py={1}
-            bg="brand.600"
+            py={2}
+            bg={selectedProjectId === proj.id ? "brand.500" : "brand.600"}
+            border="2px solid"
+            borderColor={selectedProjectId === proj.id ? "brand.300" : "transparent"}
             rounded="md"
             width="100%"
-            _hover={{ bg: "brand.500", cursor: "pointer" }}
-            onClick={() => navigateToProject(proj.id)}
+            cursor="pointer"
+            transition="all 0.2s"
+            _hover={{ bg: selectedProjectId === proj.id ? "brand.400" : "brand.500" }}
+            onClick={() => handleProjectClick(proj)}
+            onDoubleClick={() => navigateToProject(proj.id)}
           >
-            {proj.name}
+            <VStack align="start" spacing={1}>
+              <HStack justify="space-between" w="full">
+                <Text fontSize="sm" fontWeight="bold" color="white">
+                  {proj.name}
+                </Text>
+                {selectedProjectId === proj.id && (
+                  <Text fontSize="xs" color="brand.200">
+                    ✓
+                  </Text>
+                )}
+              </HStack>
+              <Text fontSize="xs" color="gray.300">
+                {proj.status}
+              </Text>
+            </VStack>
           </Box>
         ))}
       </VStack>
+      
+      <Text fontSize="xs" color="gray.500" mt={3} textAlign="center">
+        Click to filter • Double-click for details
+      </Text>
     </Box>
   );
 }
@@ -948,6 +1017,7 @@ function ProjectList() {
 /** ======= Employee List (Center Panel) ======= **/
 function EmployeeList() {
   const { employees, projects } = useApp();
+  const { selectedProjectId } = useProjectFilter();
 
   // Group employees by project or unassigned
   const grouped: any = {};
@@ -960,28 +1030,60 @@ function EmployeeList() {
     ).push(emp);
   });
 
+  // Filter groups based on selected project
+  const filteredGroups = selectedProjectId 
+    ? { [selectedProjectId]: grouped[selectedProjectId] || [] }
+    : grouped;
+
+  // Count filtered employees
+  const filteredCount = Object.values(filteredGroups).reduce((total: number, emps: any) => total + emps.length, 0);
+
   return (
     <Box flex="1" p={3} overflowY="auto">
-      <Heading size="sm" mb={3}>
-        Employees
-      </Heading>
-      {Object.entries(grouped).map(([projId, emps]: [string, any]) => (
+      <HStack justify="space-between" mb={3}>
+        <Heading size="sm">
+          Employees
+          {selectedProjectId && (
+            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
+              (Filtered: {filteredCount})
+            </Text>
+          )}
+        </Heading>
+        {selectedProjectId && filteredCount === 0 && (
+          <Text fontSize="xs" color="yellow.400">
+            No employees assigned
+          </Text>
+        )}
+      </HStack>
+      
+      {Object.entries(filteredGroups).map(([projId, emps]: [string, any]) => (
         <Droppable key={projId} droppableId={`employee-${projId}`}>
-          {(provided) => (
+          {(provided, snapshot) => (
             <Box
               ref={provided.innerRef}
               {...provided.droppableProps}
               mb={6}
               p={3}
-              bg="#1E1E2F"
+              bg={snapshot.isDraggingOver ? "brand.800" : "#1E1E2F"}
+              border="2px dashed"
+              borderColor={snapshot.isDraggingOver ? "brand.400" : "#4A4A5E"}
               rounded="md"
               minHeight="80px"
+              transition="all 0.2s"
             >
-              <Text fontWeight="bold" mb={2}>
-                {projId === "unassigned"
-                  ? "Unassigned"
-                  : projects.find((p: any) => p.id === projId)?.name}
-              </Text>
+              <HStack justify="space-between" mb={2}>
+                <Text fontWeight="bold" color="white">
+                  {projId === "unassigned"
+                    ? "Unassigned"
+                    : projects.find((p: any) => p.id === projId)?.name}
+                </Text>
+                {selectedProjectId === projId && (
+                  <Text fontSize="xs" color="brand.200" fontWeight="bold">
+                    SELECTED PROJECT
+                  </Text>
+                )}
+              </HStack>
+              
               {emps.map((emp: any, index: number) => (
                 <Draggable
                   key={emp.id}
@@ -1000,17 +1102,58 @@ function EmployeeList() {
                       boxShadow={snapshot.isDragging ? "lg" : "sm"}
                       color="white"
                       userSelect="none"
+                      cursor="grab"
+                      _active={{ cursor: "grabbing" }}
+                      transition="all 0.2s"
+                      position="relative"
                     >
-                      {emp.name}
+                      <HStack justify="space-between">
+                        <VStack align="start" spacing={0}>
+                          <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
+                          <Text fontSize="xs" color="gray.300">{emp.role}</Text>
+                        </VStack>
+                        {selectedProjectId && emp.currentProjectId === selectedProjectId && (
+                          <Box
+                            bg="green.400"
+                            color="white"
+                            borderRadius="full"
+                            w={4}
+                            h={4}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            fontSize="xs"
+                          >
+                            ✓
+                          </Box>
+                        )}
+                      </HStack>
                     </Box>
                   )}
                 </Draggable>
               ))}
               {provided.placeholder}
+              
+              {emps.length === 0 && (
+                <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={2}>
+                  No employees {projId === "unassigned" ? "unassigned" : "assigned to this project"}
+                </Text>
+              )}
             </Box>
           )}
         </Droppable>
       ))}
+      
+      {selectedProjectId && filteredCount === 0 && (
+        <Box textAlign="center" py={8} bg="#1E1E2F" rounded="md">
+          <Text color="gray.400" fontSize="sm">
+            No employees assigned to this project
+          </Text>
+          <Text color="gray.500" fontSize="xs" mt={1}>
+            Drag employees here to assign them
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -1018,6 +1161,7 @@ function EmployeeList() {
 /** ======= Equipment List (Right Panel) ======= **/
 function EquipmentList() {
   const { equipment, projects } = useApp();
+  const { selectedProjectId } = useProjectFilter();
 
   // Group equipment by project or unassigned
   const grouped: any = {};
@@ -1030,6 +1174,14 @@ function EquipmentList() {
     ).push(eq);
   });
 
+  // Filter groups based on selected project
+  const filteredGroups = selectedProjectId 
+    ? { [selectedProjectId]: grouped[selectedProjectId] || [] }
+    : grouped;
+
+  // Count filtered equipment
+  const filteredCount = Object.values(filteredGroups).reduce((total: number, eqs: any) => total + eqs.length, 0);
+
   return (
     <Box
       width="250px"
@@ -1039,26 +1191,50 @@ function EquipmentList() {
       overflowY="auto"
       bg="#1E1E2F"
     >
-      <Heading size="sm" mb={3}>
-        Equipment
-      </Heading>
-      {Object.entries(grouped).map(([projId, eqs]: [string, any]) => (
+      <HStack justify="space-between" mb={3}>
+        <Heading size="sm">
+          Equipment
+          {selectedProjectId && (
+            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
+              (Filtered: {filteredCount})
+            </Text>
+          )}
+        </Heading>
+        {selectedProjectId && filteredCount === 0 && (
+          <Text fontSize="xs" color="yellow.400">
+            No equipment assigned
+          </Text>
+        )}
+      </HStack>
+      
+      {Object.entries(filteredGroups).map(([projId, eqs]: [string, any]) => (
         <Droppable key={projId} droppableId={`equipment-${projId}`}>
-          {(provided) => (
+          {(provided, snapshot) => (
             <Box
               ref={provided.innerRef}
               {...provided.droppableProps}
               mb={6}
               p={3}
-              bg="#2A2A3D"
+              bg={snapshot.isDraggingOver ? "purple.800" : "#2A2A3D"}
+              border="2px dashed"
+              borderColor={snapshot.isDraggingOver ? "purple.400" : "#4A4A5E"}
               rounded="md"
               minHeight="80px"
+              transition="all 0.2s"
             >
-              <Text fontWeight="bold" mb={2}>
-                {projId === "unassigned"
-                  ? "Unassigned"
-                  : projects.find((p: any) => p.id === projId)?.name}
-              </Text>
+              <HStack justify="space-between" mb={2}>
+                <Text fontWeight="bold" color="white">
+                  {projId === "unassigned"
+                    ? "Unassigned"
+                    : projects.find((p: any) => p.id === projId)?.name}
+                </Text>
+                {selectedProjectId === projId && (
+                  <Text fontSize="xs" color="purple.200" fontWeight="bold">
+                    SELECTED PROJECT
+                  </Text>
+                )}
+              </HStack>
+              
               {eqs.map((eq: any, index: number) => (
                 <Draggable
                   key={eq.id}
@@ -1072,22 +1248,63 @@ function EquipmentList() {
                       {...provided.dragHandleProps}
                       p={2}
                       mb={2}
-                      bg={snapshot.isDragging ? "secondary" : "#BB86FC"}
+                      bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
                       rounded="md"
                       boxShadow={snapshot.isDragging ? "lg" : "sm"}
                       color="white"
                       userSelect="none"
+                      cursor="grab"
+                      _active={{ cursor: "grabbing" }}
+                      transition="all 0.2s"
+                      position="relative"
                     >
-                      {eq.name}
+                      <HStack justify="space-between">
+                        <VStack align="start" spacing={0}>
+                          <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
+                          <Text fontSize="xs" color="gray.300">{eq.type}</Text>
+                        </VStack>
+                        {selectedProjectId && eq.currentProjectId === selectedProjectId && (
+                          <Box
+                            bg="purple.400"
+                            color="white"
+                            borderRadius="full"
+                            w={4}
+                            h={4}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            fontSize="xs"
+                          >
+                            ✓
+                          </Box>
+                        )}
+                      </HStack>
                     </Box>
                   )}
                 </Draggable>
               ))}
               {provided.placeholder}
+              
+              {eqs.length === 0 && (
+                <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={2}>
+                  No equipment {projId === "unassigned" ? "unassigned" : "assigned to this project"}
+                </Text>
+              )}
             </Box>
           )}
         </Droppable>
       ))}
+      
+      {selectedProjectId && filteredCount === 0 && (
+        <Box textAlign="center" py={8} bg="#2A2A3D" rounded="md">
+          <Text color="gray.400" fontSize="sm">
+            No equipment assigned to this project
+          </Text>
+          <Text color="gray.500" fontSize="xs" mt={1}>
+            Drag equipment here to assign it
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -1435,12 +1652,14 @@ function AppContent() {
   return (
     <ChakraProvider theme={createTheme(brandConfig)}>
       <NavigationProvider>
-        <AppProvider>
-          <Box minH="100vh" bg="#121212" color="#E0E0E0">
-            <Header />
-            <MainContent />
-          </Box>
-        </AppProvider>
+        <ProjectFilterProvider>
+          <AppProvider>
+            <Box minH="100vh" bg="#121212" color="#E0E0E0">
+              <Header />
+              <MainContent />
+            </Box>
+          </AppProvider>
+        </ProjectFilterProvider>
       </NavigationProvider>
     </ChakraProvider>
   );
