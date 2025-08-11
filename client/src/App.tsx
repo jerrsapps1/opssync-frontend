@@ -362,15 +362,16 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   // Update employee assignment (project)
   async function moveEmployee(empId: string, newProjectId: string | null) {
     try {
-      const res = await fetch(`/api/employees/${empId}`, {
+      const res = await fetch(`/api/employees/${empId}/assignment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentProjectId: newProjectId }),
       });
       if (!res.ok) throw new Error("Failed to update employee");
+      const updatedEmployee = await res.json();
       setEmployees((emps) =>
         emps.map((e) =>
-          e.id === empId ? { ...e, currentProjectId: newProjectId } : e
+          e.id === empId ? updatedEmployee : e
         )
       );
     } catch (e: any) {
@@ -387,14 +388,15 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   // Update equipment assignment (project)
   async function moveEquipment(eqId: string, newProjectId: string | null) {
     try {
-      const res = await fetch(`/api/equipment/${eqId}`, {
+      const res = await fetch(`/api/equipment/${eqId}/assignment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentProjectId: newProjectId }),
       });
       if (!res.ok) throw new Error("Failed to update equipment");
+      const updatedEquipment = await res.json();
       setEquipment((eqs) =>
-        eqs.map((e) => (e.id === eqId ? { ...e, currentProjectId: newProjectId } : e))
+        eqs.map((e) => (e.id === eqId ? updatedEquipment : e))
       );
     } catch (e: any) {
       toast({
@@ -1589,9 +1591,7 @@ function MainApp() {
 
     // Handle different destination types
     let newProjectId = null;
-    if (destType === "project") {
-      newProjectId = destProjectParts.join("-");
-    } else if (destProjectParts.join("-") !== "unassigned") {
+    if (destType === "project" && destProjectParts.join("-") !== "unassigned") {
       newProjectId = destProjectParts.join("-");
     }
 
