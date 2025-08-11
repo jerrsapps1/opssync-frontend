@@ -7,8 +7,9 @@ The application features enterprise-grade conflict management with:
 - **Professional Alert System** - Dismissible red alert banners highlighting conflicting employees/equipment by name
 - **Three-Panel Layout** - Streamlined drag-and-drop interface for project assignments
 - **JWT Authentication** - Secure login/logout with token-based authentication
-- **Settings Panel** - Hamburger menu with white-label configuration during account setup
-- **White-Label Ready** - Complete brand customization with real-time theme updates
+- **Enhanced Navigation Header** - Professional navigation bar with branded buttons and dual settings access
+- **Advanced White-Label System** - Complete brand customization with logo upload and comprehensive configuration
+- **Object Storage Integration** - Professional file upload system for company logos and assets
 
 # User Preferences
 
@@ -81,7 +82,7 @@ The application features a complete JWT-based authentication system with:
 The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables. Supports both light and dark themes with a focus on the dark theme for operational environments. The theme system includes semantic color tokens and consistent spacing/typography scales.
 
 ## White Label Configuration
-The application includes a comprehensive white-label system with three configuration methods:
+The application includes a comprehensive white-label system with multiple configuration methods:
 
 ### 1. Account Registration Setup
 During user registration, clients can configure their brand settings:
@@ -90,14 +91,32 @@ During user registration, clients can configure their brand settings:
 - Company logo URL
 - Real-time theme preview
 
-### 2. Settings Panel Access
-After login, users can update branding via:
-- Hamburger menu in top-right corner
-- Settings modal with live color pickers
-- Instant theme updates without restart
-- Persistent brand configuration storage
+### 2. Enhanced Settings Modal Access
+Professional brand configuration accessible via:
+- Navigation header "Brand Config" button
+- Hamburger menu "Brand Settings" option
+- Tabbed interface with four sections:
+  - Brand Identity: App name, tagline configuration
+  - Company Info: Company details, industry, website
+  - Colors & Theme: Primary/secondary colors with live preview
+  - Logo & Assets: Professional logo upload with object storage
 
-### 3. Dynamic Theme System
+### 3. Professional Logo Upload System
+Advanced file upload capabilities:
+- Drag & drop interface with progress indicators
+- File validation (5MB max, image formats only)
+- Direct upload to object storage with presigned URLs
+- Automatic URL conversion for seamless integration
+- Real-time logo preview in settings
+
+### 4. Dual Settings Navigation
+Professional navigation system with:
+- Header navigation buttons (Dashboard, Settings, Brand Config)
+- Active state indicators for current page
+- Hamburger menu with additional options
+- System Settings page with four management sections
+
+### 5. Dynamic Theme System
 The brand configuration automatically updates:
 - Header branding and logo display
 - Application name throughout the UI

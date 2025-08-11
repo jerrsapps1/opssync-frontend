@@ -810,27 +810,62 @@ function Header() {
         mb={4}
         userSelect="none"
       >
-        <Image
-          src={brandConfig.logoUrl}
-          alt={`${brandConfig.appName} Logo`}
-          height="40px"
-          mr={4}
-          cursor="pointer"
-          onClick={navigateToDashboard}
-        />
-        <Heading 
-          size="md" 
-          color="white" 
-          cursor="pointer" 
-          onClick={navigateToDashboard}
-        >
-          {brandConfig.appName}
-        </Heading>
+        {/* Logo and Brand */}
+        <HStack spacing={3} mr={6}>
+          <Image
+            src={brandConfig.logoUrl}
+            alt={`${brandConfig.appName} Logo`}
+            height="40px"
+            cursor="pointer"
+            onClick={navigateToDashboard}
+          />
+          <Heading 
+            size="md" 
+            color="white" 
+            cursor="pointer" 
+            onClick={navigateToDashboard}
+          >
+            {brandConfig.appName}
+          </Heading>
+        </HStack>
+
+        {/* Navigation Buttons */}
+        <HStack spacing={2} mr={4}>
+          <Button
+            variant={currentView === 'dashboard' ? 'solid' : 'ghost'}
+            colorScheme={currentView === 'dashboard' ? 'blue' : 'whiteAlpha'}
+            size="sm"
+            onClick={navigateToDashboard}
+          >
+            Dashboard
+          </Button>
+          
+          <Button
+            variant={currentView === 'settings' ? 'solid' : 'ghost'}
+            colorScheme={currentView === 'settings' ? 'blue' : 'whiteAlpha'}
+            size="sm"
+            onClick={navigateToSettings}
+          >
+            Settings
+          </Button>
+
+          <Button
+            variant="ghost"
+            colorScheme="whiteAlpha"
+            size="sm"
+            onClick={onOpen}
+            leftIcon={<SettingsIcon />}
+          >
+            Brand Config
+          </Button>
+        </HStack>
         
         <Spacer />
         
-        <HStack spacing={2}>
-          <Text color="white">Welcome, {user?.username}</Text>
+        <HStack spacing={3}>
+          <Text color="white" fontSize="sm">
+            Welcome, {user?.username}
+          </Text>
           
           <Menu>
             <MenuButton
@@ -838,15 +873,23 @@ function Header() {
               icon={<HamburgerIcon />}
               variant="ghost"
               colorScheme="whiteAlpha"
+              size="sm"
             />
             <MenuList bg="#1E1E2F" borderColor="brand.500">
               <MenuItem 
                 icon={<SettingsIcon />} 
+                onClick={onOpen}
+                bg="#1E1E2F"
+                _hover={{ bg: "brand.600" }}
+              >
+                Brand Settings
+              </MenuItem>
+              <MenuItem 
                 onClick={navigateToSettings}
                 bg="#1E1E2F"
                 _hover={{ bg: "brand.600" }}
               >
-                Settings
+                System Settings
               </MenuItem>
               <MenuItem 
                 onClick={logout}
@@ -860,7 +903,7 @@ function Header() {
         </HStack>
       </Flex>
       
-      {currentView === 'dashboard' && <SettingsModal isOpen={isOpen} onClose={onClose} />}
+      <SettingsModal isOpen={isOpen} onClose={onClose} />
     </>
   );
 }
@@ -1146,17 +1189,166 @@ function MainApp() {
   );
 }
 
-/** ======= Simple Settings Component ======= **/
+/** ======= System Settings Page ======= **/
 function SettingsPage() {
   const { navigateToDashboard } = useNavigation();
+  const { projects, employees, equipment } = useApp();
+  const [activeSection, setActiveSection] = useState('projects');
   
+  const sections = [
+    { id: 'projects', label: 'Project Management', icon: '🏗️' },
+    { id: 'employees', label: 'Employee Profiles', icon: '👥' },
+    { id: 'equipment', label: 'Equipment Settings', icon: '🚜' },
+    { id: 'system', label: 'System Configuration', icon: '⚙️' }
+  ];
+
   return (
     <Box p={6}>
-      <Button onClick={navigateToDashboard} mb={4}>
-        ← Back to Dashboard
-      </Button>
-      <Heading mb={4}>Settings</Heading>
-      <Text>Settings page is under construction. Use the hamburger menu Settings for brand configuration.</Text>
+      <HStack mb={6} spacing={4}>
+        <Button onClick={navigateToDashboard} variant="outline" size="sm">
+          ← Back to Dashboard
+        </Button>
+        <Heading>System Settings</Heading>
+      </HStack>
+
+      <Flex gap={6}>
+        {/* Sidebar */}
+        <Box width="250px">
+          <VStack spacing={2} align="stretch">
+            {sections.map((section) => (
+              <Button
+                key={section.id}
+                variant={activeSection === section.id ? 'solid' : 'ghost'}
+                justifyContent="flex-start"
+                onClick={() => setActiveSection(section.id)}
+                leftIcon={<Text>{section.icon}</Text>}
+                size="sm"
+              >
+                {section.label}
+              </Button>
+            ))}
+          </VStack>
+        </Box>
+
+        {/* Content */}
+        <Box flex="1" bg="#1E1E2F" p={6} borderRadius="md">
+          {activeSection === 'projects' && (
+            <VStack spacing={4} align="stretch">
+              <Heading size="md">Project Management</Heading>
+              <Text color="gray.400">
+                Manage project settings, default configurations, and project templates.
+              </Text>
+              
+              <Box p={4} bg="#2D2D44" borderRadius="md">
+                <Text fontWeight="bold" mb={2}>Active Projects: {projects.length}</Text>
+                <VStack spacing={2} align="start">
+                  {projects.slice(0, 5).map(project => (
+                    <Text key={project.id} fontSize="sm">
+                      • {project.name} - {project.status}
+                    </Text>
+                  ))}
+                  {projects.length > 5 && (
+                    <Text fontSize="sm" color="gray.500">
+                      ...and {projects.length - 5} more
+                    </Text>
+                  )}
+                </VStack>
+              </Box>
+            </VStack>
+          )}
+
+          {activeSection === 'employees' && (
+            <VStack spacing={4} align="stretch">
+              <Heading size="md">Employee Profiles</Heading>
+              <Text color="gray.400">
+                Configure employee settings, roles, and permissions.
+              </Text>
+              
+              <Box p={4} bg="#2D2D44" borderRadius="md">
+                <Text fontWeight="bold" mb={2}>Total Employees: {employees.length}</Text>
+                <VStack spacing={2} align="start">
+                  {employees.slice(0, 5).map(employee => (
+                    <Text key={employee.id} fontSize="sm">
+                      • {employee.name} - {employee.role}
+                    </Text>
+                  ))}
+                  {employees.length > 5 && (
+                    <Text fontSize="sm" color="gray.500">
+                      ...and {employees.length - 5} more
+                    </Text>
+                  )}
+                </VStack>
+              </Box>
+            </VStack>
+          )}
+
+          {activeSection === 'equipment' && (
+            <VStack spacing={4} align="stretch">
+              <Heading size="md">Equipment Settings</Heading>
+              <Text color="gray.400">
+                Manage equipment configurations, maintenance schedules, and categories.
+              </Text>
+              
+              <Box p={4} bg="#2D2D44" borderRadius="md">
+                <Text fontWeight="bold" mb={2}>Total Equipment: {equipment.length}</Text>
+                <VStack spacing={2} align="start">
+                  {equipment.slice(0, 5).map(item => (
+                    <Text key={item.id} fontSize="sm">
+                      • {item.name} - {item.status}
+                    </Text>
+                  ))}
+                  {equipment.length > 5 && (
+                    <Text fontSize="sm" color="gray.500">
+                      ...and {equipment.length - 5} more
+                    </Text>
+                  )}
+                </VStack>
+              </Box>
+            </VStack>
+          )}
+
+          {activeSection === 'system' && (
+            <VStack spacing={4} align="stretch">
+              <Heading size="md">System Configuration</Heading>
+              <Text color="gray.400">
+                Configure system-wide settings, notifications, and integrations.
+              </Text>
+              
+              <VStack spacing={4} align="stretch">
+                <Box p={4} bg="#2D2D44" borderRadius="md">
+                  <Text fontWeight="bold" mb={2}>Conflict Detection</Text>
+                  <Text fontSize="sm" color="gray.300">
+                    Real-time monitoring every 15 seconds for assignment conflicts
+                  </Text>
+                  <Button size="xs" mt={2} variant="outline">
+                    Configure Alerts
+                  </Button>
+                </Box>
+
+                <Box p={4} bg="#2D2D44" borderRadius="md">
+                  <Text fontWeight="bold" mb={2}>Data Backup</Text>
+                  <Text fontSize="sm" color="gray.300">
+                    Automatic backup of projects, employees, and equipment data
+                  </Text>
+                  <Button size="xs" mt={2} variant="outline">
+                    Backup Settings
+                  </Button>
+                </Box>
+
+                <Box p={4} bg="#2D2D44" borderRadius="md">
+                  <Text fontWeight="bold" mb={2}>API Integration</Text>
+                  <Text fontSize="sm" color="gray.300">
+                    Connect with external systems and third-party services
+                  </Text>
+                  <Button size="xs" mt={2} variant="outline">
+                    Manage Integrations
+                  </Button>
+                </Box>
+              </VStack>
+            </VStack>
+          )}
+        </Box>
+      </Flex>
     </Box>
   );
 }
