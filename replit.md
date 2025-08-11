@@ -35,6 +35,11 @@ The application features enterprise-grade conflict management with:
     - Handles various Excel column naming conventions
     - Fixed API call structure for proper mutation execution
     - Provides detailed import results with success/error counts
+  - **Modified Equipment Column Display**: Changed to show all equipment without project groupings
+    - Equipment column now displays all equipment in a single list
+    - Added assignment status badges to show which project each equipment is assigned to
+    - Visual indicators distinguish between assigned and unassigned equipment
+    - Maintains drag-and-drop functionality for all equipment items
 
 - **Fixed Drag-and-Drop Functionality**: Resolved critical issues with project assignment system
   - Fixed API endpoint routing from `/api/employees/{id}` to `/api/employees/{id}/assignment`

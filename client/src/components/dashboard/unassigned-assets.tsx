@@ -13,7 +13,7 @@ interface UnassignedAssetsProps {
 
 export function UnassignedAssets({ employees, equipment, isLoading }: UnassignedAssetsProps) {
   const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
-  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId);
+  const allEquipment = equipment; // Show all equipment regardless of assignment
 
   if (isLoading) {
     return (
@@ -63,8 +63,8 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader>
         <CardTitle className="text-white flex items-center">
-          <Inbox className="mr-2 text-gray-400" size={20} />
-          Unassigned Assets
+          <Wrench className="mr-2 text-gray-400" size={20} />
+          Equipment
         </CardTitle>
         <p className="text-sm text-gray-400">Drag to assign to projects</p>
       </CardHeader>
@@ -123,14 +123,14 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                 </div>
               </div>
 
-              {/* Unassigned Equipment */}
+              {/* All Equipment */}
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
                   <Wrench size={16} className="mr-2" />
-                  Equipment ({unassignedEquipment.length})
+                  Equipment ({allEquipment.length})
                 </h4>
                 <div className="space-y-2">
-                  {unassignedEquipment.map((item, index) => {
+                  {allEquipment.map((item, index) => {
                     const IconComponent = getEquipmentIcon(item.type);
                     return (
                       <Draggable 
@@ -155,6 +155,15 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                               <div className="flex-1">
                                 <p className="text-sm font-medium text-white">{item.name}</p>
                                 <p className="text-xs text-gray-400">ID: {item.serialNumber}</p>
+                                {item.currentProjectId ? (
+                                  <Badge variant="outline" className="text-xs mt-1">
+                                    Assigned: {item.currentProjectId}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="text-xs mt-1">
+                                    Unassigned
+                                  </Badge>
+                                )}
                               </div>
                               <div className="flex items-center space-x-1">
                                 <div className={`w-2 h-2 ${getStatusColor(item.status)} rounded-full`}></div>
