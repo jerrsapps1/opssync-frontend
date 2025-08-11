@@ -981,7 +981,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 /** ======= Header with Branding and Auth ======= **/
 function Header() {
   const { brandConfig, user, logout } = useAuth();
-  const { navigateToSettings, navigateToDashboard, currentView } = useNavigation();
+  const { navigateTo, navigateToSettings, navigateToDashboard, currentView } = useNavigation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
