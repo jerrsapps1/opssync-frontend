@@ -14,11 +14,10 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 /** ======= White Label Brand Config ======= **/
 const brandConfig = {
-  appName: "TrackPro",
-  primaryColor: "#4A90E2",
-  secondaryColor: "#BB86FC",
-  logoUrl:
-    "https://cdn-icons-png.flaticon.com/512/2920/2920579.png", // example logo URL
+  appName: "YourAppName",
+  primaryColor: "#yourPrimaryColor",
+  secondaryColor: "#yourSecondaryColor",
+  logoUrl: "https://yourdomain.com/your-logo.svg",
 };
 
 /** ======= Chakra UI Dark Theme based on brand colors ======= **/

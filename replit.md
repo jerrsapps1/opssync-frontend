@@ -38,10 +38,10 @@ The application includes a comprehensive white-label system that can be customiz
 
 ```javascript
 const brandConfig = {
-  appName: "TrackPro",              // Your company name
-  primaryColor: "#4A90E2",          // Main brand color (buttons, accents)
-  secondaryColor: "#BB86FC",        // Secondary color (highlights, equipment)
-  logoUrl: "https://...",           // Your company logo URL
+  appName: "YourAppName",           // Your company name
+  primaryColor: "#yourPrimaryColor", // Main brand color (buttons, accents)
+  secondaryColor: "#yourSecondaryColor", // Secondary color (highlights, equipment)
+  logoUrl: "https://yourdomain.com/your-logo.svg", // Your company logo URL
 };
 ```
 
