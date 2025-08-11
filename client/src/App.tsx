@@ -1583,16 +1583,16 @@ function MainApp() {
     console.log("Drag end:", { sourceId, destId, draggableId });
 
     // Extract item type and project IDs
-    const [itemType, sourceProjectId] = sourceId.split("-");
-    const [destType, destProjectId] = destId.split("-");
+    const [itemType, ...sourceProjectParts] = sourceId.split("-");
+    const [destType, ...destProjectParts] = destId.split("-");
     const itemId = draggableId.replace(`${itemType}-`, "");
 
     // Handle different destination types
     let newProjectId = null;
     if (destType === "project") {
-      newProjectId = destProjectId;
-    } else if (destProjectId !== "unassigned") {
-      newProjectId = destProjectId;
+      newProjectId = destProjectParts.join("-");
+    } else if (destProjectParts.join("-") !== "unassigned") {
+      newProjectId = destProjectParts.join("-");
     }
 
     console.log("Moving item:", { itemType, itemId, newProjectId });
