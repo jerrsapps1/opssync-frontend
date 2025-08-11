@@ -1,0 +1,65 @@
+# Overview
+
+Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. The application provides drag-and-drop functionality for assigning employees and equipment to projects, real-time tracking of assets, and comprehensive dashboard analytics. Built as a full-stack web application with React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows.
+
+# User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+# System Architecture
+
+## Frontend Architecture
+The client application uses React 18 with TypeScript, built using Vite for development and bundling. The UI is constructed with shadcn/ui components and Radix UI primitives, providing a consistent design system with dark theme support. State management is handled through TanStack Query (React Query) for server state and React context for local state. The drag-and-drop functionality is implemented using react-beautiful-dnd library for intuitive asset assignment workflows.
+
+Routing is handled by Wouter for lightweight client-side navigation. The application follows a component-based architecture with separation of concerns between UI components, business logic hooks, and data fetching utilities.
+
+## Backend Architecture
+The server runs on Express.js with TypeScript, following a RESTful API design pattern. The application uses a layered architecture with route handlers, storage abstraction layer, and database integration. Currently implements an in-memory storage system that can be easily replaced with persistent database storage.
+
+The backend provides endpoints for CRUD operations on projects, employees, equipment, activities, and alerts. Real-time updates are handled through standard HTTP requests with client-side polling via React Query.
+
+## Data Storage Solutions
+The application uses Drizzle ORM with PostgreSQL configuration for database operations. The schema defines five main entities: projects, employees, equipment, activities, and alerts. The current implementation includes a memory storage class (MemStorage) that serves as a temporary solution before database integration.
+
+Database schema includes proper relationships between entities, with employees and equipment having foreign key references to projects for assignment tracking. All entities include created/updated timestamps and use UUID primary keys for scalability.
+
+## Authentication and Authorization
+The codebase is prepared for authentication implementation with session-based architecture. The Express server includes cookie parsing middleware and the database configuration suggests session storage capabilities through connect-pg-simple integration.
+
+## Styling and Theme System
+The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables. Supports both light and dark themes with a focus on the dark theme for operational environments. The theme system includes semantic color tokens and consistent spacing/typography scales.
+
+## White Label Configuration
+The application includes a brand configuration system allowing customization of app name, colors, and branding elements through environment variables and a centralized brand config file.
+
+# External Dependencies
+
+## Database Integration
+- **Neon Database**: Serverless PostgreSQL database service (@neondatabase/serverless)
+- **Drizzle ORM**: Type-safe database toolkit for schema definition and queries
+- **PostgreSQL**: Primary database using connection pooling for scalability
+
+## UI Component Libraries
+- **Radix UI**: Comprehensive primitive component library for accessibility and functionality
+- **Shadcn/ui**: Pre-built components built on top of Radix UI primitives
+- **React Beautiful DnD**: Drag and drop functionality for asset assignment workflows
+- **Lucide React**: Icon library providing consistent iconography
+
+## State Management and Data Fetching
+- **TanStack Query**: Server state management with caching, background updates, and optimistic updates
+- **React Hook Form**: Form state management with validation
+- **Zod**: Runtime type validation for forms and API responses
+
+## Development and Build Tools
+- **Vite**: Build tool and development server with hot module replacement
+- **TypeScript**: Type safety across frontend and backend
+- **Tailwind CSS**: Utility-first CSS framework
+- **ESBuild**: Fast JavaScript bundler for production builds
+
+## Date and Utility Libraries
+- **Date-fns**: Date manipulation and formatting library
+- **Class Variance Authority**: Utility for creating variant-based component APIs
+- **CLSX**: Conditional className utility
+
+## Development Environment Integration
+- **Replit**: Development environment with specific plugins for runtime error handling and cartographer integration for enhanced development experience
