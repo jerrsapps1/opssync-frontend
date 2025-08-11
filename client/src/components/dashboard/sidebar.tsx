@@ -14,6 +14,7 @@ import {
   HardHat
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link, useLocation } from "wouter";
 
 interface SidebarProps {
   activeView?: string;
@@ -25,12 +26,14 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeView = "dashboard", stats }: SidebarProps) {
+  const [location] = useLocation();
+  
   const navigationItems = [
-    { id: "dashboard", icon: BarChart3, label: "Dashboard", active: true },
+    { id: "dashboard", icon: BarChart3, label: "Dashboard", path: "/", active: location === "/" },
     { id: "employees", icon: Users, label: "Employees", badge: stats?.totalEmployees },
     { id: "equipment", icon: Wrench, label: "Equipment", badge: stats?.totalEquipment },
     { id: "projects", icon: FolderOpen, label: "Projects", badge: stats?.activeProjects, badgeVariant: "secondary" as const },
-    { id: "assignments", icon: ArrowLeftRight, label: "Assignments" },
+    { id: "assignments", icon: ArrowLeftRight, label: "Assignments", path: "/assignments", active: location === "/assignments" },
     { id: "reports", icon: ChartPie, label: "Reports" },
   ];
 
@@ -52,36 +55,44 @@ export function Sidebar({ activeView = "dashboard", stats }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {navigationItems.map((item) => (
-            <li key={item.id}>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start space-x-3 h-auto p-3",
-                  item.id === activeView || (activeView === "dashboard" && item.active)
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                )}
-                data-testid={`nav-${item.id}`}
-              >
-                <item.icon size={18} />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge !== undefined && (
-                  <Badge 
-                    variant={item.badgeVariant || "outline"}
+          {navigationItems.map((item) => {
+            const isActive = item.active || (item.id === activeView);
+            const Component = item.path ? Link : 'div' as any;
+            const componentProps = item.path ? { href: item.path } : {};
+            
+            return (
+              <li key={item.id}>
+                <Component {...componentProps} className="block">
+                  <Button
+                    variant="ghost"
                     className={cn(
-                      "text-xs",
-                      item.badgeVariant === "secondary" 
-                        ? "bg-teal-500 text-white hover:bg-teal-600" 
-                        : "bg-gray-600 text-white"
+                      "w-full justify-start space-x-3 h-auto p-3",
+                      isActive
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
                     )}
+                    data-testid={`nav-${item.id}`}
                   >
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
-            </li>
-          ))}
+                    <item.icon size={18} />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {item.badge !== undefined && (
+                      <Badge 
+                        variant={item.badgeVariant || "outline"}
+                        className={cn(
+                          "text-xs",
+                          item.badgeVariant === "secondary" 
+                            ? "bg-teal-500 text-white hover:bg-teal-600" 
+                            : "bg-gray-600 text-white"
+                        )}
+                      >
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Button>
+                </Component>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 

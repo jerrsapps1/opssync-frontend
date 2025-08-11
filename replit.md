@@ -2,6 +2,10 @@
 
 Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. The application provides drag-and-drop functionality for assigning employees and equipment to projects, real-time tracking of assets, and comprehensive dashboard analytics. Built as a full-stack web application with React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows.
 
+The application now includes two main interfaces:
+1. **Dashboard View** - Comprehensive analytics dashboard with stats, project overview, and asset assignment management
+2. **Assignments View** - Simplified three-panel layout for focused drag-and-drop assignment workflows inspired by the user's Chakra UI implementation
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
