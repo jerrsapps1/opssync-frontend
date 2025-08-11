@@ -29,6 +29,12 @@ The application features enterprise-grade conflict management with:
     - Inactive tabs have white outline borders with white text
     - Added proper hover effects for better user experience
     - Clear contrast against blue header background
+  - **Fixed Excel Import Functionality**: Equipment profiles can now be created from incomplete Excel data
+    - Implemented comprehensive Excel file parsing with flexible column mapping
+    - Creates equipment profiles even with missing data using intelligent defaults
+    - Handles various Excel column naming conventions
+    - Fixed API call structure for proper mutation execution
+    - Provides detailed import results with success/error counts
 
 - **Fixed Drag-and-Drop Functionality**: Resolved critical issues with project assignment system
   - Fixed API endpoint routing from `/api/employees/{id}` to `/api/employees/{id}/assignment`

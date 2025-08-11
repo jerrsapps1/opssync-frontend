@@ -3175,7 +3175,7 @@ function EquipmentManagementPage() {
 
   const createEquipmentMutation = useMutation({
     mutationFn: async (data: InsertEquipment) => {
-      return apiRequest("/api/equipment", { method: "POST", body: data });
+      return apiRequest("POST", "/api/equipment", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
