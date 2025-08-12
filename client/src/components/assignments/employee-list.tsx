@@ -83,14 +83,14 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                     ref={dragProvided.innerRef}
                     {...dragProvided.draggableProps}
                     {...dragProvided.dragHandleProps}
-                    className={`p-3 transition-all select-none cursor-move border-[color:var(--border)] ${
+                    className={`p-2 transition-all select-none cursor-move border-[color:var(--border)] ${
                       dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--card)] hover:bg-[color:var(--card)]/80"
                     }`}
                     data-testid={`employee-${emp.id}`}
                     onDoubleClick={() => nav(`/directory`)}
                     onContextMenu={(e) => openContext(e, emp.id)}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="flex-1">
                         <div className="text-white text-sm font-medium">{emp.name}</div>
                         <div className="text-[color:var(--muted-foreground)] text-xs font-medium">{(emp as any).role || "Employee"}</div>

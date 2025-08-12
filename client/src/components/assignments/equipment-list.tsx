@@ -85,7 +85,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                       ref={dragProvided.innerRef}
                       {...dragProvided.draggableProps}
                       {...dragProvided.dragHandleProps}
-                      className={`p-3 transition-all select-none cursor-move border-gray-600 ${
+                      className={`p-2 transition-all select-none cursor-move border-gray-600 ${
                         dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
                       }`}
                       data-testid={`equipment-${eq.id}`}
