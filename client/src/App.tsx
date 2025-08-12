@@ -1292,7 +1292,7 @@ function ProjectList() {
 }
 
 /** ======= Employee List (Center Panel) ======= **/
-function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, name: string) => void }) {
+function EmployeeList() {
   const { employees, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
@@ -1360,30 +1360,10 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
                     _active={{ cursor: "grabbing" }}
                     position="relative"
                   >
-                    <HStack justify="space-between">
-                      <VStack align="start" spacing={1}>
-                        <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
-                        <Text fontSize="xs" color="gray.300">{emp.role}</Text>
-                        {emp.currentProjectId && (
-                          <Text fontSize="xs" color="brand.200">
-                            Assigned to: {projects.find((p: any) => p.id === emp.currentProjectId)?.name || 'Unknown Project'}
-                          </Text>
-                        )}
-                      </VStack>
-                      <IconButton
-                        size="xs"
-                        variant="ghost"
-                        color="brand.200"
-                        _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
-                        transition="all 0.2s"
-                        icon={<StarIcon />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEndorse('employee', emp.id, emp.name);
-                        }}
-                        aria-label="Endorse employee performance"
-                      />
-                    </HStack>
+                    <VStack align="start" spacing={1}>
+                      <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
+                      <Text fontSize="xs" color="gray.300">{emp.role}</Text>
+                    </VStack>
                   </Box>
                 )}
               </Draggable>
@@ -1657,7 +1637,7 @@ function MainApp() {
       <DragDropContext onDragEnd={onDragEnd}>
         <Flex height="calc(100vh - 120px)">
           <ProjectList />
-          <EmployeeList onEndorse={handleSkillEndorsement} />
+          <EmployeeList />
           <EquipmentList onEndorse={handleSkillEndorsement} />
         </Flex>
       </DragDropContext>
