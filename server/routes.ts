@@ -463,10 +463,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let yPosition = 110;
       
+      // Add total count to header
+      doc.fontSize(10).font('Helvetica').text(`Total Employees: ${employees.length}`, 50, 90);
+      
       employees.forEach((emp, index) => {
-        if (yPosition > 700) {
+        // Calculate space needed for this employee (name + up to 4 details + spacing)
+        const spaceNeeded = 20 + (emp.role ? 15 : 0) + (emp.email ? 15 : 0) + (emp.phone ? 15 : 0) + (emp.employmentStatus ? 15 : 0) + 10;
+        
+        // Check if we need a new page (leaving 50px margin at bottom)
+        if (yPosition + spaceNeeded > 742) {
           doc.addPage();
           yPosition = 50;
+          // Add page header with total count
+          doc.fontSize(10).font('Helvetica').text(`Total Employees: ${employees.length}`, 50, 30);
+          yPosition = 60;
         }
         
         doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${emp.name}`, 50, yPosition);
@@ -492,8 +502,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           yPosition += 15;
         }
         
+        if (emp.currentProjectId) {
+          doc.text(`Current Project: ${emp.currentProjectId}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
         yPosition += 10;
       });
+      
+      // Add footer with total count
+      doc.fontSize(8).font('Helvetica').text(`Generated ${employees.length} employee records`, 50, doc.page.height - 30);
       
       doc.end();
     } catch (error) {
