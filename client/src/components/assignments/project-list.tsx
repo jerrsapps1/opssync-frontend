@@ -37,7 +37,8 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                p={3}
+                px={3}
+                py={2}
                 bg={
                   projectId === project.id 
                     ? "blue.600" 
@@ -54,7 +55,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                     : "gray.600"
                 }
                 rounded="md"
-                minHeight="60px"
+                minHeight="45px"
                 transition="all 0.2s"
                 cursor="pointer"
                 _hover={{
@@ -67,15 +68,15 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   setContextMenu({ x: e.clientX, y: e.clientY, project });
                 }}
               >
-                <Text fontWeight="bold" fontSize="sm" mb={1} color="white">
+                <Text fontWeight="bold" fontSize="sm" mb={0.5} color="white" lineHeight="1.2">
                   {project.name}
                 </Text>
-                <Text fontSize="xs" color="#C0C0D8" mb={1}>
+                <Text fontSize="xs" color="#C0C0D8" mb={0.5} lineHeight="1.1">
                   {project.location}
                 </Text>
                 
                 {/* Status Bar */}
-                <Box mb={1}>
+                <Box>
                   <Box 
                     h="2px" 
                     rounded="full" 
@@ -85,9 +86,9 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                       project.status === "Paused" ? "yellow.400" :
                       "gray.400" // Planned or default
                     }
-                    mb={1}
+                    mb={0.5}
                   />
-                  <Text fontSize="xs" color="blue.300" fontWeight="medium">
+                  <Text fontSize="xs" color="blue.300" fontWeight="medium" lineHeight="1.1">
                     {project.status || "Planned"}
                   </Text>
                 </Box>
