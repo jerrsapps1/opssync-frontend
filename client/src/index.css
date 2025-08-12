@@ -19,90 +19,92 @@
 }
 
 :root {
-  --background: hsl(222, 84%, 4.9%);
-  --foreground: hsl(210, 40%, 98%);
-  --card: hsl(217, 16%, 14%);
-  --card-foreground: hsl(210, 40%, 98%);
-  --popover: hsl(217, 16%, 14%);
-  --popover-foreground: hsl(210, 40%, 98%);
-  --primary: hsl(210, 50%, 50%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(217, 32%, 17.5%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --muted: hsl(217, 32%, 17.5%);
-  --muted-foreground: hsl(215, 20.2%, 65.1%);
-  --accent: hsl(217, 32%, 17.5%);
-  --accent-foreground: hsl(210, 40%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --border: hsl(217, 32%, 17.5%);
-  --input: hsl(217, 32%, 17.5%);
-  --ring: hsl(224, 76.3%, 94.1%);
-  --chart-1: hsl(210, 50%, 50%);
-  --chart-2: hsl(160, 60%, 45%);
-  --chart-3: hsl(30, 80%, 55%);
-  --chart-4: hsl(280, 65%, 60%);
-  --chart-5: hsl(340, 75%, 55%);
-  --sidebar: hsl(217, 16%, 14%);
-  --sidebar-foreground: hsl(210, 40%, 98%);
-  --sidebar-primary: hsl(210, 50%, 50%);
-  --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(217, 32%, 17.5%);
-  --sidebar-accent-foreground: hsl(210, 40%, 98%);
-  --sidebar-border: hsl(217, 32%, 17.5%);
-  --sidebar-ring: hsl(224, 76.3%, 94.1%);
+  /* Professional Dark Theme - Tech-Forward AI-Inspired */
+  --background: #121212; /* Very dark grey/black base */
+  --foreground: #E0E0E0; /* Light grey text */
+  --card: #1E1E2F; /* Darker bluish-grey panels */
+  --card-foreground: #E0E0E0;
+  --popover: #1E1E2F;
+  --popover-foreground: #E0E0E0;
+  --primary: #4A90E2; /* Bright tech blue */
+  --primary-foreground: #FFFFFF;
+  --secondary: #BB86FC; /* Soft purple for highlights */
+  --secondary-foreground: #FFFFFF;
+  --muted: #1E1E2F;
+  --muted-foreground: #A0A0B8; /* Muted grey/blue secondary */
+  --accent: #BB86FC;
+  --accent-foreground: #FFFFFF;
+  --destructive: #CF6679; /* Soft red/pink alert color */
+  --destructive-foreground: #FFFFFF;
+  --border: #2A2A3D; /* Slightly lighter panel edges */
+  --input: #1E1E2F;
+  --ring: #4A90E2;
+  --chart-1: #4A90E2;
+  --chart-2: #BB86FC;
+  --chart-3: #CF6679;
+  --chart-4: #00D4AA;
+  --chart-5: #FF9500;
+  --sidebar: #1E1E2F;
+  --sidebar-foreground: #E0E0E0;
+  --sidebar-primary: #4A90E2;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2A2A3D;
+  --sidebar-accent-foreground: #E0E0E0;
+  --sidebar-border: #2A2A3D;
+  --sidebar-ring: #4A90E2;
   --font-sans: 'Inter', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 0.5rem;
   
-  /* Brand Variables for White Label */
-  --brand-primary: hsl(210, 50%, 50%);
-  --brand-secondary: hsl(160, 60%, 45%);
-  --brand-accent: hsl(30, 80%, 55%);
+  /* Brand Variables for White Label - Updated with Professional Theme */
+  --brand-primary: #4A90E2;
+  --brand-secondary: #BB86FC;
+  --brand-accent: #CF6679;
   --brand-primary-foreground: white;
   --brand-secondary-foreground: white;
   --brand-accent-foreground: white;
-  --brand-text: white;
-  --brand-header-bg: hsl(217, 16%, 14%);
-  --brand-sidebar-bg: hsl(217, 16%, 14%);
+  --brand-text: #E0E0E0;
+  --brand-header-bg: #1E1E2F;
+  --brand-sidebar-bg: #1E1E2F;
   --brand-radius: 0.5rem;
   --brand-font-family: 'Inter', sans-serif;
 }
 
 .dark {
-  --background: hsl(224, 71.4%, 4.1%);
-  --foreground: hsl(210, 20%, 98%);
-  --card: hsl(224, 71.4%, 4.1%);
-  --card-foreground: hsl(210, 20%, 98%);
-  --popover: hsl(224, 71.4%, 4.1%);
-  --popover-foreground: hsl(210, 20%, 98%);
-  --primary: hsl(263.4, 70%, 50.4%);
-  --primary-foreground: hsl(210, 20%, 98%);
-  --secondary: hsl(215, 27.9%, 16.9%);
-  --secondary-foreground: hsl(210, 20%, 98%);
-  --muted: hsl(215, 27.9%, 16.9%);
-  --muted-foreground: hsl(217.9, 10.6%, 64.9%);
-  --accent: hsl(215, 27.9%, 16.9%);
-  --accent-foreground: hsl(210, 20%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(210, 20%, 98%);
-  --border: hsl(215, 27.9%, 16.9%);
-  --input: hsl(215, 27.9%, 16.9%);
-  --ring: hsl(263.4, 70%, 50.4%);
-  --chart-1: hsl(220, 70%, 50%);
-  --chart-2: hsl(160, 60%, 45%);
-  --chart-3: hsl(30, 80%, 55%);
-  --chart-4: hsl(280, 65%, 60%);
-  --chart-5: hsl(340, 75%, 55%);
-  --sidebar: hsl(224, 71.4%, 4.1%);
-  --sidebar-foreground: hsl(210, 20%, 98%);
-  --sidebar-primary: hsl(263.4, 70%, 50.4%);
-  --sidebar-primary-foreground: hsl(210, 20%, 98%);
-  --sidebar-accent: hsl(215, 27.9%, 16.9%);
-  --sidebar-accent-foreground: hsl(210, 20%, 98%);
-  --sidebar-border: hsl(215, 27.9%, 16.9%);
-  --sidebar-ring: hsl(263.4, 70%, 50.4%);
+  /* Professional Dark Theme - Consistent with root theme */
+  --background: #121212;
+  --foreground: #E0E0E0;
+  --card: #1E1E2F;
+  --card-foreground: #E0E0E0;
+  --popover: #1E1E2F;
+  --popover-foreground: #E0E0E0;
+  --primary: #4A90E2;
+  --primary-foreground: #FFFFFF;
+  --secondary: #BB86FC;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1E1E2F;
+  --muted-foreground: #A0A0B8;
+  --accent: #BB86FC;
+  --accent-foreground: #FFFFFF;
+  --destructive: #CF6679;
+  --destructive-foreground: #FFFFFF;
+  --border: #2A2A3D;
+  --input: #1E1E2F;
+  --ring: #4A90E2;
+  --chart-1: #4A90E2;
+  --chart-2: #BB86FC;
+  --chart-3: #CF6679;
+  --chart-4: #00D4AA;
+  --chart-5: #FF9500;
+  --sidebar: #1E1E2F;
+  --sidebar-foreground: #E0E0E0;
+  --sidebar-primary: #4A90E2;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2A2A3D;
+  --sidebar-accent-foreground: #E0E0E0;
+  --sidebar-border: #2A2A3D;
+  --sidebar-ring: #4A90E2;
 }
 
 @layer base {
@@ -112,11 +114,44 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* Professional dark theme with subtle texture */
+    background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
   }
 
   /* Dark theme by default */
   html {
     @apply dark;
+  }
+
+  /* Enhanced professional styling */
+  .bg-card {
+    background: linear-gradient(135deg, #1E1E2F 0%, #252540 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(74, 144, 226, 0.1);
+  }
+
+  /* Tech-inspired glow effects */
+  .shadow-lg {
+    box-shadow: 0 10px 25px -5px rgba(74, 144, 226, 0.1), 0 10px 10px -5px rgba(74, 144, 226, 0.04);
+  }
+
+  /* Professional scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #1E1E2F;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #4A90E2;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #5BA0F2;
   }
 }
 

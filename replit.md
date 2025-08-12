@@ -21,7 +21,7 @@ The application uses Replit Database (@replit/database) for simple, persistent s
 The application features a complete JWT-based authentication system including user registration with white-label brand configuration, secure login with 7-day token expiration, automatic token validation and refresh, in-app brand configuration updates, protected routes with authentication middleware, and user management with encrypted password storage using bcryptjs.
 
 ## Styling and Theme System
-The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables, supporting both light and dark themes, primarily optimized for dark mode. The system includes semantic color tokens and consistent spacing/typography scales.
+The application implements a professional tech-forward dark theme using Tailwind CSS with CSS custom properties. **Updated August 12, 2025**: Implemented user's preferred professional dark theme with AI-inspired color palette featuring #121212 background, #1E1E2F panels, #4A90E2 tech blue primary, #BB86FC purple accents, and #CF6679 alert colors. Enhanced with subtle gradients, backdrop blur effects, and custom scrollbars for a modern enterprise feel.
 
 ## White Label Configuration
 The application includes a comprehensive white-label system configurable during account registration and via an enhanced settings modal. This allows clients to configure app name, branding, primary/secondary colors, and company logo URL with real-time theme preview. A professional logo upload system supports drag & drop, file validation, direct upload to object storage with presigned URLs, and real-time logo preview. The dynamic theme system automatically updates the UI based on brand configurations using CSS variables.
