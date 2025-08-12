@@ -15,7 +15,7 @@ export function onDragEndFactory(fns: Fns) {
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const isEmp = draggableId.startsWith("emp-");
-    const id = isEmp ? draggableId.replace(/^emp-/, "") : draggableId.replace(/^eq-/, "");
+    const id = draggableId;
 
     // Handle the standard employee-X and equipment-X format
     const dest = parseDroppableId(destination.droppableId);

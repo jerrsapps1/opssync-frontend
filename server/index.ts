@@ -147,7 +147,7 @@ app.patch("/api/employees/:id/assignment", async (req, res) => {
   const updatedEmployees = employees.map((emp: any) => {
     if (emp.id === id) {
       found = true;
-      return { ...emp, currentProjectId: projectId };
+      return { ...emp, currentProjectId: projectId, updatedAt: new Date().toISOString() };
     }
     return emp;
   });

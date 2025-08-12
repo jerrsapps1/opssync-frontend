@@ -8,9 +8,11 @@ import type { Project } from "@shared/schema";
 
 interface ProjectListProps {
   projects: Project[];
+  employees?: any[];
+  equipment?: any[];
 }
 
-export function ProjectList({ projects }: ProjectListProps) {
+export function ProjectList({ projects, employees = [], equipment = [] }: ProjectListProps) {
   const { projectId, setProjectId } = useSelection();
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
@@ -99,6 +101,20 @@ export function ProjectList({ projects }: ProjectListProps) {
                 </Text>
                 <Box mb={2}>
                   <ProjectStatusDropdown project={project} size="sm" />
+                </Box>
+                
+                {/* Show assigned employees and equipment */}
+                <Box mb={2}>
+                  {employees.filter(emp => emp.currentProjectId === project.id).map(emp => (
+                    <Text key={emp.id} fontSize="xs" color="green.400" mb={1}>
+                      👤 {emp.name}
+                    </Text>
+                  ))}
+                  {equipment.filter(eq => eq.currentProjectId === project.id).map(eq => (
+                    <Text key={eq.id} fontSize="xs" color="blue.400" mb={1}>
+                      🔧 {eq.name}
+                    </Text>
+                  ))}
                 </Box>
                 
                 {provided.placeholder}

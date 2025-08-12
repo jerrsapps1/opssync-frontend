@@ -85,7 +85,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
               const IconComponent = getEquipmentIcon(eq.type);
 
               return (
-                <Draggable key={eq.id} draggableId={`eq-${eq.id}`} index={index}>
+                <Draggable key={eq.id} draggableId={eq.id} index={index}>
                   {(dragProvided, dragSnapshot) => (
                     <Card
                       ref={dragProvided.innerRef}

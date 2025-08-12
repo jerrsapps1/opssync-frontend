@@ -146,7 +146,7 @@ export default function Dashboard() {
       
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
-          <ProjectList projects={projects} />
+          <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
         </div>

@@ -83,7 +83,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
             className={`space-y-2 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
           >
             {filteredEmployees.map((emp, index) => (
-              <Draggable key={emp.id} draggableId={`emp-${emp.id}`} index={index}>
+              <Draggable key={emp.id} draggableId={emp.id} index={index}>
                 {(dragProvided, dragSnapshot) => (
                   <Card
                     ref={dragProvided.innerRef}
