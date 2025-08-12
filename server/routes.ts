@@ -235,14 +235,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.aoa_to_sheet([]);
-
-      // Add total count in first row
-      XLSX.utils.sheet_add_aoa(worksheet, [['PROJECT DIRECTORY - TOTAL RECORDS: ' + projects.length]], { origin: 'A1' });
-      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
       
-      // Add data starting from row 4
-      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+      // Create the worksheet data manually as a 2D array to ensure proper structure
+      const worksheetData = [
+        ['PROJECT DIRECTORY - TOTAL RECORDS: ' + projects.length], // Row 1
+        ['Generated on: ' + new Date().toLocaleDateString()], // Row 2
+        [], // Row 3 (empty)
+        // Row 4 - Headers
+        Object.keys(exportData[0])
+      ];
+      
+      // Add all data rows
+      exportData.forEach(row => {
+        worksheetData.push(Object.values(row));
+      });
+      
+      // Create worksheet from the 2D array
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
       // Set column widths
       const colWidths = [
@@ -434,14 +443,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.aoa_to_sheet([]);
-
-      // Add total count in first row
-      XLSX.utils.sheet_add_aoa(worksheet, [['EMPLOYEE DIRECTORY - TOTAL RECORDS: ' + employees.length]], { origin: 'A1' });
-      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
       
-      // Add data starting from row 4
-      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+      // Create the worksheet data manually as a 2D array to ensure proper structure
+      const worksheetData = [
+        ['EMPLOYEE DIRECTORY - TOTAL RECORDS: ' + employees.length], // Row 1
+        ['Generated on: ' + new Date().toLocaleDateString()], // Row 2
+        [], // Row 3 (empty)
+        // Row 4 - Headers
+        Object.keys(exportData[0])
+      ];
+      
+      // Add all data rows
+      exportData.forEach(row => {
+        worksheetData.push(Object.values(row));
+      });
+      
+      // Create worksheet from the 2D array
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
       // Set column widths
       const colWidths = [
@@ -647,14 +665,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.aoa_to_sheet([]);
-
-      // Add total count in first row
-      XLSX.utils.sheet_add_aoa(worksheet, [['EQUIPMENT DIRECTORY - TOTAL RECORDS: ' + equipment.length]], { origin: 'A1' });
-      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
       
-      // Add data starting from row 4
-      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+      // Create the worksheet data manually as a 2D array to ensure proper structure
+      const worksheetData = [
+        ['EQUIPMENT DIRECTORY - TOTAL RECORDS: ' + equipment.length], // Row 1
+        ['Generated on: ' + new Date().toLocaleDateString()], // Row 2
+        [], // Row 3 (empty)
+        // Row 4 - Headers
+        Object.keys(exportData[0])
+      ];
+      
+      // Add all data rows
+      exportData.forEach(row => {
+        worksheetData.push(Object.values(row));
+      });
+      
+      // Create worksheet from the 2D array
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
       // Set column widths
       const colWidths = [
