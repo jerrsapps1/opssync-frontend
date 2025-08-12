@@ -189,7 +189,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    
+
     if (res.ok) {
       const { token, user: userData } = await res.json();
       localStorage.setItem('authToken', token);
@@ -216,7 +216,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, brandConfig: brandData })
     });
-    
+
     if (res.ok) {
       const { token, user: userData } = await res.json();
       localStorage.setItem('authToken', token);
@@ -243,7 +243,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       body: JSON.stringify({ brandConfig: newBrandConfig })
     });
-    
+
     if (res.ok) {
       setBrandConfig({ ...defaultBrandConfig, ...newBrandConfig });
       return true;
@@ -371,11 +371,11 @@ function AppProvider({ children }: { children: React.ReactNode }) {
           fetch("/api/employees"),
           fetch("/api/equipment"),
         ]);
-        
+
         if (!projRes.ok || !empRes.ok || !eqRes.ok) {
           throw new Error("Failed to load data");
         }
-        
+
         setProjects(await projRes.json());
         setEmployees(await empRes.json());
         setEquipment(await eqRes.json());
@@ -575,11 +575,11 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const success = isRegister 
       ? await register(username, password, brandData)
       : await login(username, password);
-    
+
     if (!success) {
       toast({
         title: "Authentication failed",
@@ -605,7 +605,7 @@ function LoginForm() {
           <Heading size="lg" textAlign="center">
             {isRegister ? "Create Account" : "Welcome to TrackPro"}
           </Heading>
-          
+
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
             <VStack spacing={4}>
               <FormControl>
@@ -616,7 +616,7 @@ function LoginForm() {
                   required
                 />
               </FormControl>
-              
+
               <FormControl>
                 <FormLabel>Password</FormLabel>
                 <Input
@@ -630,7 +630,7 @@ function LoginForm() {
               {isRegister && (
                 <VStack spacing={4} w="full">
                   <Text fontWeight="bold">Customize Your Brand</Text>
-                  
+
                   <FormControl>
                     <FormLabel>App Name</FormLabel>
                     <Input
@@ -638,7 +638,7 @@ function LoginForm() {
                       onChange={(e) => setBrandData({...brandData, appName: e.target.value})}
                     />
                   </FormControl>
-                  
+
                   <FormControl>
                     <FormLabel>Primary Color</FormLabel>
                     <Input
@@ -647,7 +647,7 @@ function LoginForm() {
                       onChange={(e) => setBrandData({...brandData, primaryColor: e.target.value})}
                     />
                   </FormControl>
-                  
+
                   <FormControl>
                     <FormLabel>Logo URL</FormLabel>
                     <Input
@@ -657,11 +657,11 @@ function LoginForm() {
                   </FormControl>
                 </VStack>
               )}
-              
+
               <UIButton type="submit" colorScheme="blue" width="full">
                 {isRegister ? "Create Account" : "Login"}
               </UIButton>
-              
+
               <Button
                 variant="link"
                 onClick={() => setIsRegister(!isRegister)}
@@ -682,7 +682,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [formData, setFormData] = useState(brandConfig);
   const [activeTab, setActiveTab] = useState(0);
   const toast = useToast();
-  
+
   useEffect(() => {
     setFormData(brandConfig);
   }, [brandConfig, isOpen]);
@@ -719,7 +719,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       "https://storage.googleapis.com/",
       "/public-objects/"
     ).replace(/^\/[^\/]+\//, "");
-    
+
     setFormData(prev => ({ ...prev, logoUrl: `/public-objects/${publicUrl}` }));
   };
 
@@ -743,7 +743,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           </VStack>
         </ModalHeader>
         <ModalCloseButton />
-        
+
         <ModalBody pb={6} overflow="hidden">
           <Flex height="500px">
             {/* Sidebar Navigation */}
@@ -772,7 +772,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               {activeTab === 0 && (
                 <VStack spacing={6} align="stretch">
                   <Heading size="md" color="white">Brand Identity</Heading>
-                  
+
                   <FormControl>
                     <FormLabel>Application Name</FormLabel>
                     <Input
@@ -808,7 +808,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               {activeTab === 1 && (
                 <VStack spacing={6} align="stretch">
                   <Heading size="md" color="white">Company Information</Heading>
-                  
+
                   <FormControl>
                     <FormLabel>Company Name</FormLabel>
                     <Input
@@ -850,7 +850,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               {activeTab === 2 && (
                 <VStack spacing={6} align="stretch">
                   <Heading size="md" color="white">Colors & Theme</Heading>
-                  
+
                   <FormControl>
                     <FormLabel>Primary Brand Color</FormLabel>
                     <HStack>
@@ -919,7 +919,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               {activeTab === 3 && (
                 <VStack spacing={6} align="stretch">
                   <Heading size="md" color="white">Logo & Visual Assets</Heading>
-                  
+
                   <FormControl>
                     <FormLabel>Company Logo</FormLabel>
                     <VStack spacing={4} align="stretch">
@@ -935,11 +935,11 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                           />
                         </Box>
                       )}
-                      
+
                       <ObjectUploader onComplete={handleLogoUpload}>
                         📁 Upload New Logo
                       </ObjectUploader>
-                      
+
                       <Text fontSize="xs" color="gray.500">
                         Recommended: PNG or SVG format, max 5MB, optimized for 40px height
                       </Text>
@@ -965,7 +965,7 @@ function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             </Box>
           </Flex>
         </ModalBody>
-        
+
         <ModalFooter borderTop="1px solid #4A4A5E">
           <UIButton colorScheme="blue" mr={3} onClick={handleSave}>
             Save Changes
@@ -1031,7 +1031,7 @@ function Header() {
           >
             Dashboard
           </Button>
-          
+
           <Button
             variant={currentView === 'projects' ? 'solid' : 'outline'}
             bg={currentView === 'projects' ? 'white' : 'transparent'}
@@ -1077,14 +1077,14 @@ function Header() {
             Equipment Management
           </Button>
         </HStack>
-        
+
         <Spacer />
-        
+
         <HStack spacing={3}>
           <Text color="white" fontSize="sm">
             Welcome, {user?.username}
           </Text>
-          
+
           <Menu>
             <MenuButton
               as={IconButton}
@@ -1113,7 +1113,7 @@ function Header() {
           </Menu>
         </HStack>
       </Flex>
-      
+
       <SettingsModal isOpen={isOpen} onClose={onClose} />
     </>
   );
@@ -1122,12 +1122,12 @@ function Header() {
 /** ======= Helper Functions ======= **/
 function calculateProjectDuration(startDate: Date | null, endDate: Date | null): string {
   if (!startDate || !endDate) return 'Duration TBD';
-  
+
   const start = new Date(startDate);
   const end = new Date(endDate);
   const diffTime = Math.abs(end.getTime() - start.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays < 30) {
     return `${diffDays} days`;
   } else if (diffDays < 365) {
@@ -1141,11 +1141,11 @@ function calculateProjectDuration(startDate: Date | null, endDate: Date | null):
 
 function getProjectTimeStatus(startDate: Date | null, endDate: Date | null): 'upcoming' | 'active' | 'overdue' | 'completed' {
   if (!startDate || !endDate) return 'active';
-  
+
   const now = new Date();
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   if (now < start) return 'upcoming';
   if (now > end) return 'overdue';
   return 'active';
@@ -1166,7 +1166,7 @@ function ProjectList() {
       selectProject(project.id);
     }
   };
-  
+
   return (
     <Box
       width="200px"
@@ -1184,7 +1184,7 @@ function ProjectList() {
           </UIButton>
         )}
       </HStack>
-      
+
       <VStack align="start" spacing={2}>
         {projects.map((proj: any) => (
           <Droppable key={proj.id} droppableId={`project-${proj.id}`}>
@@ -1217,7 +1217,7 @@ function ProjectList() {
                       </Text>
                     )}
                   </HStack>
-                  
+
                   <HStack justify="space-between" w="full">
                     <Text fontSize="xs" color="gray.300" textTransform="capitalize">
                       {proj.status}
@@ -1233,7 +1233,7 @@ function ProjectList() {
                       {calculateProjectDuration(proj.startDate, proj.endDate)}
                     </Text>
                   </HStack>
-                  
+
                   {proj.progress !== undefined && (
                     <Box w="full">
                       <Progress 
@@ -1255,7 +1255,7 @@ function ProjectList() {
             )}
           </Droppable>
         ))}
-        
+
         {/* Unassigned Drop Zone */}
         <Droppable droppableId="project-unassigned">
           {(provided, snapshot) => (
@@ -1283,7 +1283,7 @@ function ProjectList() {
           )}
         </Droppable>
       </VStack>
-      
+
       <Text fontSize="xs" color="gray.500" mt={3} textAlign="center">
         Click to filter • Double-click for details
       </Text>
@@ -1332,7 +1332,7 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
           </Text>
         )}
       </HStack>
-      
+
       {Object.entries(filteredGroups).map(([projId, emps]: [string, any]) => (
         <Droppable key={projId} droppableId={`employee-${projId}`}>
           {(provided, snapshot) => (
@@ -1354,13 +1354,11 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
                     ? "Unassigned"
                     : projects.find((p: any) => p.id === projId)?.name}
                 </Text>
-                {selectedProjectId === projId && (
                   <Text fontSize="xs" color="brand.200" fontWeight="bold">
-                    SELECTED PROJECT
                   </Text>
                 )}
               </HStack>
-              
+
               {emps.map((emp: any, index: number) => (
                 <Draggable
                   key={emp.id}
@@ -1428,7 +1426,7 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
                 </Draggable>
               ))}
               {provided.placeholder}
-              
+
               {emps.length === 0 && (
                 <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={2}>
                   No employees {projId === "unassigned" ? "unassigned" : "assigned to this project"}
@@ -1438,7 +1436,7 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
           )}
         </Droppable>
       ))}
-      
+
       {selectedProjectId && filteredCount === 0 && (
         <Box textAlign="center" py={8} bg="#1E1E2F" rounded="md">
           <Text color="gray.400" fontSize="sm">
@@ -1487,7 +1485,7 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
           </Text>
         )}
       </HStack>
-      
+
       <Droppable droppableId="equipment-all">
         {(provided, snapshot) => (
           <Box
@@ -1551,7 +1549,7 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
               </Draggable>
             ))}
             {provided.placeholder}
-            
+
             {filteredEquipment.length === 0 && (
               <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
                 {selectedProjectId ? "No equipment assigned to this project" : "No equipment available"}
@@ -1609,14 +1607,14 @@ function MainApp() {
   const [conflicts, setConflicts] = useConflictPolling(15000);
   const [dismissedConflicts, setDismissedConflicts] = useState(false);
   const [endorsementAnimation, setEndorsementAnimation] = useState<{show: boolean, text: string, type: string}>({show: false, text: '', type: ''});
-  
+
   const handleSkillEndorsement = (type: string, id: string, name: string) => {
     setEndorsementAnimation({
       show: true,
       text: `${name} endorsed!`,
       type: type
     });
-    
+
     // Hide animation after 2 seconds
     setTimeout(() => {
       setEndorsementAnimation({show: false, text: '', type: ''});
@@ -1768,7 +1766,7 @@ function SettingsPage() {
         status: newProjectData.status,
         progress: newProjectData.progress
       };
-      
+
       await addProject(projectData);
       setIsCreatingNew(false);
       setNewProjectData({
@@ -1794,7 +1792,7 @@ function SettingsPage() {
         email: newEmployeeData.email,
         phone: newEmployeeData.phone
       };
-      
+
       await addEmployee(employeeData);
       setIsCreatingNew(false);
       setNewEmployeeData({
@@ -1816,7 +1814,7 @@ function SettingsPage() {
         type: newEquipmentData.type,
         serialNumber: newEquipmentData.serialNumber
       };
-      
+
       await addEquipment(equipmentData);
       setIsCreatingNew(false);
       setNewEquipmentData({
@@ -1875,7 +1873,7 @@ function SettingsPage() {
                 + Add New Project
               </UIButton>
             </HStack>
-            
+
             <Flex gap={6}>
               {/* Project List */}
               <Box w="300px">
@@ -1906,7 +1904,7 @@ function SettingsPage() {
                 {isCreatingNew ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Create New Project</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name *</Text>
@@ -1918,7 +1916,7 @@ function SettingsPage() {
                           placeholder="Enter project name"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
                         <UISelect 
@@ -1933,7 +1931,7 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
                         </UISelect>
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location *</Text>
                         <UIInput
@@ -1944,7 +1942,7 @@ function SettingsPage() {
                           placeholder="Enter project location"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
                         <UIInput
@@ -1955,7 +1953,7 @@ function SettingsPage() {
                           placeholder="e.g. $50,000"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
                         <UIInput
@@ -1966,7 +1964,7 @@ function SettingsPage() {
                           color="white" 
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
                         <UIInput
@@ -1978,7 +1976,7 @@ function SettingsPage() {
                         />
                       </Box>
                     </SimpleGrid>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
                       <UITextarea 
@@ -1990,7 +1988,7 @@ function SettingsPage() {
                         placeholder="Project description..."
                       />
                     </Box>
-                    
+
                     <HStack>
                       <UIButton 
                         colorScheme="brand" 
@@ -2010,13 +2008,13 @@ function SettingsPage() {
                 ) : selectedProject ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedProject.name}</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Project Name</Text>
                         <UIInput value={selectedProject.name} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Status</Text>
                         <UISelect bg="#1E1E2F" color="white" value={selectedProject.status}>
@@ -2026,33 +2024,33 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Completed">Completed</option>
                         </UISelect>
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Location</Text>
                         <UIInput value={selectedProject.location} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Budget</Text>
                         <UIInput value={selectedProject.budget} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Start Date</Text>
                         <UIInput type="date" value={selectedProject.startDate} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Due Date</Text>
                         <UIInput type="date" value={selectedProject.dueDate} bg="#1E1E2F" color="white" />
                       </Box>
                     </SimpleGrid>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Description</Text>
                       <UITextarea value={selectedProject.description} bg="#1E1E2F" color="white" rows={3} />
                     </Box>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Progress (%)</Text>
                       <Slider value={selectedProject.progress} colorScheme="brand">
@@ -2063,7 +2061,7 @@ function SettingsPage() {
                       </Slider>
                       <Text color="gray.400" fontSize="sm" mt={1}>{selectedProject.progress}% Complete</Text>
                     </Box>
-                    
+
                     <HStack>
                       <UIButton colorScheme="brand">Save Changes</UIButton>
                       <UIButton variant="outline">Cancel</UIButton>
@@ -2096,7 +2094,7 @@ function SettingsPage() {
                 + Add Team Member
               </UIButton>
             </HStack>
-            
+
             <Flex gap={6}>
               {/* Employee List */}
               <Box w="300px">
@@ -2130,7 +2128,7 @@ function SettingsPage() {
                 {isCreatingNew && activeTab === 'team' ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Add New Team Member</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name *</Text>
@@ -2142,7 +2140,7 @@ function SettingsPage() {
                           placeholder="Enter employee name"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title *</Text>
                         <UIInput
@@ -2153,7 +2151,7 @@ function SettingsPage() {
                           placeholder="e.g. Site Manager, Heavy Operator"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
                         <UIInput
@@ -2165,7 +2163,7 @@ function SettingsPage() {
                           placeholder="employee@company.com"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
                         <UIInput
@@ -2177,7 +2175,7 @@ function SettingsPage() {
                           placeholder="(555) 123-4567"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
                         <UISelect 
@@ -2193,7 +2191,7 @@ function SettingsPage() {
                         </UISelect>
                       </Box>
                     </SimpleGrid>
-                    
+
                     <HStack>
                       <UIButton 
                         colorScheme="green" 
@@ -2213,33 +2211,33 @@ function SettingsPage() {
                 ) : selectedEmployee ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedEmployee.name}</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Full Name</Text>
                         <UIInput value={selectedEmployee.name} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Job Title</Text>
                         <UIInput value={selectedEmployee.role} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Email</Text>
                         <UIInput type="email" value={selectedEmployee.email || ""} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Phone</Text>
                         <UIInput type="tel" value={selectedEmployee.phone || ""} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Hire Date</Text>
                         <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Department</Text>
                         <UISelect bg="#1E1E2F" color="white">
@@ -2250,12 +2248,12 @@ function SettingsPage() {
                         </UISelect>
                       </Box>
                     </SimpleGrid>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Skills & Certifications</Text>
                       <UITextarea placeholder="List employee skills and certifications..." bg="#1E1E2F" color="white" rows={3} />
                     </Box>
-                    
+
                     <HStack>
                       <UIButton colorScheme="green">Save Changes</UIButton>
                       <UIButton variant="outline">Cancel</UIButton>
@@ -2288,7 +2286,7 @@ function SettingsPage() {
                 + Add Equipment
               </UIButton>
             </HStack>
-            
+
             <Flex gap={6}>
               {/* Equipment List */}
               <Box w="300px">
@@ -2322,7 +2320,7 @@ function SettingsPage() {
                 {isCreatingNew && activeTab === 'equipment' ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Add New Equipment</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name *</Text>
@@ -2334,7 +2332,7 @@ function SettingsPage() {
                           placeholder="e.g. Excavator CAT-320"
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category *</Text>
                         <UISelect 
@@ -2349,7 +2347,7 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
                         </UISelect>
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
                         <UIInput
@@ -2360,7 +2358,7 @@ function SettingsPage() {
                           color="white" 
                         />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
                         <UISelect 
@@ -2376,7 +2374,7 @@ function SettingsPage() {
                         </UISelect>
                       </Box>
                     </SimpleGrid>
-                    
+
                     <HStack>
                       <UIButton 
                         colorScheme="purple" 
@@ -2396,13 +2394,13 @@ function SettingsPage() {
                 ) : selectedEquipment ? (
                   <VStack spacing={4} align="stretch">
                     <Heading size="md" color="white">Edit: {selectedEquipment.name}</Heading>
-                    
+
                     <SimpleGrid columns={2} spacing={4}>
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Equipment Name</Text>
                         <UIInput value={selectedEquipment.name} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Type/Category</Text>
                         <UISelect bg="#1E1E2F" color="white" value={selectedEquipment.type}>
@@ -2412,22 +2410,22 @@ function SettingsPage() {
                           <option style={{background: '#1E1E2F'}} value="Vehicles">Vehicles</option>
                         </UISelect>
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Serial Number</Text>
                         <UIInput value={selectedEquipment.serialNumber || ""} bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Purchase Date</Text>
                         <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Warranty Expires</Text>
                         <UIInput type="date" bg="#1E1E2F" color="white" />
                       </Box>
-                      
+
                       <Box>
                         <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Condition</Text>
                         <UISelect bg="#1E1E2F" color="white">
@@ -2438,12 +2436,12 @@ function SettingsPage() {
                         </UISelect>
                       </Box>
                     </SimpleGrid>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={1}>Maintenance Notes</Text>
                       <UITextarea placeholder="Maintenance history and notes..." bg="#1E1E2F" color="white" rows={3} />
                     </Box>
-                    
+
                     <HStack>
                       <UIButton colorScheme="purple">Save Changes</UIButton>
                       <UIButton variant="outline">Cancel</UIButton>
@@ -2467,7 +2465,7 @@ function SettingsPage() {
               <Heading size="lg" color="white">Company Contacts</Heading>
               <UIButton colorScheme="brand" size="sm">+ Add Contact+ Add Contact</UIButton>
             </HStack>
-            
+
             <SimpleGrid columns={2} spacing={6}>
               <Box bg="#2D2D44" p={4} borderRadius="md">
                 <Text fontWeight="bold" color="white" mb={3}>Key Personnel</Text>
@@ -2489,7 +2487,7 @@ function SettingsPage() {
                   </Box>
                 </VStack>
               </Box>
-              
+
               <Box bg="#2D2D44" p={4} borderRadius="md">
                 <Text fontWeight="bold" color="white" mb={3}>Vendors & Suppliers</Text>
                 <VStack spacing={3} align="stretch">
@@ -2511,7 +2509,7 @@ function SettingsPage() {
                 </VStack>
               </Box>
             </SimpleGrid>
-            
+
             <Box bg="#2D2D44" p={4} borderRadius="md">
               <Text fontWeight="bold" color="white" mb={3}>Emergency Contacts</Text>
               <SimpleGrid columns={3} spacing={4}>
@@ -2538,12 +2536,12 @@ function SettingsPage() {
               <Heading size="lg" color="white">Project Contacts</Heading>
               <UIButton colorScheme="brand" size="sm">+ Add Project Contact+ Add Project Contact</UIButton>
             </HStack>
-            
+
             <VStack spacing={4} align="stretch">
               {projects.map(project => (
                 <Box key={project.id} bg="#2D2D44" p={4} borderRadius="md">
                   <Text fontWeight="bold" color="white" mb={3} fontSize="lg">{project.name}</Text>
-                  
+
                   <SimpleGrid columns={3} spacing={4}>
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Project Manager</Text>
@@ -2553,7 +2551,7 @@ function SettingsPage() {
                         <Text color="gray.400" fontSize="xs">(555) 300-3001</Text>
                       </Box>
                     </Box>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Site Supervisor</Text>
                       <Box p={3} bg="#1E1E2F" borderRadius="md">
@@ -2562,7 +2560,7 @@ function SettingsPage() {
                         <Text color="gray.400" fontSize="xs">(555) 300-3002</Text>
                       </Box>
                     </Box>
-                    
+
                     <Box>
                       <Text fontWeight="bold" color="gray.300" fontSize="sm" mb={2}>Client Contact</Text>
                       <Box p={3} bg="#1E1E2F" borderRadius="md">
@@ -2586,9 +2584,9 @@ function SettingsPage() {
 function ProjectProfilePage() {
   const { navigateToDashboard, currentProjectId } = useNavigation();
   const { projects } = useApp();
-  
+
   const project = projects.find(p => p.id === currentProjectId);
-  
+
   return (
     <Box p={6}>
       <UIButton onClick={navigateToDashboard} mb={4}>
@@ -3172,34 +3170,34 @@ function EquipmentManagementPage() {
 
     try {
       setImportStatus(null);
-      
+
       // Read the file
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
-      
+
       // Get first worksheet
       const worksheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[worksheetName];
-      
+
       // Convert to JSON
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-      
+
       if (jsonData.length <= 1) {
         throw new Error('No data found in the Excel file');
       }
-      
+
       // Get headers from first row
       const headers = jsonData[0].map((h: any) => String(h).toLowerCase().trim());
-      
+
       // Process each row of data
       const equipmentToCreate: InsertEquipment[] = [];
       let successCount = 0;
       let errorCount = 0;
-      
+
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
         if (!row || row.length === 0) continue;
-        
+
         try {
           // Map row data to equipment object with flexible column mapping
           const equipmentData: Partial<InsertEquipment> = {
@@ -3207,12 +3205,12 @@ function EquipmentManagementPage() {
             type: '',
             status: 'available' as const
           };
-          
+
           // Flexible mapping for different possible column names
           headers.forEach((header, index) => {
             const value = row[index] ? String(row[index]).trim() : '';
             if (!value) return;
-            
+
             // Map common column names to equipment fields
             if (header.includes('name') || header.includes('equipment') || header === 'item') {
               equipmentData.name = value;
@@ -3240,26 +3238,26 @@ function EquipmentManagementPage() {
               }
             }
           });
-          
+
           // Ensure required fields have values - create equipment even with minimal data
           if (!equipmentData.name || equipmentData.name.length === 0) {
             // Use type or a generic name if name is missing
             equipmentData.name = equipmentData.type || `Equipment ${i}`;
           }
-          
+
           if (!equipmentData.type || equipmentData.type.length === 0) {
             equipmentData.type = 'General Equipment';
           }
-          
+
           equipmentToCreate.push(equipmentData as InsertEquipment);
           successCount++;
-          
+
         } catch (rowError) {
           console.warn(`Error processing row ${i}:`, rowError);
           errorCount++;
         }
       }
-      
+
       // Create equipment profiles
       for (const equipmentData of equipmentToCreate) {
         try {
@@ -3270,19 +3268,19 @@ function EquipmentManagementPage() {
           successCount--;
         }
       }
-      
+
       // Show results
       if (successCount > 0) {
         setImportStatus({ 
           type: 'success', 
           message: `Successfully imported ${successCount} equipment profiles${errorCount > 0 ? ` (${errorCount} rows had issues)` : ''}` 
         });
-        
+
         toast({
           title: "Import Successful",
           description: `Created ${successCount} equipment profiles from Excel file`,
         });
-        
+
         queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
       } else {
         throw new Error('No equipment profiles could be created from the Excel file');
@@ -3299,20 +3297,20 @@ function EquipmentManagementPage() {
     } catch (error) {
       console.error('Import error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Import failed';
-      
+
       setImportStatus({ type: 'error', message: errorMessage });
-      
+
       toast({
         title: "Import Failed",
         description: errorMessage,
         variant: "destructive",
       });
-      
+
       // Clear file input on error too
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
+
       // Auto-dismiss error after 10 seconds
       setTimeout(() => setImportStatus(null), 10000);
     }
@@ -3616,7 +3614,7 @@ function App() {
 
 function AppContent() {
   const { user, loading, brandConfig } = useAuth();
-  
+
   if (loading) {
     return (
       <ChakraProvider theme={createTheme(defaultBrandConfig)}>
