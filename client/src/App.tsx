@@ -10,11 +10,7 @@ import {
   HStack,
   Button,
   Spacer,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+
   useToast,
   Alert as ChakraAlert,
   AlertIcon,
@@ -22,7 +18,7 @@ import {
   AlertDescription as ChakraAlertDescription,
   CloseButton,
 } from "@chakra-ui/react";
-import { HamburgerIcon, SettingsIcon } from "@chakra-ui/icons";
+// Removed unused icon imports
 import { Route, Link, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -129,8 +125,7 @@ const mockEquipment = [
 
 /** ======= Header Component ======= **/
 function Header() {
-  const { brandConfig, user, logout } = useApp();
-  const [location, navigate] = useLocation();
+  const { brandConfig } = useApp();
   
   return (
     <Box bg="brand.600" p={4} borderBottom="1px solid" borderColor="brand.700">
@@ -141,42 +136,6 @@ function Header() {
             {brandConfig.appName}
           </Heading>
         </HStack>
-
-        <Spacer />
-
-        {/* Navigation */}
-        <HStack spacing={4} mr={4}>
-          <Button
-            variant={location === "/" ? "solid" : "ghost"}
-            colorScheme={location === "/" ? "white" : "gray"}
-            color={location === "/" ? "brand.600" : "white"}
-            onClick={() => navigate("/")}
-            size="sm"
-          >
-            Dashboard
-          </Button>
-          <Button
-            variant={location === "/settings" ? "solid" : "ghost"}
-            colorScheme={location === "/settings" ? "white" : "gray"}
-            color={location === "/settings" ? "brand.600" : "white"}
-            onClick={() => navigate("/settings")}
-            size="sm"
-          >
-            Settings
-          </Button>
-        </HStack>
-
-        {/* User Menu */}
-        <Menu>
-          <MenuButton as={IconButton} icon={<HamburgerIcon />} variant="ghost" />
-          <MenuList>
-            <MenuItem onClick={() => navigate("/settings")}>
-              <SettingsIcon mr={2} />
-              Settings
-            </MenuItem>
-            <MenuItem onClick={logout}>Logout</MenuItem>
-          </MenuList>
-        </Menu>
       </Flex>
     </Box>
   );
