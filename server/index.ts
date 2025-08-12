@@ -4,8 +4,14 @@ import { setupVite, serveStatic, log } from "./vite";
 import stream from "./realtime/stream";
 import assignments from "./routes/assignments";
 import archive from "./routes/archive";
+import billing from "./routes/billing";
+import stripeWebhook from "./routes/stripe-webhook";
+import limits from "./routes/limits";
 
 const app = express();
+
+// Stripe webhook needs raw body parser before JSON parser
+app.use("/api", stripeWebhook);  // NOTE: uses express.raw for signature verification
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -14,6 +20,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", stream);        // GET /api/stream (SSE endpoint)
 app.use("/api", assignments);   // PATCH /api/{employees|equipment}/:id/assignment with broadcast
 app.use("/api", archive);       // archive/restore/remove + GET /api/history with broadcast
+
+// Billing endpoints
+app.use("/api", billing);       // POST /api/billing/checkout, /api/billing/portal
+app.use("/api", limits);        // Plan-based feature limits
 
 /** Mock Replit DB for development **/
 class MockReplitDB {

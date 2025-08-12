@@ -13,6 +13,9 @@ export default function AppLayout() {
 
   // Apply brand theme to CSS variables
   useBrandTheme(brandConfig || {});
+  
+  // Provide safe brand config access
+  const safeBrandConfig = brandConfig || {};
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
@@ -20,16 +23,16 @@ export default function AppLayout() {
       <main className="flex-1 flex flex-col">
         <div 
           className="h-12 border-b border-gray-800 flex items-center px-4"
-          style={brandConfig?.headerBgColor ? { 
-            backgroundColor: brandConfig.headerBgColor,
-            borderBottomColor: brandConfig.headerBgColor 
+          style={(safeBrandConfig as any)?.headerBgColor ? { 
+            backgroundColor: (safeBrandConfig as any).headerBgColor,
+            borderBottomColor: (safeBrandConfig as any).headerBgColor 
           } : {}}
         >
           <div 
             className="font-semibold text-white"
-            style={brandConfig?.textColor ? { color: brandConfig.textColor } : {}}
+            style={(safeBrandConfig as any)?.textColor ? { color: (safeBrandConfig as any).textColor } : {}}
           >
-            {brandConfig?.companyName || "StaffTrak"}
+            {(safeBrandConfig as any)?.companyName || "StaffTrak"}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">

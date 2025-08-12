@@ -40,6 +40,11 @@ export function Sidebar() {
         <Item to="/history">History</Item>
         <Item to="/settings">Settings</Item>
         <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">
+          Billing
+        </div>
+        <Item to="/pricing">Pricing Plans</Item>
+        <Item to="/billing">Billing Portal</Item>
+        <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">
           Admin
         </div>
         <Item to="/white-label">White Label Config</Item>

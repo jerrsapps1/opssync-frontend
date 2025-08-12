@@ -38,6 +38,8 @@ import EmployeeDetail from "./pages/employee-detail";
 import DirectoryPage from "./pages/directory";
 import ProfileBuilder from "./pages/profile-builder";
 import HistoryPage from "./pages/history";
+import PricingPage from "./pages/billing/pricing";
+import BillingHome from "./pages/billing";
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -264,6 +266,8 @@ export default function App() {
                 <Route path="/directory" element={<DirectoryPage />} />
                 <Route path="/builder" element={<ProfileBuilder />} />
                 <Route path="/history" element={<HistoryPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/billing" element={<BillingHome />} />
                 <Route path="/assignments" element={<Dashboard />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />
               </Route>
