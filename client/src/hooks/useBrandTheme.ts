@@ -41,22 +41,15 @@ export function useBrandTheme(brandConfig: BrandConfig) {
     }
     
     if (brandConfig.buttonRadius !== undefined) {
-      root.style.setProperty('--brand-button-radius', `${brandConfig.buttonRadius}px`);
+      root.style.setProperty('--brand-radius', `${brandConfig.buttonRadius}px`);
     }
     
     if (brandConfig.fontFamily) {
       root.style.setProperty('--brand-font-family', brandConfig.fontFamily);
     }
     
-    // Apply dynamic radius to buttons if specified
-    if (brandConfig.buttonRadius !== undefined) {
-      const buttons = document.querySelectorAll('button');
-      buttons.forEach(button => {
-        if (!button.style.borderRadius) {
-          button.style.borderRadius = `${brandConfig.buttonRadius}px`;
-        }
-      });
-    }
+    // The radius is now handled by CSS variables in the button component
+    // No need for manual DOM manipulation since buttons use var(--brand-radius)
     
   }, [brandConfig]);
 }
