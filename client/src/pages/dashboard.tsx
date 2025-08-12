@@ -51,19 +51,28 @@ export default function Dashboard() {
   const alertDismissed = appContext?.alertDismissed || false;
   const setAlertDismissed = appContext?.setAlertDismissed || (() => {});
 
-  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
+  const { data: projects = [], isLoading: projectsLoading, error: projectsError } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
+  const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
     queryKey: ["/api/employees"],
   });
 
-  const { data: equipment = [], isLoading: equipmentLoading } = useQuery<Equipment[]>({
+  const { data: equipment = [], isLoading: equipmentLoading, error: equipmentError } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
   });
 
   const isLoading = projectsLoading || employeesLoading || equipmentLoading;
+
+  // Debug logging
+  console.log("Dashboard data:", { 
+    projects: projects.length, 
+    employees: employees.length, 
+    equipment: equipment.length,
+    isLoading,
+    errors: { projectsError, employeesError, equipmentError }
+  });
 
   const handleCommandActions = (actions: any[]) => {
     applyActions({

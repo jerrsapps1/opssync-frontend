@@ -41,15 +41,8 @@ import HistoryPage from "./pages/history";
 import PricingPage from "./pages/billing/pricing";
 import BillingHome from "./pages/billing";
 
-// Create QueryClient
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Import the properly configured QueryClient
+import { queryClient } from "./lib/queryClient";
 
 /** ======= Auth Context ======= **/
 const AuthContext = createContext<any>(null);
