@@ -32,7 +32,7 @@ export function Sidebar() {
 
       <nav className="p-3 space-y-1">
         <Item to="/dashboard">Dashboard</Item>
-        <Item to="/employees">Employees</Item>
+        <Item to="/employees">Employee Management</Item>
         <Item to="/equipment">Equipment</Item>
         <Item to="/analytics">Analytics</Item>
         <Item to="/directory">Directory</Item>
