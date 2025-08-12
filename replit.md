@@ -30,7 +30,7 @@ The application includes a comprehensive white-label system configurable during 
 A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.
 
 ## Navigation System
-The application features a clean sidebar navigation system with StaffTrak branding and links to Dashboard, Employees, Equipment, Analytics, and Settings pages. The sidebar provides consistent navigation across the application with a dark theme that matches the overall interface design.
+The application features a clean sidebar navigation system with StaffTrak branding and links to Dashboard, Employees, Equipment, Analytics, and Settings pages. The layout uses a flex container with the sidebar on the left and main content on the right. The main content area preserves the original dashboard functionality including the command bar and three-panel assignment interface. The design uses a dark slate background (#0f172a) for a professional appearance.
 
 ## Natural Language Command Bar System
 The application features an advanced natural language interface that allows users to interact with StaffTrak using plain English commands. The command bar is positioned above the main dashboard and integrates seamlessly with the existing drag-and-drop functionality.

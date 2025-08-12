@@ -72,42 +72,40 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="h-screen flex items-center justify-center bg-[#0f172a] text-white">
         Loading StaffTrak...
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-gray-900 text-white">
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <Sidebar />
+    <div className="flex h-screen bg-[#0f172a]">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        {/* keep your existing header / CommandBar / grid exactly as-is */}
+        {/** BEGIN original dashboard content **/}
+        {/* Command Bar */}
+        <div className="p-4 bg-gray-800 border-b border-gray-700">
+          <CommandBar runActions={handleCommandActions} />
+        </div>
         
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Command Bar */}
-          <div className="p-4 bg-gray-800 border-b border-gray-700">
-            <CommandBar runActions={handleCommandActions} />
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
+            <ProjectList projects={projects} />
+            <EmployeeList employees={employees} projects={projects} />
+            <EquipmentList equipment={equipment} projects={projects} />
           </div>
-          
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
-              <ProjectList projects={projects} />
-              <EmployeeList employees={employees} projects={projects} />
-              <EquipmentList equipment={equipment} projects={projects} />
+        </DragDropContext>
+        {/** END original dashboard content **/}
+        
+        {isAssigning && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg text-white">
+              Updating assignment...
             </div>
-          </DragDropContext>
-        </div>
-      </div>
-
-      {isAssigning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg text-white">
-            Updating assignment...
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
