@@ -26,25 +26,8 @@ app.use("/api", archive);       // archive/restore/remove + GET /api/history wit
 app.use("/api", billing);       // POST /api/billing/checkout, /api/billing/portal
 app.use("/api", limits);        // Plan-based feature limits
 
-/** Mock Replit DB for development **/
-class MockReplitDB {
-  private data: Record<string, any> = {};
-
-  async get(key: string) {
-    return this.data[key] || null;
-  }
-
-  async set(key: string, value: any) {
-    this.data[key] = value;
-  }
-}
-
-const db = new MockReplitDB();
-
-/** Utility helpers **/
-const EMPLOYEES_KEY = "employees";
-const EQUIPMENT_KEY = "equipment";
-const PROJECTS_KEY = "projects";
+// Import shared DB instance
+import { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } from "./sharedDb";
 
 // Initialize DB with realistic data from Excel import
 async function initData() {

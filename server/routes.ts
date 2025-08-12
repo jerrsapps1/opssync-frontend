@@ -87,6 +87,9 @@ function authenticateToken(req: Request, res: Response, next: NextFunction) {
   });
 }
 
+// Import shared DB instance
+import { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } from "./sharedDb";
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
@@ -208,15 +211,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects Excel export route - MUST come before :id route  
   app.get("/api/projects/export", async (req, res) => {
     try {
-      const projects = await storage.getProjects();
+      const projects = (await db.get(PROJECTS_KEY)) || [];
+      console.log(`🏗️ Projects Excel Export: Found ${projects.length} projects`);
       
       // Transform project data for Excel export
-      const exportData = projects.map(proj => ({
+      const exportData = projects.map((proj, index) => ({
+        'Row': index + 1,
         'Project Number': proj.projectNumber || '',
         'Name': proj.name,
         'Location': proj.location || '',
         'Status': proj.status || '',
-        'Progress %': proj.progress || 0,
+        'Progress %': proj.progress || proj.percentComplete || 0,
         'GPS Latitude': proj.gpsLatitude || '',
         'GPS Longitude': proj.gpsLongitude || '',
         'Description': proj.description || '',
@@ -226,12 +231,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Updated Date': proj.updatedAt ? new Date(proj.updatedAt).toLocaleDateString() : ''
       }));
 
+      console.log(`🏗️ Projects Excel Export: Transformed ${exportData.length} records`);
+
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(exportData);
 
+      // Add total count in first row
+      XLSX.utils.sheet_add_aoa(worksheet, [['PROJECT DIRECTORY - TOTAL RECORDS: ' + projects.length]], { origin: 'A1' });
+      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
+      
+      // Add data starting from row 4
+      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+
       // Set column widths
       const colWidths = [
+        { wch: 5 },  // Row
         { wch: 15 }, // Project Number
         { wch: 25 }, // Name
         { wch: 20 }, // Location
@@ -257,6 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
+      console.log(`🏗️ Projects Excel Export: Successfully generated file with ${projects.length} projects`);
       res.send(buffer);
     } catch (error) {
       console.error("Error exporting projects:", error);
@@ -267,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects PDF export route - MUST come before :id route  
   app.get("/api/projects/export-pdf", async (req, res) => {
     try {
-      const projects = await storage.getProjects();
+      const projects = (await db.get(PROJECTS_KEY)) || [];
       
       const doc = new PDFDocument({ margin: 50 });
       const timestamp = new Date().toISOString().split('T')[0];
@@ -396,31 +412,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employee Excel export route - MUST come before :id route
   app.get("/api/employees/export", async (req, res) => {
     try {
-      const employees = await storage.getEmployees();
+      const employees = (await db.get(EMPLOYEES_KEY)) || [];
+      console.log(`📊 Employee Excel Export: Found ${employees.length} employees`);
       
       // Transform employee data for Excel export
-      const exportData = employees.map(emp => ({
+      const exportData = employees.map((emp, index) => ({
+        'Row': index + 1,
         'Name': emp.name,
         'Role': emp.role || '',
         'Email': emp.email || '',
         'Phone': emp.phone || '',
-        'Employment Status': emp.employmentStatus || '',
-        'Current Project': emp.currentProjectId || '',
+        'Employment Status': emp.employmentStatus || emp.status || 'active',
+        'Years Experience': emp.yearsExperience || '',
+        'Equipment Operated': Array.isArray(emp.operates) ? emp.operates.join(', ') : '',
+        'Current Project': emp.currentProjectId || 'Unassigned',
         'Created Date': emp.createdAt ? new Date(emp.createdAt).toLocaleDateString() : '',
         'Updated Date': emp.updatedAt ? new Date(emp.updatedAt).toLocaleDateString() : ''
       }));
+
+      console.log(`📊 Employee Excel Export: Transformed ${exportData.length} records`);
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(exportData);
 
+      // Add total count in first row
+      XLSX.utils.sheet_add_aoa(worksheet, [['EMPLOYEE DIRECTORY - TOTAL RECORDS: ' + employees.length]], { origin: 'A1' });
+      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
+      
+      // Add data starting from row 4
+      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+
       // Set column widths
       const colWidths = [
+        { wch: 5 },  // Row
         { wch: 25 }, // Name
         { wch: 20 }, // Role
         { wch: 25 }, // Email
         { wch: 15 }, // Phone
         { wch: 15 }, // Employment Status
+        { wch: 10 }, // Years Experience
+        { wch: 30 }, // Equipment Operated
         { wch: 20 }, // Current Project
         { wch: 12 }, // Created Date
         { wch: 12 }, // Updated Date
@@ -437,6 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename="employees-export-${timestamp}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
+      console.log(`📊 Employee Excel Export: Successfully generated file with ${employees.length} employees`);
       res.send(buffer);
     } catch (error) {
       console.error("Error exporting employees:", error);
@@ -447,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employee PDF export route - MUST come before :id route
   app.get("/api/employees/export-pdf", async (req, res) => {
     try {
-      const employees = await storage.getEmployees();
+      const employees = (await db.get(EMPLOYEES_KEY)) || [];
       
       const doc = new PDFDocument({ margin: 50 });
       const timestamp = new Date().toISOString().split('T')[0];
@@ -592,28 +625,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Equipment Excel export route - MUST come before :id route
   app.get("/api/equipment/export", async (req, res) => {
     try {
-      const equipment = await storage.getEquipment();
+      const equipment = (await db.get(EQUIPMENT_KEY)) || [];
+      console.log(`🚜 Equipment Excel Export: Found ${equipment.length} equipment items`);
       
       // Transform equipment data for Excel export
-      const exportData = equipment.map(eq => ({
+      const exportData = equipment.map((eq, index) => ({
+        'Row': index + 1,
         'Name': eq.name,
-        'Type': eq.type,
+        'Type': eq.type || '',
         'Make': eq.make || '',
         'Model': eq.model || '',
         'Asset Number': eq.assetNumber || '',
         'Serial Number': eq.serialNumber || '',
-        'Status': eq.status,
-        'Current Project': eq.currentProjectId || '',
+        'Status': eq.status || 'active',
+        'Current Project': eq.currentProjectId || 'Unassigned',
         'Created Date': eq.createdAt ? new Date(eq.createdAt).toLocaleDateString() : '',
         'Updated Date': eq.updatedAt ? new Date(eq.updatedAt).toLocaleDateString() : ''
       }));
+
+      console.log(`🚜 Equipment Excel Export: Transformed ${exportData.length} records`);
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(exportData);
 
+      // Add total count in first row
+      XLSX.utils.sheet_add_aoa(worksheet, [['EQUIPMENT DIRECTORY - TOTAL RECORDS: ' + equipment.length]], { origin: 'A1' });
+      XLSX.utils.sheet_add_aoa(worksheet, [['Generated on: ' + new Date().toLocaleDateString()]], { origin: 'A2' });
+      
+      // Add data starting from row 4
+      XLSX.utils.sheet_add_json(worksheet, exportData, { origin: 'A4', skipHeader: false });
+
       // Set column widths
       const colWidths = [
+        { wch: 5 },  // Row
         { wch: 25 }, // Name
         { wch: 15 }, // Type
         { wch: 15 }, // Make
@@ -637,6 +682,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
+      console.log(`🚜 Equipment Excel Export: Successfully generated file with ${equipment.length} equipment items`);
       res.send(buffer);
     } catch (error) {
       console.error("Error exporting equipment:", error);
@@ -647,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Equipment PDF export route - MUST come before :id route
   app.get("/api/equipment/export-pdf", async (req, res) => {
     try {
-      const equipment = await storage.getEquipment();
+      const equipment = (await db.get(EQUIPMENT_KEY)) || [];
       
       const doc = new PDFDocument({ margin: 50 });
       const timestamp = new Date().toISOString().split('T')[0];
