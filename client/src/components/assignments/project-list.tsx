@@ -86,8 +86,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   borderColor: "blue.500",
                   transform: "translateY(-1px)",
                 }}
-                onClick={() => setProjectId(project.id)}
-                onDoubleClick={() => navigate(`/projects/${project.id}`)}
+                onClick={() => navigate(`/projects/${project.id}`)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setContextMenu({ x: e.clientX, y: e.clientY, project });
