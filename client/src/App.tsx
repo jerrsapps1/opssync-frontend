@@ -24,12 +24,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import pages
 import Dashboard from "./pages/dashboard";
-import Settings from "./pages/settings";
 import WhiteLabelPage from "./pages/white-label";
 import EmployeesPage from "./pages/employees";
 import EquipmentPage from "./pages/equipment";
 import AnalyticsPage from "./pages/analytics";
 import AppLayout from "./components/layout/AppLayout";
+import SettingsIndex from "./pages/settings";
+import ProjectSettings from "./pages/settings/projects";
+import SettingsEquipment from "./pages/settings/equipment";
+import SettingsEmployees from "./pages/settings/employees";
+import EquipmentDetail from "./pages/equipment-detail";
+import EmployeeDetail from "./pages/employee-detail";
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -246,7 +251,13 @@ export default function App() {
                 <Route path="/employees" element={<EmployeesPage />} />
                 <Route path="/equipment" element={<EquipmentPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings" element={<SettingsIndex />}>
+                  <Route path="projects" element={<ProjectSettings />} />
+                  <Route path="equipment" element={<SettingsEquipment />} />
+                  <Route path="employees" element={<SettingsEmployees />} />
+                </Route>
+                <Route path="/equipment/:id" element={<EquipmentDetail />} />
+                <Route path="/employees/:id" element={<EmployeeDetail />} />
                 <Route path="/assignments" element={<Dashboard />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />
               </Route>

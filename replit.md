@@ -46,7 +46,26 @@ The useBrandTheme hook automatically applies brand configuration to CSS custom p
 - Consistent branding across Dashboard, Employees, Equipment, Analytics, and Settings pages
 
 ## Enhanced Settings Management System
-A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.
+A comprehensive settings interface is provided with a structured sub-page system accessible via header navigation. The system includes:
+
+**Settings Architecture:**
+- **Settings Index**: Main settings shell with tabbed navigation and white-label branding
+- **Project Settings**: Project details management with contact person functionality
+- **Equipment Settings**: Import/export functionality with comprehensive equipment table views
+- **Employee Settings**: Import/export functionality with employee management tables
+- **Detail Pages**: Dedicated employee and equipment profile pages accessible via double-click or direct navigation
+
+**Import/Export Capabilities:**
+- Bulk CSV/Excel import functionality for employees and equipment
+- Export capabilities for complete data backups
+- Template download support for proper data formatting
+- Professional ImportExportPanel component for consistent UI
+
+**Enhanced Navigation:**
+- Nested routing structure for organized settings management
+- White-label logo and company name integration throughout
+- Professional branded headers and navigation elements
+- Back navigation support on detail pages
 
 ## Navigation System
 The application features a global layout system with consistent sidebar navigation across all pages. Implemented using React Router DOM with nested routing architecture for clean page transitions. The AppLayout component provides a unified shell with sidebar and header that wraps all application pages. The sidebar includes navigation to Dashboard, Employees, Equipment, Analytics, Settings, and admin sections like White Label Config. The layout maintains the original gray-900 color scheme with proper active link highlighting and seamless navigation between all pages.
