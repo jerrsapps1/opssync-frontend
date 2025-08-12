@@ -9,6 +9,8 @@ import {
 } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useApp } from "../App";
+import { EmployeeList } from "../components/assignments/employee-list";
+import { EquipmentList } from "../components/assignments/equipment-list";
 
 /** ======= Project Filter Context ======= **/
 const ProjectFilterContext = React.createContext<any>(null);
@@ -119,203 +121,40 @@ function ProjectList() {
   );
 }
 
-/** ======= Employee List (Middle Panel) ======= **/
-function EmployeeList() {
+/** ======= Employee List Wrapper (Middle Panel) ======= **/
+function EmployeeListWrapper() {
   const appContext = useApp();
-  const { selectedProjectId } = useProjectFilter();
   
   if (!appContext) return null;
-  const { employees } = appContext;
-
-  // Apply project filtering if selected
-  const filteredEmployees = selectedProjectId && selectedProjectId !== 'all'
-    ? employees.filter((emp: any) => emp.currentProjectId === selectedProjectId)
-    : employees;
+  const { employees, projects } = appContext;
 
   return (
     <Box
       width="250px"
       borderRight="1px solid"
       borderColor="brand.700"
-      p={3}
-      overflowY="auto"
       bg="#1E1E2F"
     >
-      <HStack justify="space-between" mb={3}>
-        <Heading size="sm">
-          Employees
-          {selectedProjectId && (
-            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
-              (Filtered: {filteredEmployees.length})
-            </Text>
-          )}
-        </Heading>
-        {selectedProjectId && filteredEmployees.length === 0 && (
-          <Text fontSize="xs" color="yellow.400">
-            No employees assigned
-          </Text>
-        )}
-      </HStack>
-
-      <Droppable droppableId="employee-list">
-        {(provided, snapshot) => (
-          <Box
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            p={3}
-            bg={snapshot.isDraggingOver ? "blue.800" : "#2A2A3D"}
-            border="2px dashed"
-            borderColor={snapshot.isDraggingOver ? "blue.400" : "#4A4A5E"}
-            rounded="md"
-            minHeight="200px"
-            transition="all 0.2s"
-          >
-            {filteredEmployees.map((employee: any, index: number) => (
-              <Draggable
-                key={employee.id}
-                draggableId={`employee-${employee.id}`}
-                index={index}
-              >
-                {(provided, snapshot) => (
-                  <Box
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    p={2}
-                    mb={2}
-                    bg={snapshot.isDragging ? "blue.500" : "#4A90E2"}
-                    rounded="md"
-                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
-                    color="white"
-                    userSelect="none"
-                    cursor="grab"
-                    transform={snapshot.isDragging ? "rotate(-2deg) scale(1.05)" : "none"}
-                    transition="all 0.2s ease-in-out"
-                    _hover={{
-                      transform: "scale(1.02)",
-                      boxShadow: "lg"
-                    }}
-                    _active={{ cursor: "grabbing" }}
-                  >
-                    <VStack align="start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="sm">{employee.name}</Text>
-                      <Text fontSize="xs" color="gray.300">{employee.role}</Text>
-                    </VStack>
-                  </Box>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-
-            {filteredEmployees.length === 0 && (
-              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
-                {selectedProjectId ? "No employees assigned to this project" : "No employees available"}
-              </Text>
-            )}
-          </Box>
-        )}
-      </Droppable>
+      <EmployeeList employees={employees} projects={projects} />
     </Box>
   );
 }
 
-/** ======= Equipment List (Right Panel) ======= **/
-function EquipmentList() {
+/** ======= Equipment List Wrapper (Right Panel) ======= **/
+function EquipmentListWrapper() {
   const appContext = useApp();
-  const { selectedProjectId } = useProjectFilter();
   
   if (!appContext) return null;
-  const { equipment } = appContext;
-
-  // Apply project filtering if selected
-  const filteredEquipment = selectedProjectId && selectedProjectId !== 'all'
-    ? equipment.filter((eq: any) => eq.currentProjectId === selectedProjectId)
-    : equipment;
+  const { equipment, projects } = appContext;
 
   return (
     <Box
       width="250px"
       borderLeft="1px solid"
       borderColor="brand.700"
-      p={3}
-      overflowY="auto"
       bg="#1E1E2F"
     >
-      <HStack justify="space-between" mb={3}>
-        <Heading size="sm">
-          Equipment
-          {selectedProjectId && (
-            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
-              (Filtered: {filteredEquipment.length})
-            </Text>
-          )}
-        </Heading>
-        {selectedProjectId && filteredEquipment.length === 0 && (
-          <Text fontSize="xs" color="yellow.400">
-            No equipment assigned
-          </Text>
-        )}
-      </HStack>
-
-      <Droppable droppableId="equipment-list">
-        {(provided, snapshot) => (
-          <Box
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            p={3}
-            bg={snapshot.isDraggingOver ? "purple.800" : "#2A2A3D"}
-            border="2px dashed"
-            borderColor={snapshot.isDraggingOver ? "purple.400" : "#4A4A5E"}
-            rounded="md"
-            minHeight="200px"
-            transition="all 0.2s"
-          >
-            {filteredEquipment.map((eq: any, index: number) => (
-              <Draggable
-                key={eq.id}
-                draggableId={`equipment-${eq.id}`}
-                index={index}
-              >
-                {(provided, snapshot) => (
-                  <Box
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    p={2}
-                    mb={2}
-                    bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
-                    rounded="md"
-                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
-                    color="white"
-                    userSelect="none"
-                    cursor="grab"
-                    transform={snapshot.isDragging ? "rotate(2deg) scale(1.05)" : "none"}
-                    transition="all 0.2s ease-in-out"
-                    _hover={{
-                      transform: "scale(1.02)",
-                      boxShadow: "lg"
-                    }}
-                    _active={{ cursor: "grabbing" }}
-                    position="relative"
-                  >
-                    <VStack align="start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
-                      <Text fontSize="xs" color="gray.300">{eq.type}</Text>
-                    </VStack>
-                  </Box>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-
-            {filteredEquipment.length === 0 && (
-              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
-                {selectedProjectId ? "No equipment assigned to this project" : "No equipment available"}
-              </Text>
-            )}
-          </Box>
-        )}
-      </Droppable>
+      <EquipmentList equipment={equipment} projects={projects} />
     </Box>
   );
 }
@@ -340,8 +179,8 @@ export default function Dashboard() {
         <DragDropContext onDragEnd={onDragEnd}>
           <Flex height="calc(100vh - 120px)">
             <ProjectList />
-            <EmployeeList />
-            <EquipmentList />
+            <EmployeeListWrapper />
+            <EquipmentListWrapper />
           </Flex>
         </DragDropContext>
       </Box>
