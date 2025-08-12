@@ -103,19 +103,21 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   <ProjectStatusDropdown project={project} size="sm" />
                 </Box>
                 
-                {/* Show assigned employees and equipment */}
-                <Box mb={2}>
-                  {employees.filter(emp => emp.currentProjectId === project.id).map(emp => (
-                    <Text key={emp.id} fontSize="xs" color="green.400" mb={1}>
-                      👤 {emp.name}
-                    </Text>
-                  ))}
-                  {equipment.filter(eq => eq.currentProjectId === project.id).map(eq => (
-                    <Text key={eq.id} fontSize="xs" color="blue.400" mb={1}>
-                      🔧 {eq.name}
-                    </Text>
-                  ))}
-                </Box>
+                {/* Show assigned employees and equipment only when project is focused */}
+                {projectId === project.id && (
+                  <Box mb={2}>
+                    {employees.filter(emp => emp.currentProjectId === project.id).map(emp => (
+                      <Text key={emp.id} fontSize="xs" color="green.400" mb={1}>
+                        👤 {emp.name}
+                      </Text>
+                    ))}
+                    {equipment.filter(eq => eq.currentProjectId === project.id).map(eq => (
+                      <Text key={eq.id} fontSize="xs" color="blue.400" mb={1}>
+                        🔧 {eq.name}
+                      </Text>
+                    ))}
+                  </Box>
+                )}
                 
                 {provided.placeholder}
               </Box>

@@ -136,13 +136,15 @@ export default function Dashboard() {
         </Box>
       )}
 
-      {/* Command Bar */}
+      {/* Command Bar with Project Counts */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">
         <CommandBar runActions={handleCommandActions} />
+        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+          <div className="text-sm text-gray-400">
+            Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
+          </div>
+        </div>
       </div>
-      
-      {/* Project Counts Bar */}
-      <ProjectCountsBar />
       
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
@@ -152,10 +154,7 @@ export default function Dashboard() {
         </div>
       </DragDropContext>
       
-      {/* Debug Info - Remove Later */}
-      <div className="fixed bottom-4 right-4 bg-gray-800 p-2 rounded text-xs text-white">
-        Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
-      </div>
+
       
       {isAssigning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
