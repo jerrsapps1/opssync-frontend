@@ -2,8 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "react-beautiful-dnd";
 import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
-import CommandBar from "@/components/CommandBar";
-import { applyActions } from "@/lib/applyActions";
+
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
@@ -81,46 +80,7 @@ export default function Dashboard() {
     errors: { projectsError, employeesError, equipmentError }
   });
 
-  const handleCommandActions = (actions: any[]) => {
-    applyActions({
-      actions,
-      findEmployeeByQuery: (q) => {
-        const qq = q.toLowerCase();
-        return employees.find((e: any) => e.name.toLowerCase().includes(qq));
-      },
-      findEquipmentByQuery: (q) => {
-        const qq = q.toLowerCase();
-        return equipment.find(
-          (x: any) =>
-            x.name.toLowerCase().includes(qq) ||
-            x.type.toLowerCase().includes(qq)
-        );
-      },
-      moveEmployee: async (employeeId, projectName) => {
-        const dest = projects.find(
-          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
-        );
-        if (!dest) return;
-        await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
-          projectId: dest.id,
-        });
-        await Promise.allSettled([queryClient.invalidateQueries()]);
-      },
-      assignEquipment: async (equipmentId, projectName) => {
-        const dest = projects.find(
-          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
-        );
-        if (!dest) return;
-        await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
-          projectId: dest.id,
-        });
-        await Promise.allSettled([queryClient.invalidateQueries()]);
-      },
-      showUnassigned: (date) => {
-        console.log("Unassigned requested for", date);
-      },
-    });
-  };
+
 
   if (isLoading) {
     return (
@@ -142,10 +102,9 @@ export default function Dashboard() {
         </Box>
       )}
 
-      {/* Command Bar with Project Counts */}
+      {/* Project Counts */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">
-        <CommandBar runActions={handleCommandActions} />
-        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+        <div className="flex justify-between items-center">
           <div className="text-sm text-gray-400">
             Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
           </div>
@@ -153,7 +112,7 @@ export default function Dashboard() {
       </div>
       
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
+        <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
