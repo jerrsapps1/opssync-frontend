@@ -19,7 +19,7 @@ export default function ContextMenu({
 
   return (
     <div
-      className="fixed z-[9999] min-w-[180px] rounded border border-gray-800 bg-[#0b1220] shadow-xl"
+      className="fixed z-[9999] min-w-[200px] rounded border border-gray-800 bg-[#0b1220] shadow-xl"
       style={{ left: pos.x, top: pos.y }}
     >
       {items.map((it, i) => (

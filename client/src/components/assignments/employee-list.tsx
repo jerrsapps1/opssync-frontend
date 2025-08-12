@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ContextMenu from "@/components/common/ContextMenu";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import ContextMenu from "@/components/common/ContextMenu";
+import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { apiRequest } from "@/lib/queryClient";
 import type { Employee, Project } from "@shared/schema";
 
@@ -15,29 +15,10 @@ interface EmployeeListProps {
 }
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
+  const nav = useNavigate();
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const unassignMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("PATCH", `/api/employees/${id}/assignment`, { currentProjectId: null });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-    },
-  });
-
-  const openMenu = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setMenu({ id, x: e.clientX, y: e.clientY });
-  };
-
-  const handleDoubleClick = (id: string) => {
-    navigate(`/employees/${id}`);
-  };
+  const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
 
   if (isLoading) {
     return (
@@ -62,7 +43,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
   // Group employees by project or unassigned
   const grouped: Record<string, Employee[]> = {};
-  (projects || []).forEach((p) => (grouped[p.id] = []));
+  projects.forEach((p) => (grouped[p.id] = []));
   grouped["unassigned"] = [];
   employees.forEach((emp) => {
     if (emp.currentProjectId && grouped[emp.currentProjectId]) {
@@ -79,6 +60,15 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
   };
 
+  async function assignTo(employeeId: string, dest: string | null) {
+    await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, { currentProjectId: dest });
+  }
+
+  function openContext(e: React.MouseEvent, id: string) {
+    e.preventDefault();
+    setMenu({ id, x: e.clientX, y: e.clientY });
+  }
+
   return (
     <div className="flex-1 p-3 overflow-y-auto">
       <h2 className="text-sm font-medium mb-3">Employees</h2>
@@ -86,7 +76,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search employees or roles…"
-        className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
       />
       {Object.entries(grouped).map(([projId, emps]) => {
         const visible = useMemo(() => emps.filter(filterEmp), [emps, q]);
@@ -97,7 +87,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 className={`mb-6 p-3 min-h-20 border-gray-700 transition-colors ${
-                  snapshot.isDraggingOver ? "bg-blue-500/20 border-blue-500" : "bg-gray-800"
+                  snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/20 border-[color:var(--brand-primary)]" : "bg-gray-800"
                 }`}
                 data-testid={`employee-group-${projId}`}
               >
@@ -114,16 +104,14 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        className="p-2 mb-2 transition-all select-none cursor-move border-none shadow-lg"
-                        style={{
-                          backgroundColor: dragSnapshot.isDragging 
-                            ? 'var(--brand-secondary)' 
-                            : 'var(--brand-primary)',
-                          color: 'var(--brand-primary-foreground)'
-                        }}
+                        className={`p-2 mb-2 transition-all select-none cursor-move border-none ${
+                          dragSnapshot.isDragging
+                            ? "bg-[color:var(--brand-accent)] shadow-lg"
+                            : "bg-[color:var(--brand-primary)] hover:brightness-110"
+                        }`}
                         data-testid={`employee-${emp.id}`}
-                        onDoubleClick={() => handleDoubleClick(emp.id)}
-                        onContextMenu={(e) => openMenu(e, emp.id)}
+                        onDoubleClick={() => nav(`/employees/${emp.id}`)}
+                        onContextMenu={(e) => openContext(e, emp.id)}
                       >
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
@@ -131,10 +119,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                               <AvatarImage src={emp.avatarUrl} className="object-cover" />
                             ) : null}
                             <AvatarFallback className="text-xs">
-                              {emp.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
+                              {emp.name.split(" ").map((n) => n[0]).join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div className="text-white text-sm">{emp.name}</div>
@@ -150,27 +135,23 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
         );
       })}
 
-      {/* Context Menu */}
       {menu && (
         <ContextMenu
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { 
-              label: "👤 Open Profile", 
-              onClick: () => { 
-                navigate(`/employees/${menu.id}`); 
-                setMenu(null); 
-              } 
-            },
-            { 
-              label: "📋 Unassign from Project", 
-              onClick: () => { 
-                unassignMutation.mutate(menu.id); 
-                setMenu(null); 
-              } 
-            },
+            { label: "Open profile", onClick: () => { nav(`/employees/${menu.id}`); setMenu(null); } },
+            { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
+            { label: "Unassign", onClick: async () => { await assignTo(menu.id, null); setMenu(null); } },
           ]}
+        />
+      )}
+      {assignPos && (
+        <ProjectAssignMenu
+          pos={{ x: assignPos.x, y: assignPos.y }}
+          projects={projects}
+          onCancel={() => setAssignPos(null)}
+          onSelect={async (pid) => { await assignTo(assignPos.id, pid); setAssignPos(null); }}
         />
       )}
     </div>
