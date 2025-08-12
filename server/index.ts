@@ -31,7 +31,11 @@ import { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } from "./sharedDb";
 
 // Initialize DB with realistic data from Excel import
 async function initData() {
-  if ((await db.get(EMPLOYEES_KEY)) === null) {
+  // Check if we already have projects (to avoid overriding user-created data)
+  const existingProjects = await db.get(PROJECTS_KEY);
+  const hasUserProjects = existingProjects && existingProjects.length > 0;
+  
+  if (!hasUserProjects && (await db.get(EMPLOYEES_KEY)) === null) {
     const fs = await import('fs');
     const path = await import('path');
     

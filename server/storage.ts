@@ -75,12 +75,36 @@ export class MemStorage implements IStorage {
     this.alerts = new Map();
     this.projectContacts = new Map();
     
-    // Initialize with some sample data
-    this.initializeSampleData();
+    // Load data from shared database instead of hardcoded data
+    this.loadFromSharedDatabase().catch(console.error);
     this.initializeTestUser().catch(console.error);
   }
 
-  private initializeSampleData() {
+  private async loadFromSharedDatabase() {
+    const { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } = await import('./sharedDb');
+    
+    // Load projects from shared database
+    const projects = (await db.get(PROJECTS_KEY)) || [];
+    for (const project of projects) {
+      this.projects.set(project.id, project);
+    }
+    
+    // Load employees from shared database
+    const employees = (await db.get(EMPLOYEES_KEY)) || [];
+    for (const employee of employees) {
+      this.employees.set(employee.id, employee);
+    }
+    
+    // Load equipment from shared database
+    const equipment = (await db.get(EQUIPMENT_KEY)) || [];
+    for (const equipmentItem of equipment) {
+      this.equipment.set(equipmentItem.id, equipmentItem);
+    }
+    
+    console.log(`✓ Loaded ${projects.length} projects, ${employees.length} employees, ${equipment.length} equipment from shared database`);
+  }
+
+  private initializeSampleDataDeprecated() {
     // Create sample projects
     const project1: Project = {
       id: "proj-001",
@@ -587,6 +611,13 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     this.projects.set(id, newProject);
+    
+    // Also persist to shared database
+    const { db, PROJECTS_KEY } = await import('./sharedDb');
+    const existingProjects = (await db.get(PROJECTS_KEY)) || [];
+    existingProjects.push(newProject);
+    await db.set(PROJECTS_KEY, existingProjects);
+    
     return newProject;
   }
 
@@ -602,6 +633,16 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     this.projects.set(id, updatedProject);
+    
+    // Also update in shared database
+    const { db, PROJECTS_KEY } = await import('./sharedDb');
+    const existingProjects = (await db.get(PROJECTS_KEY)) || [];
+    const projectIndex = existingProjects.findIndex((p: Project) => p.id === id);
+    if (projectIndex !== -1) {
+      existingProjects[projectIndex] = updatedProject;
+      await db.set(PROJECTS_KEY, existingProjects);
+    }
+    
     return updatedProject;
   }
 
