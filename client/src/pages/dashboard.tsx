@@ -66,11 +66,17 @@ export default function Dashboard() {
 
   const isLoading = projectsLoading || employeesLoading || equipmentLoading;
 
+  // Calculate filtered counts for dashboard display
+  const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
+  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId);
+  
   // Debug logging
   console.log("Dashboard data:", { 
     projects: projects.length, 
-    employees: employees.length, 
-    equipment: equipment.length,
+    unassignedEmployees: unassignedEmployees.length, 
+    unassignedEquipment: unassignedEquipment.length,
+    totalEmployees: employees.length,
+    totalEquipment: equipment.length,
     isLoading,
     errors: { projectsError, employeesError, equipmentError }
   });

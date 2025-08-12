@@ -28,7 +28,8 @@ export function useDragDrop() {
     },
     onSuccess: (data) => {
       console.log("Employee assignment success:", data);
-      // Force immediate refetch instead of just invalidation
+      // Force immediate refetch with cache removal
+      queryClient.removeQueries({ queryKey: ["/api/employees"] });
       queryClient.refetchQueries({ queryKey: ["/api/employees"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
@@ -52,7 +53,8 @@ export function useDragDrop() {
     },
     onSuccess: (data) => {
       console.log("Equipment assignment success:", data);
-      // Force immediate refetch instead of just invalidation
+      // Force immediate refetch with cache removal
+      queryClient.removeQueries({ queryKey: ["/api/equipment"] });
       queryClient.refetchQueries({ queryKey: ["/api/equipment"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
