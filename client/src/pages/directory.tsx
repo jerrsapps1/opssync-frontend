@@ -224,13 +224,13 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
                 onClick={() => handleExport(exportDialog.type, "excel")}
                 className="flex-1 bg-[color:var(--brand-primary)] hover:brightness-110 text-white"
               >
-                Excel Spreadsheet
+                📊 Excel Spreadsheet
               </Button>
               <Button
                 onClick={() => handleExport(exportDialog.type, "pdf")}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white"
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white"
               >
-                PDF Document
+                📄 Save as PDF
               </Button>
             </div>
             <Button
