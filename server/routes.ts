@@ -212,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects Excel export route - MUST come before :id route  
   app.get("/api/projects/export", async (req, res) => {
     try {
-      const projects = (await db.get(PROJECTS_KEY)) || [];
+      const projects = await storage.getProjects();
       console.log(`🏗️ Projects Excel Export: Found ${projects.length} projects`);
       
       // Transform project data for Excel export
@@ -293,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects PDF export route - MUST come before :id route  
   app.get("/api/projects/export-pdf", async (req, res) => {
     try {
-      const projects = (await db.get(PROJECTS_KEY)) || [];
+      const projects = await storage.getProjects();
       
       const doc = new PDFDocument({ margin: 50 });
       const timestamp = new Date().toISOString().split('T')[0];
@@ -355,7 +355,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects", async (req, res) => {
     try {
+      console.log(`🔍 API route /api/projects called - about to call storage.getProjects()`);
       const projects = await storage.getProjects();
+      console.log(`🔍 API route /api/projects - storage.getProjects() returned ${projects.length} projects`);
       res.json(projects);
     } catch (error) {
       console.error("Error fetching projects:", error);

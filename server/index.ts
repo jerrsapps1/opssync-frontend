@@ -29,13 +29,23 @@ app.use("/api", limits);        // Plan-based feature limits
 // Import shared DB instance
 import { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } from "./sharedDb";
 
+// Import storage to check for existing data
+import { storage } from "./storage";
+
 // Initialize DB with realistic data from Excel import
 async function initData() {
-  // Check if we already have projects (to avoid overriding user-created data)
-  const existingProjects = await db.get(PROJECTS_KEY);
+  // Check if we already have projects in PostgreSQL (to avoid overriding user-created data)
+  const existingProjects = await storage.getProjects();
   const hasUserProjects = existingProjects && existingProjects.length > 0;
   
-  if (!hasUserProjects && (await db.get(EMPLOYEES_KEY)) === null) {
+  console.log(`💾 initData: Found ${existingProjects.length} existing projects in PostgreSQL database`);
+  
+  if (hasUserProjects) {
+    console.log(`💾 initData: User projects found, skipping mock data initialization`);
+    return;
+  }
+  
+  if ((await db.get(EMPLOYEES_KEY)) === null) {
     const fs = await import('fs');
     const path = await import('path');
     
@@ -67,7 +77,9 @@ async function initData() {
 
       await db.set(EMPLOYEES_KEY, mockEmployees);
       await db.set(EQUIPMENT_KEY, mockEquipment);
-      await db.set(PROJECTS_KEY, standardizedProjects);
+      // Don't load mock projects into sharedDb since we use PostgreSQL for projects
+      // await db.set(PROJECTS_KEY, standardizedProjects);
+      console.log(`💾 initData: Skipping mock projects - using PostgreSQL storage only`);
       
       // Verify all projects have required fields
       console.log('✓ Sample project fields verification:');
@@ -94,27 +106,9 @@ async function initData() {
         { id: "eq-002", name: "Bulldozer", type: "Heavy Equipment", status: "available", currentProjectId: null }
       ]);
       
-      await db.set(PROJECTS_KEY, [
-        { 
-          id: "proj-001", 
-          projectNumber: "SAMPLE-001",
-          name: "Sample Project", 
-          location: "Seattle",
-          status: "active", 
-          progress: 50, 
-          percentComplete: 50,
-          percentMode: "auto",
-          budget: 100000,
-          gpsLatitude: null,
-          gpsLongitude: null,
-          description: null,
-          kmzFileUrl: null,
-          startDate: new Date().toISOString(),
-          endDate: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]);
+      // Don't load fallback projects into sharedDb since we use PostgreSQL for projects  
+      // await db.set(PROJECTS_KEY, [...]);
+      console.log(`💾 initData: Skipping fallback projects - using PostgreSQL storage only`);
     }
   }
 }

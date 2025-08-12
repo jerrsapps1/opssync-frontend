@@ -930,4 +930,104 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Create a PostgreSQL storage class that extends MemStorage but uses database for projects
+export class PostgreSQLStorage extends MemStorage {
+  // Override project methods to use PostgreSQL instead of in-memory storage
+  
+  async getProjects(): Promise<Project[]> {
+    console.log(`💾 PostgreSQLStorage.getProjects: Loading projects from PostgreSQL database`);
+    const dbProjects = await db.select().from(projects);
+    console.log(`💾 PostgreSQLStorage.getProjects: Found ${dbProjects.length} projects in PostgreSQL database`);
+    
+    // Update in-memory cache for consistency with parent class
+    this.projects.clear();
+    for (const project of dbProjects) {
+      this.projects.set(project.id, project);
+    }
+    
+    return dbProjects;
+  }
+
+  async getProject(id: string): Promise<Project | undefined> {
+    console.log(`💾 PostgreSQLStorage.getProject: Loading project ${id} from PostgreSQL database`);
+    const [dbProject] = await db.select().from(projects).where(eq(projects.id, id));
+    if (dbProject) {
+      this.projects.set(id, dbProject);
+    }
+    return dbProject;
+  }
+
+  async createProject(project: InsertProject): Promise<Project> {
+    console.log(`💾 PostgreSQLStorage.createProject: Creating project in PostgreSQL database`);
+    const [newProject] = await db.insert(projects).values({
+      ...project,
+      gpsLatitude: project.gpsLatitude || null,
+      gpsLongitude: project.gpsLongitude || null,
+      kmzFileUrl: project.kmzFileUrl || null,
+      description: project.description || null,
+      status: project.status || "Planned",
+      progress: project.progress || 0,
+      percentComplete: project.percentComplete || 0,
+      percentMode: project.percentMode || "auto",
+      startDate: project.startDate ? new Date(project.startDate) : new Date(),
+      endDate: project.endDate ? new Date(project.endDate) : null,
+    }).returning();
+    
+    console.log(`💾 PostgreSQLStorage.createProject: Created project ${newProject.id} successfully`);
+    
+    // Also update in-memory cache
+    this.projects.set(newProject.id, newProject);
+    
+    return newProject;
+  }
+
+  async updateProject(id: string, updates: UpdateProject): Promise<Project> {
+    console.log(`💾 PostgreSQLStorage.updateProject: Updating project ${id} in PostgreSQL database`);
+    const [updatedProject] = await db
+      .update(projects)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(projects.id, id))
+      .returning();
+    
+    if (!updatedProject) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+    
+    console.log(`💾 PostgreSQLStorage.updateProject: Updated project ${id} successfully`);
+    
+    // Update in-memory cache
+    this.projects.set(id, updatedProject);
+    
+    return updatedProject;
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    console.log(`💾 PostgreSQLStorage.deleteProject: Deleting project ${id} from PostgreSQL database`);
+    
+    // First, unassign all employees and equipment from this project
+    for (const employee of this.employees.values()) {
+      if (employee.currentProjectId === id) {
+        await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
+      }
+    }
+
+    for (const equipment of this.equipment.values()) {
+      if (equipment.currentProjectId === id) {
+        await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
+      }
+    }
+
+    // Delete from database
+    await db.delete(projects).where(eq(projects.id, id));
+    
+    // Remove from in-memory cache
+    this.projects.delete(id);
+    
+    console.log(`💾 PostgreSQLStorage.deleteProject: Deleted project ${id} successfully`);
+  }
+}
+
+export const storage = new PostgreSQLStorage();
