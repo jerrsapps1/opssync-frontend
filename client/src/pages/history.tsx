@@ -126,6 +126,11 @@ export default function HistoryPage() {
           Showing {filteredData.length} assignment changes
           {entityFilter !== "all" && ` for ${entityFilter}s`}
           {` in the last ${dateRange} ${parseInt(dateRange) === 1 ? 'day' : 'days'}`}
+          {filteredData.length > 0 && (
+            <span className="ml-4">
+              • {new Set(filteredData.map(h => h.userId || h.user || 'System')).size} users involved
+            </span>
+          )}
         </p>
       </div>
 
@@ -141,6 +146,7 @@ export default function HistoryPage() {
             <THead>
               <TR>
                 <TH className="text-gray-300">Date & Time</TH>
+                <TH className="text-gray-300">Who</TH>
                 <TH className="text-gray-300">Entity</TH>
                 <TH className="text-gray-300">Assignment Action</TH>
                 <TH className="text-gray-300">Details</TH>
@@ -155,6 +161,14 @@ export default function HistoryPage() {
                     </div>
                     <div className="text-xs text-gray-500">
                       {new Date(h.at).toLocaleTimeString()}
+                    </div>
+                  </TD>
+                  <TD className="text-gray-300">
+                    <div className="text-sm font-medium">
+                      {h.userId || h.user || 'System'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {h.userRole || 'Admin'}
                     </div>
                   </TD>
                   <TD className="capitalize text-gray-300">
