@@ -63,7 +63,11 @@ export function useDragDrop() {
     }
 
     // Extract asset type and ID from draggableId
-    const [assetType, assetId] = draggableId.split("-");
+    // Format: "emp-emp-001" -> assetType="emp", assetId="emp-001"
+    // Format: "eq-eq-001" -> assetType="eq", assetId="eq-001"
+    const parts = draggableId.split("-");
+    const assetType = parts[0];
+    const assetId = parts.slice(1).join("-"); // Rejoin remaining parts for full ID
     
     // Extract project ID from destination droppableId
     let projectId = null;
@@ -84,7 +88,7 @@ export function useDragDrop() {
       projectId
     });
 
-    if (assetType === "employee") {
+    if (assetType === "emp") {
       assignEmployeeMutation.mutate({ employeeId: assetId, projectId });
       
       toast({
@@ -93,7 +97,7 @@ export function useDragDrop() {
           ? "Employee assigned to project successfully" 
           : "Employee unassigned successfully",
       });
-    } else if (assetType === "equipment") {
+    } else if (assetType === "eq") {
       assignEquipmentMutation.mutate({ equipmentId: assetId, projectId });
       
       toast({
