@@ -258,6 +258,7 @@ export default function App() {
                 <Route path="/equipment/:id" element={<EquipmentDetail />} />
                 <Route path="/employees/:id" element={<EmployeeDetail />} />
                 <Route path="/projects/:id" element={<ProjectProfile />} />
+                <Route path="/project/:id" element={<ProjectProfile />} />
                 <Route path="/directory" element={<DirectoryPage />} />
                 <Route path="/builder" element={<ProfileBuilder />} />
                 <Route path="/history" element={<HistoryPage />} />
