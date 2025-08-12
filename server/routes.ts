@@ -291,35 +291,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Employee assignment route - MUST be defined before general PATCH route  
-  app.patch("/api/employees/:id/assignment", async (req, res) => {
-    try {
-      console.log(`🎯🎯🎯 ASSIGNMENT ENDPOINT HIT: /api/employees/${req.params.id}/assignment`);
-      console.log(`🎯🎯🎯 REQUEST URL: ${req.url} | ORIGINAL URL: ${req.originalUrl} | PATH: ${req.path}`);
-      console.log('Request body:', req.body);
-      
-      // Validate the request body for assignment
-      const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
-      console.log('Parsed assignment data:', assignmentData);
-      
-      // Check if employee exists before updating
-      const existingEmployee = await storage.getEmployee(req.params.id);
-      if (!existingEmployee) {
-        console.log(`Employee ${req.params.id} not found`);
-        return res.status(404).json({ message: "Employee not found" });
-      }
-      console.log('Found employee:', existingEmployee.name);
-      
-      // Map projectId to currentProjectId for storage
-      const storageAssignment = { currentProjectId: assignmentData.projectId };
-      const employee = await storage.updateEmployeeAssignment(req.params.id, storageAssignment);
-      console.log(`Assignment result:`, employee.name, 'assigned to project:', employee.currentProjectId);
-      res.json(employee);
-    } catch (error) {
-      console.error("Detailed error updating employee assignment:", error);
-      res.status(400).json({ message: "Failed to update employee assignment", details: error instanceof Error ? error.message : String(error) });
-    }
-  });
+  // Employee assignment route - DISABLED: using dedicated assignment routes in server/routes/assignments.ts
+  // app.patch("/api/employees/:id/assignment", ...)
 
   // Employee profile update route - MUST come after assignment route
   app.patch("/api/employees/:id", async (req, res) => {
@@ -370,21 +343,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Equipment assignment route - MUST come before general PATCH route
-  app.patch("/api/equipment/:id/assignment", async (req, res) => {
-    try {
-      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assignment`);
-      const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
-      // Map projectId to currentProjectId for storage
-      const storageAssignment = { currentProjectId: assignmentData.projectId };
-      const equipment = await storage.updateEquipmentAssignment(req.params.id, storageAssignment);
-      console.log(`Equipment assignment result:`, equipment);
-      res.json(equipment);
-    } catch (error) {
-      console.error("Error updating equipment assignment:", error);
-      res.status(400).json({ message: "Failed to update equipment assignment" });
-    }
-  });
+  // Equipment assignment route - DISABLED: using dedicated assignment routes in server/routes/assignments.ts
+  // app.patch("/api/equipment/:id/assignment", ...)
 
   // Equipment profile update route - MUST come after assignment route
   app.patch("/api/equipment/:id", async (req, res) => {

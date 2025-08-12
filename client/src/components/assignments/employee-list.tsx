@@ -48,13 +48,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   // Dashboard shows only unassigned employees - assigned employees live on project pages
   const availableEmployees = employees.filter(emp => !emp.currentProjectId);
   
-  // Debug logging for assignment filtering
-  console.log("Employee filtering debug:", { 
-    totalEmployees: employees.length, 
-    availableEmployees: availableEmployees.length,
-    assignedEmployees: employees.filter(emp => emp.currentProjectId).length,
-    sampleAssigned: employees.filter(emp => emp.currentProjectId).slice(0, 3).map(emp => ({ name: emp.name, projectId: emp.currentProjectId }))
-  });
+  // Assignment filtering working correctly - employees disappear from dashboard when assigned
 
   const q = query.trim().toLowerCase();
   const filterEmp = (e: Employee) => {

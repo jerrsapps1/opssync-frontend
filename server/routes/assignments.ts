@@ -1,42 +1,55 @@
 import express from "express";
-import fetch from "node-fetch";
 import { broadcast } from "../realtime/stream";
+import { storage } from "../storage";
 
 const router = express.Router();
-const BASE = process.env.INTERNAL_BASE_URL || "http://localhost:" + (process.env.PORT || 5000);
 
+// Handle employee assignment directly without proxy layer  
 router.patch("/employees/:id/assignment", async (req, res) => {
   try {
     const { id } = req.params as { id: string };
-    const { projectId } = req.body || {};  // Frontend sends projectId
-    const r = await fetch(`${BASE}/api/employees/${id}/assignment`, {  // Call assignment endpoint
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId }),  // Send projectId as expected by assignment endpoint
-    });
-    if (!r.ok) throw new Error(`Upstream error ${r.status}`);
-    const payload = await r.json();
+    const { projectId } = req.body || {};
+    
+    console.log("=== ASSIGNMENT ROUTE DEBUG ===");
+    console.log("Employee ID:", id);
+    console.log("Project ID:", projectId);
+    console.log("Request body:", req.body);
+    
+    // Update employee assignment directly via storage
+    const updatedEmployee = await storage.updateEmployeeAssignment(id, { projectId });
+    
+    console.log("Assignment complete:", updatedEmployee);
+    console.log("=================================");
+    
     broadcast({ type: "assignment.updated", entity: "employee", id, currentProjectId: projectId });
-    res.json(payload);
+    res.json(updatedEmployee);
   } catch (e:any) {
+    console.error("Assignment error:", e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
+// Handle equipment assignment directly without proxy layer
 router.patch("/equipment/:id/assignment", async (req, res) => {
   try {
     const { id } = req.params as { id: string };
-    const { projectId } = req.body || {};  // Frontend sends projectId
-    const r = await fetch(`${BASE}/api/equipment/${id}/assignment`, {  // Call assignment endpoint
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId }),  // Send projectId as expected by assignment endpoint
-    });
-    if (!r.ok) throw new Error(`Upstream error ${r.status}`);
-    const payload = await r.json();
+    const { projectId } = req.body || {};
+    
+    console.log("=== EQUIPMENT ASSIGNMENT ROUTE DEBUG ===");
+    console.log("Equipment ID:", id);
+    console.log("Project ID:", projectId);
+    console.log("Request body:", req.body);
+    
+    // Update equipment assignment directly via storage
+    const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+    
+    console.log("Equipment assignment complete:", updatedEquipment);
+    console.log("=================================");
+    
     broadcast({ type: "assignment.updated", entity: "equipment", id, currentProjectId: projectId });
-    res.json(payload);
+    res.json(updatedEquipment);
   } catch (e:any) {
+    console.error("Equipment assignment error:", e.message);
     res.status(500).json({ error: e.message });
   }
 });
