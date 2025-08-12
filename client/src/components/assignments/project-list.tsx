@@ -3,7 +3,7 @@ import { Droppable } from "react-beautiful-dnd";
 import { useSelection } from "@/state/selection";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ProjectStatusDropdown } from "../ProjectStatusDropdown";
+
 import type { Project } from "@shared/schema";
 
 interface ProjectListProps {
@@ -28,7 +28,6 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
     >
       <Heading size="md" mb={4} color="white">Projects</Heading>
       
-
 
       {/* Project List */}
       <VStack spacing={3} align="stretch">
@@ -74,8 +73,31 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                 <Text fontSize="xs" color="#C0C0D8" mb={2}>
                   {project.location}
                 </Text>
+                {/* Status and Progress */}
                 <Box mb={2}>
-                  <ProjectStatusDropdown project={project} size="sm" />
+                  <Text fontSize="xs" color="blue.300" fontWeight="medium" mb={1}>
+                    Status: {project.status || "Planned"}
+                  </Text>
+                  {project.progress > 0 && (
+                    <Box>
+                      <Text fontSize="xs" color="gray.400" mb={1}>
+                        Progress: {project.progress}%
+                      </Text>
+                      <Box bg="gray.700" rounded="full" h="2" overflow="hidden">
+                        <Box 
+                          bg="blue.400" 
+                          h="full" 
+                          w={`${project.progress}%`}
+                          transition="width 0.3s"
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                  {project.startDate && project.endDate && (
+                    <Text fontSize="xs" color="gray.400" mt={1}>
+                      Duration: {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
+                    </Text>
+                  )}
                 </Box>
                 
                 {/* Show assigned employees and equipment only when project is focused */}

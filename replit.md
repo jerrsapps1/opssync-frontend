@@ -15,6 +15,7 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Simplified Assignment Interface**: Removed "Drop here to unassign" functionality per user request for future replacement with different approach
 - **UI Cleanup**: Removed employee avatar displays, search bars, and command bar for minimal, clean interface focused on drag-and-drop workflow
 - **Layout Balance**: Made all three columns equal width for consistent visual balance across the dashboard
+- **Project Display Enhancement**: Replaced status dropdown with text-only status display, added progress bars and duration information
 - **Project Management Enhancement**: Fixed critical project creation issues with date validation and form submission flow
 - **Alphabetical Sorting**: Projects now display in alphabetical order by name for consistent organization
 
