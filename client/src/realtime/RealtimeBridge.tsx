@@ -5,8 +5,8 @@ import { connectSSE } from "./sse";
 export default function RealtimeBridge() {
   const qc = useQueryClient();
   React.useEffect(() => {
-    const es = connectSSE(qc);
-    return () => es.close();
+    const connection = connectSSE(qc);
+    return () => connection.close();
   }, [qc]);
   return null;
 }

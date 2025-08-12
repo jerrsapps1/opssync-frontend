@@ -5,7 +5,6 @@ import { broadcast } from "../realtime/stream";
 const router = express.Router();
 const BASE = process.env.INTERNAL_BASE_URL || "http://localhost:" + (process.env.PORT || 3000);
 
-// PATCH /api/employees/:id/assignment { currentProjectId }
 router.patch("/employees/:id/assignment", async (req, res) => {
   try {
     const { id } = req.params as { id: string };
@@ -24,7 +23,6 @@ router.patch("/employees/:id/assignment", async (req, res) => {
   }
 });
 
-// PATCH /api/equipment/:id/assignment { currentProjectId }
 router.patch("/equipment/:id/assignment", async (req, res) => {
   try {
     const { id } = req.params as { id: string };

@@ -11,7 +11,6 @@ function singular(e: Entity): "employee"|"equipment"|"project" {
   return e === "employees" ? "employee" : e === "equipment" ? "equipment" : "project";
 }
 
-// Soft archive
 router.post("/:entity/:id/archive", async (req, res) => {
   const { entity, id } = req.params as { entity: Entity; id: string };
   try {
@@ -24,12 +23,9 @@ router.post("/:entity/:id/archive", async (req, res) => {
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "archive", at: new Date().toISOString(), payload: {} });
     broadcast({ type: "entity.archived", entity: singular(entity), id });
     res.json(await r.json());
-  } catch (e:any) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch (e:any) { res.status(500).json({ error: e.message }); }
 });
 
-// Restore
 router.post("/:entity/:id/restore", async (req, res) => {
   const { entity, id } = req.params as { entity: Entity; id: string };
   try {
@@ -42,12 +38,9 @@ router.post("/:entity/:id/restore", async (req, res) => {
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "restore", at: new Date().toISOString(), payload: {} });
     broadcast({ type: "entity.restored", entity: singular(entity), id });
     res.json(await r.json());
-  } catch (e:any) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch (e:any) { res.status(500).json({ error: e.message }); }
 });
 
-// Soft delete (mark removed)
 router.delete("/:entity/:id", async (req, res) => {
   const { entity, id } = req.params as { entity: Entity; id: string };
   try {
@@ -60,12 +53,9 @@ router.delete("/:entity/:id", async (req, res) => {
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "delete", at: new Date().toISOString(), payload: {} });
     broadcast({ type: "entity.removed", entity: singular(entity), id });
     res.json(await r.json());
-  } catch (e:any) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch (e:any) { res.status(500).json({ error: e.message }); }
 });
 
-// History feed
 router.get("/history", async (req, res) => {
   try {
     const fs = await import("fs");
@@ -74,9 +64,7 @@ router.get("/history", async (req, res) => {
     if (!fs.existsSync(file)) return res.json([]);
     const list = JSON.parse(fs.readFileSync(file, "utf-8"));
     res.json(list);
-  } catch (e:any) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch (e:any) { res.status(500).json({ error: e.message }); }
 });
 
 export default router;

@@ -1,0 +1,13 @@
+.dnd-dropping > * {
+  transition: transform 120ms ease, opacity 120ms ease;
+  will-change: transform, opacity;
+}
+.rbd-drag-handle {
+  cursor: grab;
+}
+.rbd-drag-handle:active {
+  cursor: grabbing;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dnd-dropping > * { transition: none !important; }
+}
