@@ -48,8 +48,12 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   // Dashboard shows only unassigned employees - assigned employees live on project pages
   const availableEmployees = employees.filter(emp => !emp.currentProjectId);
   
-  // Assignment filtering working correctly - employees disappear from dashboard when assigned
+  // Sort employees alphabetically by name
+  const sortedEmployees = [...availableEmployees].sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
 
+  // Column-specific search - only searches within the employee name and role fields
   const q = query.trim().toLowerCase();
   const filterEmp = (e: Employee) => {
     if (!q) return true;
@@ -57,7 +61,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
   };
 
-  const filteredEmployees = availableEmployees.filter(filterEmp);
+  const filteredEmployees = sortedEmployees.filter(filterEmp);
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -72,7 +76,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search employees or roles…"
+        placeholder="Search employees by name or role (this column only)…"
         className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
       />
       

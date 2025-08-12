@@ -71,7 +71,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search equipment or types…"
+        placeholder="Search equipment by name or type (this column only)…"
         className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
       />
       <Droppable droppableId="equipment">
