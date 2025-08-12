@@ -29,6 +29,14 @@ The application includes a comprehensive white-label system configurable during 
 ### Dynamic CSS Variable Theming
 The useBrandTheme hook automatically applies brand configuration to CSS custom properties at runtime, enabling real-time theme updates across the entire application. Key components use CSS variables like --brand-primary, --brand-secondary, and --brand-accent for consistent branding. The AppLayout component fetches brand configuration and applies it globally, while individual components reference these variables for buttons, navigation highlights, and interactive elements.
 
+**Complete UI Component Library:**
+- Button component with 5 variants (default, secondary, accent, outline, ghost) using brand colors
+- Input component with brand radius and primary focus rings
+- Select component with native dropdown styling and brand theming
+- Dialog component with branded headers and professional modal design
+- Table components (Table, THead, TBody, TR, TH, TD) with branded headers and zebra striping
+- All components automatically inherit brand configuration through CSS variables
+
 ## Enhanced Settings Management System
 A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.
 
