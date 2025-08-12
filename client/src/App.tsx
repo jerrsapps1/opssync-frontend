@@ -26,6 +26,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./pages/dashboard";
 import Settings from "./pages/settings";
 import WhiteLabelPage from "./pages/white-label";
+import AppLayout from "./components/layout/AppLayout";
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -123,23 +124,7 @@ const mockEquipment = [
   { id: "eq-005", name: "Concrete Mixer", type: "Heavy Equipment", currentProjectId: null },
 ];
 
-/** ======= Header Component ======= **/
-function Header() {
-  const { brandConfig } = useApp();
-  
-  return (
-    <Box bg="brand.600" p={4} borderBottom="1px solid" borderColor="brand.700">
-      <Flex align="center">
-        <HStack spacing={4}>
-          <Image src={brandConfig.logoUrl} alt="Logo" boxSize="40px" />
-          <Heading size="md" color="white">
-            {brandConfig.appName}
-          </Heading>
-        </HStack>
-      </Flex>
-    </Box>
-  );
-}
+/** ======= Header Component (now integrated in AppLayout) ======= **/
 
 /** ======= Conflict Alert Component ======= **/
 function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => void }) {
@@ -249,9 +234,7 @@ function MainApp() {
   const { conflicts, alertDismissed, setAlertDismissed } = useApp();
 
   return (
-    <Box minH="100vh" bg="#121212">
-      <Header />
-      
+    <AppLayout>
       {/* Conflict Alerts */}
       {!alertDismissed && (
         <Box p={4}>
@@ -264,10 +247,11 @@ function MainApp() {
 
       {/* Router */}
       <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/settings" component={Settings} />
       <Route path="/assignments" component={Dashboard} />
       <Route path="/white-label" component={WhiteLabelPage} />
-    </Box>
+    </AppLayout>
   );
 }
 
