@@ -231,50 +231,20 @@ function AppProvider({ children }: { children: React.ReactNode }) {
 
 /** ======= Main App Component ======= **/
 function MainApp() {
-  const { conflicts, alertDismissed, setAlertDismissed } = useApp();
-
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* App shell with sidebar on every page */}
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={
-            <>
-              {/* Conflict Alerts */}
-              {!alertDismissed && (
-                <Box p={4}>
-                  <ConflictAlert 
-                    conflicts={conflicts} 
-                    onClose={() => setAlertDismissed(true)} 
-                  />
-                </Box>
-              )}
-              <Dashboard />
-            </>
-          } />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/assignments" element={
-            <>
-              {/* Conflict Alerts */}
-              {!alertDismissed && (
-                <Box p={4}>
-                  <ConflictAlert 
-                    conflicts={conflicts} 
-                    onClose={() => setAlertDismissed(true)} 
-                  />
-                </Box>
-              )}
-              <Dashboard />
-            </>
-          } />
-          <Route path="/white-label" element={<WhiteLabelPage />} />
-        </Route>
+    <Routes>
+      {/* App shell with sidebar on every page */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/assignments" element={<Dashboard />} />
+        <Route path="/white-label" element={<WhiteLabelPage />} />
+      </Route>
 
-        {/* Public routes (e.g., login) can live outside the layout */}
-        {/* <Route path="/login" element={<LoginPage />} /> */}
-      </Routes>
-    </BrowserRouter>
+      {/* Public routes (e.g., login) can live outside the layout */}
+      {/* <Route path="/login" element={<LoginPage />} /> */}
+    </Routes>
   );
 }
 
@@ -284,7 +254,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={createTheme(defaultBrandConfig)}>
         <AppProvider>
-          <MainApp />
+          <BrowserRouter>
+            <MainApp />
+          </BrowserRouter>
         </AppProvider>
       </ChakraProvider>
     </QueryClientProvider>

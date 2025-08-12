@@ -1,19 +1,60 @@
 // Removed Chakra UI imports - using Tailwind classes instead
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "react-beautiful-dnd";
+import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
 import CommandBar from "@/components/CommandBar";
 import { applyActions } from "@/lib/applyActions";
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import type { Project, Employee, Equipment } from "@shared/schema";
 
+function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => void }) {
+  const hasConflicts =
+    conflicts.employeeConflicts.length > 0 || conflicts.equipmentConflicts.length > 0;
+
+  if (!hasConflicts) return null;
+
+  return (
+    <ChakraAlert status="error" mb={4}>
+      <AlertIcon />
+      <Box flex="1">
+        <AlertTitle mr={2}>Assignment Conflicts Detected!</AlertTitle>
+        <ChakraAlertDescription>
+          {conflicts.employeeConflicts.length > 0 && (
+            <div>
+              Employees: {conflicts.employeeConflicts.map((e: any) => e.name).join(", ")}
+            </div>
+          )}
+          {conflicts.equipmentConflicts.length > 0 && (
+            <div>
+              Equipment: {conflicts.equipmentConflicts.map((e: any) => e.name).join(", ")}
+            </div>
+          )}
+        </ChakraAlertDescription>
+      </Box>
+      <CloseButton onClick={onClose} />
+    </ChakraAlert>
+  );
+}
+
 export default function Dashboard() {
   const { handleDragEnd, isAssigning } = useDragDrop();
+  const appContext = useApp();
   const queryClient = useQueryClient();
+
+  if (!appContext) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
+        Loading application context...
+      </div>
+    );
+  }
+
+  const { conflicts, alertDismissed, setAlertDismissed } = appContext;
 
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -79,33 +120,37 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-900">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        {/* keep your existing header / CommandBar / grid exactly as-is */}
-        {/** BEGIN original dashboard content **/}
-        {/* Command Bar */}
-        <div className="p-4 bg-gray-800 border-b border-gray-700">
-          <CommandBar runActions={handleCommandActions} />
-        </div>
-        
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
-            <ProjectList projects={projects} />
-            <EmployeeList employees={employees} projects={projects} />
-            <EquipmentList equipment={equipment} projects={projects} />
-          </div>
-        </DragDropContext>
-        {/** END original dashboard content **/}
-        
-        {isAssigning && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 p-6 rounded-lg text-white">
-              Updating assignment...
-            </div>
-          </div>
-        )}
+    <>
+      {/* Conflict Alerts */}
+      {!alertDismissed && (
+        <Box p={4}>
+          <ConflictAlert 
+            conflicts={conflicts} 
+            onClose={() => setAlertDismissed(true)} 
+          />
+        </Box>
+      )}
+
+      {/* Command Bar */}
+      <div className="p-4 bg-gray-800 border-b border-gray-700">
+        <CommandBar runActions={handleCommandActions} />
       </div>
-    </div>
+      
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
+          <ProjectList projects={projects} />
+          <EmployeeList employees={employees} projects={projects} />
+          <EquipmentList equipment={equipment} projects={projects} />
+        </div>
+      </DragDropContext>
+      
+      {isAssigning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg text-white">
+            Updating assignment...
+          </div>
+        </div>
+      )}
+    </>
   );
 }
