@@ -5,7 +5,7 @@ import { Wrench, Truck, Hammer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
-import { apiRequest } from "@/lib/queryClient";
+import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
@@ -16,6 +16,7 @@ interface EquipmentListProps {
 
 export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
   const nav = useNavigate();
+  const { setAssignment } = useAssignmentSync("equipment");
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -51,10 +52,6 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
   const visible = useMemo(() => equipment.filter(filterEq), [equipment, q]);
 
-  async function assignTo(equipmentId: string, dest: string | null) {
-    await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, { currentProjectId: dest });
-  }
-
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
     setMenu({ id, x: e.clientX, y: e.clientY });
@@ -87,9 +84,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                       {...dragProvided.draggableProps}
                       {...dragProvided.dragHandleProps}
                       className={`p-3 transition-all select-none cursor-move border-gray-600 ${
-                        dragSnapshot.isDragging
-                          ? "bg-[color:var(--brand-accent)] shadow-lg"
-                          : "bg-[color:var(--brand-primary)] hover:brightness-110"
+                        dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
                       }`}
                       data-testid={`equipment-${eq.id}`}
                       onDoubleClick={() => nav(`/equipment/${eq.id}`)}
@@ -121,7 +116,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           items={[
             { label: "Open profile", onClick: () => { nav(`/equipment/${menu.id}`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
-            { label: "Unassign", onClick: async () => { await assignTo(menu.id, null); setMenu(null); } },
+            { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}
         />
       )}
@@ -130,7 +125,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           pos={{ x: assignPos.x, y: assignPos.y }}
           projects={projects}
           onCancel={() => setAssignPos(null)}
-          onSelect={async (pid) => { await assignTo(assignPos.id, pid); setAssignPos(null); }}
+          onSelect={async (pid) => { setAssignment(assignPos.id, pid); setAssignPos(null); }}
         />
       )}
     </div>

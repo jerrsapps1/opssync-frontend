@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
-import { apiRequest } from "@/lib/queryClient";
+import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import type { Employee, Project } from "@shared/schema";
 
 interface EmployeeListProps {
@@ -16,6 +16,7 @@ interface EmployeeListProps {
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
   const nav = useNavigate();
+  const { setAssignment } = useAssignmentSync("employees");
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -41,7 +42,6 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     );
   }
 
-  // Group employees by project or unassigned
   const grouped: Record<string, Employee[]> = {};
   projects.forEach((p) => (grouped[p.id] = []));
   grouped["unassigned"] = [];
@@ -59,10 +59,6 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     const role = (e as any).role || (e as any).title || (e as any).position || "";
     return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
   };
-
-  async function assignTo(employeeId: string, dest: string | null) {
-    await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, { currentProjectId: dest });
-  }
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -92,9 +88,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                 data-testid={`employee-group-${projId}`}
               >
                 <div className="font-medium mb-2 text-white">
-                  {projId === "unassigned"
-                    ? "Unassigned"
-                    : projects.find((p) => p.id === projId)?.name || "Unknown Project"}
+                  {projId === "unassigned" ? "Unassigned" : projects.find((p) => p.id === projId)?.name || "Unknown Project"}
                 </div>
 
                 {visible.map((emp, index) => (
@@ -105,9 +99,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
                         className={`p-2 mb-2 transition-all select-none cursor-move border-none ${
-                          dragSnapshot.isDragging
-                            ? "bg-[color:var(--brand-accent)] shadow-lg"
-                            : "bg-[color:var(--brand-primary)] hover:brightness-110"
+                          dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
                         }`}
                         data-testid={`employee-${emp.id}`}
                         onDoubleClick={() => nav(`/employees/${emp.id}`)}
@@ -115,12 +107,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                       >
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
-                            {emp.avatarUrl ? (
-                              <AvatarImage src={emp.avatarUrl} className="object-cover" />
-                            ) : null}
-                            <AvatarFallback className="text-xs">
-                              {emp.name.split(" ").map((n) => n[0]).join("")}
-                            </AvatarFallback>
+                            {emp.avatarUrl ? <AvatarImage src={emp.avatarUrl} className="object-cover" /> : null}
+                            <AvatarFallback className="text-xs">{emp.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
                           </Avatar>
                           <div className="text-white text-sm">{emp.name}</div>
                         </div>
@@ -142,7 +130,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           items={[
             { label: "Open profile", onClick: () => { nav(`/employees/${menu.id}`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
-            { label: "Unassign", onClick: async () => { await assignTo(menu.id, null); setMenu(null); } },
+            { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}
         />
       )}
@@ -151,7 +139,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           pos={{ x: assignPos.x, y: assignPos.y }}
           projects={projects}
           onCancel={() => setAssignPos(null)}
-          onSelect={async (pid) => { await assignTo(assignPos.id, pid); setAssignPos(null); }}
+          onSelect={async (pid) => { setAssignment(assignPos.id, pid); setAssignPos(null); }}
         />
       )}
     </div>

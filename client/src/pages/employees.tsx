@@ -1,139 +1,74 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
-import type { Employee } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import MiniEmployeeCard from "@/components/mini/MiniEmployeeCard";
+import ImportExportPanel from "@/components/common/ImportExportPanel";
+
+type Employee = { id: string; name: string; yearsExperience?: number; operates?: string[]; currentProjectId?: string | null };
+type Project = { id: string; name: string };
+
+async function fetchEmployees(): Promise<Employee[]> { const r = await apiRequest("GET", "/api/employees"); return r.json(); }
+async function fetchProjects(): Promise<Project[]> { const r = await apiRequest("GET", "/api/projects"); return r.json(); }
 
 export default function EmployeesPage() {
-  const { data: employees = [], isLoading } = useQuery<Employee[]>({
-    queryKey: ["/api/employees"],
-  });
+  const { data: employees = [], isLoading, refetch } = useQuery({ queryKey: ["employees"], queryFn: fetchEmployees, refetchOnWindowFocus: true });
+  const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const [q, setQ] = React.useState("");
 
-  const { data: brandConfig } = useQuery<{
-    logoUrl?: string;
-    companyName?: string;
-    primaryColor?: string;
-    secondaryColor?: string;
-  }>({
-    queryKey: ["/api/auth/brand-config"],
-    staleTime: 5 * 60 * 1000,
-  });
+  const projName = React.useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.name])), [projects]);
 
-  if (isLoading) {
-    return (
-      <div className="p-6 text-gray-300">
-        <div className="animate-pulse">Loading employees...</div>
-      </div>
+  const filtered = React.useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return employees;
+    return employees.filter(e =>
+      e.name.toLowerCase().includes(s) ||
+      String(e.yearsExperience || "").includes(s) ||
+      (e.operates || []).some(x => x.toLowerCase().includes(s))
     );
+  }, [employees, q]);
+
+  function importEmployees(file: File) {
+    const body = new FormData();
+    body.append("file", file);
+    fetch("/api/employees/import", { method: "POST", body }).then(()=>refetch());
   }
+  function exportEmployees() { window.location.href = "/api/employees/export"; }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Page Header with Brand Logo Placeholder */}
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {brandConfig?.logoUrl && (
-            <img 
-              src={brandConfig.logoUrl} 
-              alt={`${brandConfig.companyName || 'Company'} Logo`}
-              className="h-10 w-10 rounded"
-            />
-          )}
-          <div>
-            <h1 className="text-2xl font-semibold text-white">Employee Management</h1>
-            <p className="text-sm text-gray-400">
-              Manage your team at {brandConfig?.companyName || 'your organization'}
-            </p>
-          </div>
-        </div>
-        <Button>
-          <span className="mr-2">👤</span>
-          Add Employee
-        </Button>
+        <h1 className="text-xl font-semibold">Employees</h1>
+        <input
+          value={q}
+          onChange={e=>setQ(e.target.value)}
+          placeholder="Search employees / equipment…"
+          className="px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[color:var(--brand-primary)]"
+        />
       </div>
 
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="flex gap-4 items-center">
-          <Input 
-            placeholder="Search employees by name or role..."
-            className="flex-1"
-          />
-          <Button variant="outline">
-            <span className="mr-2">🔍</span>
-            Search
-          </Button>
-          <Button variant="ghost">
-            <span className="mr-2">⚙️</span>
-            Filters
-          </Button>
+      <ImportExportPanel title="Employees" onImport={importEmployees} onExport={exportEmployees} templateUrl="/templates/employees_template.csv" />
+
+      {isLoading ? (
+        <div className="text-gray-400">Loading…</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {filtered.map(emp => (
+            <MiniEmployeeCard
+              key={emp.id}
+              emp={{
+                id: emp.id,
+                name: emp.name,
+                years: emp.yearsExperience,
+                operates: emp.operates,
+                projectName: emp.currentProjectId ? projName[emp.currentProjectId] || "Unassigned" : "Unassigned"
+              }}
+            />
+          ))}
+          {filtered.length === 0 && <div className="text-gray-400">No matches.</div>}
         </div>
-      </Card>
-
-      {/* Employee Table */}
-      <Card className="overflow-hidden">
-        <Table>
-          <THead>
-            <TR>
-              <TH>Employee</TH>
-              <TH>Role</TH>
-              <TH>Current Project</TH>
-              <TH>Status</TH>
-              <TH>Actions</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {employees.map((employee) => (
-              <TR key={employee.id}>
-                <TD>
-                  <div className="flex items-center gap-3">
-                    {employee.avatarUrl ? (
-                      <img 
-                        src={employee.avatarUrl} 
-                        alt={employee.name}
-                        className="h-8 w-8 rounded-full"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-                        {employee.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                    )}
-                    <span className="font-medium">{employee.name}</span>
-                  </div>
-                </TD>
-                <TD>{employee.role}</TD>
-                <TD>
-                  {employee.currentProjectId ? (
-                    <span className="px-2 py-1 rounded text-xs" 
-                          style={{ backgroundColor: 'var(--brand-accent)', color: 'white' }}>
-                      Project #{employee.currentProjectId}
-                    </span>
-                  ) : (
-                    <span className="text-gray-500">Unassigned</span>
-                  )}
-                </TD>
-                <TD>
-                  <span className="px-2 py-1 rounded text-xs bg-green-600 text-white">
-                    Active
-                  </span>
-                </TD>
-                <TD>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">Edit</Button>
-                    <Button variant="ghost" size="sm">Assign</Button>
-                  </div>
-                </TD>
-              </TR>
-            ))}
-          </TBody>
-        </Table>
-      </Card>
-
-      {/* Company Footer */}
-      <div className="text-center text-xs text-gray-500 pt-6">
-        Powered by {brandConfig?.companyName || 'StaffTrak'} Employee Management System
+      )}
+      <div className="text-xs text-gray-500">
+        Tip: Double‑click an employee in the <span className="text-gray-300">Dashboard</span> to open their full profile.
       </div>
     </div>
   );
