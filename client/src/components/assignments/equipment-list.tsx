@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
+import { useSelection } from "@/state/selection";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
@@ -17,6 +18,7 @@ interface EquipmentListProps {
 export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
   const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("equipment");
+  const { projectId } = useSelection();
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -48,9 +50,20 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     return Wrench;
   };
 
+  // Focus-based filtering with no-duplicate logic
+  const focusedEquipment = equipment.filter(eq => {
+    if (!projectId) {
+      // No project focused: show only unassigned equipment
+      return !eq.currentProjectId || eq.currentProjectId === null;
+    } else {
+      // Project focused: show only equipment assigned to that project
+      return eq.currentProjectId === projectId;
+    }
+  });
+
   const q = query.trim().toLowerCase();
   const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
-  const visible = useMemo(() => equipment.filter(filterEq), [equipment, q]);
+  const visible = useMemo(() => focusedEquipment.filter(filterEq), [focusedEquipment, q]);
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -59,7 +72,9 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
 
   return (
     <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-gray-800">
-      <h2 className="text-sm font-medium mb-3">Equipment</h2>
+      <h2 className="text-sm font-medium mb-3">
+        Equipment {projectId ? `(${projects.find(p => p.id === projectId)?.name || 'Unknown'})` : '(Unassigned)'}
+      </h2>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}

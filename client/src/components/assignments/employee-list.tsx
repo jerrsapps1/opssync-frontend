@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
+import { useSelection } from "@/state/selection";
 import type { Employee, Project } from "@shared/schema";
 
 interface EmployeeListProps {
@@ -17,6 +18,7 @@ interface EmployeeListProps {
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
   const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("employees");
+  const { projectId } = useSelection();
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -42,8 +44,16 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     );
   }
 
-  // Show all employees in a single list - no project grouping
-  const allEmployees = employees;
+  // Focus-based filtering with no-duplicate logic
+  const focusedEmployees = employees.filter(emp => {
+    if (!projectId) {
+      // No project focused: show only unassigned employees
+      return !emp.currentProjectId || emp.currentProjectId === null;
+    } else {
+      // Project focused: show only employees assigned to that project
+      return emp.currentProjectId === projectId;
+    }
+  });
 
   const q = query.trim().toLowerCase();
   const filterEmp = (e: Employee) => {
@@ -52,7 +62,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
   };
 
-  const filteredEmployees = allEmployees.filter(filterEmp);
+  const filteredEmployees = focusedEmployees.filter(filterEmp);
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -61,7 +71,9 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
   return (
     <div className="flex-1 p-3 overflow-y-auto">
-      <h2 className="text-sm font-medium mb-3">Employees</h2>
+      <h2 className="text-sm font-medium mb-3">
+        Employees {projectId ? `(${projects.find(p => p.id === projectId)?.name || 'Unknown'})` : '(Unassigned)'}
+      </h2>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}

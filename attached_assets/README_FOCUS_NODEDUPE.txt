@@ -1,5 +1,5 @@
 
-FOCUS NODEDUPE PATCH v3
+FOCUS NODEDUPE PATCH v2
 
 Features:
 1. Project Focus - Show only assigned employees & equipment for a selected project.
@@ -8,8 +8,6 @@ Features:
 4. Asset Numbers - Visible on dashboard mini cards for equipment.
 5. Inline Editing - Project profile allows start/end date and % complete edits.
 6. Quick Counts Bar - Shows Employees & Equipment count for focused project.
-7. Auto-Calculated % Complete - If start and end dates are set, % complete is calculated based on elapsed days / total days.
-   - Still allows manual override by clicking 'Override %' toggle in the UI.
 
 Install Instructions:
 - Copy 'src' folder contents into your project client/src directory.
