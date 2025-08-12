@@ -53,22 +53,57 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
     return patch(`/api/equipment/${id}/assignment`, { currentProjectId: to });
   }
 
-  function handleExport(type: "employees" | "equipment" | "projects", format: "excel" | "pdf") {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in to export data');
-      return;
-    }
+  async function handleExport(type: "employees" | "equipment" | "projects", format: "excel" | "pdf") {
+    try {
+      let endpoint = "";
+      if (format === "excel") {
+        if (type === "employees") endpoint = "/api/employees/export";
+        else if (type === "equipment") endpoint = "/api/equipment/export";
+        else if (type === "projects") endpoint = "/api/projects/export";
+      } else {
+        // PDF export endpoints
+        if (type === "employees") endpoint = "/api/employees/export-pdf";
+        else if (type === "equipment") endpoint = "/api/equipment/export-pdf";
+        else if (type === "projects") endpoint = "/api/projects/export-pdf";
+      }
 
-    if (format === "excel") {
-      if (type === "employees") window.location.href = `/api/employees/export?token=${token}`;
-      else if (type === "equipment") window.location.href = `/api/equipment/export?token=${token}`;
-      else if (type === "projects") window.location.href = `/api/projects/export?token=${token}`;
-    } else {
-      // PDF export endpoints
-      if (type === "employees") window.location.href = `/api/employees/export-pdf?token=${token}`;
-      else if (type === "equipment") window.location.href = `/api/equipment/export-pdf?token=${token}`;
-      else if (type === "projects") window.location.href = `/api/projects/export-pdf?token=${token}`;
+      // Use fetch with credentials to maintain session authentication
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include', // Include cookies for session auth
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Please log in to export data');
+          return;
+        }
+        throw new Error(`Export failed: ${response.statusText}`);
+      }
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Set filename based on content-disposition header or default
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = `${type}-export.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match) filename = match[1];
+      }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed. Please try again.');
     }
     setExportDialog(null);
   }

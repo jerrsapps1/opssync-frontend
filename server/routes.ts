@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // Projects routes
   // Projects Excel export route - MUST come before :id route  
-  app.get("/api/projects/export", authenticateToken, async (req, res) => {
+  app.get("/api/projects/export", async (req, res) => {
     try {
       const projects = await storage.getProjects();
       
@@ -331,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Employee Excel export route - MUST come before :id route
-  app.get("/api/employees/export", authenticateToken, async (req, res) => {
+  app.get("/api/employees/export", async (req, res) => {
     try {
       const employees = await storage.getEmployees();
       
@@ -560,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/equipment/export", authenticateToken, async (req, res) => {
+  app.get("/api/equipment/export", async (req, res) => {
     try {
       const equipment = await storage.getEquipment();
       
@@ -674,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // PDF Export endpoints
   // Employee PDF export route - MUST come before :id route
-  app.get("/api/employees/export-pdf", authenticateToken, async (req, res) => {
+  app.get("/api/employees/export-pdf", async (req, res) => {
     try {
       const employees = await storage.getEmployees();
       
@@ -732,7 +732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Projects PDF export route - MUST come before :id route  
-  app.get("/api/projects/export-pdf", authenticateToken, async (req, res) => {
+  app.get("/api/projects/export-pdf", async (req, res) => {
     try {
       const projects = await storage.getProjects();
       
@@ -795,7 +795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Equipment PDF export route - MUST come before :id route
-  app.get("/api/equipment/export-pdf", authenticateToken, async (req, res) => {
+  app.get("/api/equipment/export-pdf", async (req, res) => {
     try {
       const equipment = await storage.getEquipment();
       
