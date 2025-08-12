@@ -13,6 +13,7 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Navigation Streamlining**: Removed redundant Profile Builder tab, updated navigation to use consistent "Profiles" naming (Employee Profiles, Equipment Profiles, Project Profiles)
 - **Directory-First Navigation**: Streamlined employee and equipment profile access to use the comprehensive Directory system instead of individual profile pages, reducing redundancy
 - **Simplified Assignment Interface**: Removed "Drop here to unassign" functionality per user request for future replacement with different approach
+- **UI Cleanup**: Removed employee initials from avatar displays, replaced with generic user icon for cleaner appearance
 - **Project Management Enhancement**: Fixed critical project creation issues with date validation and form submission flow
 - **Alphabetical Sorting**: Projects now display in alphabetical order by name for consistent organization
 

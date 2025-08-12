@@ -105,7 +105,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
                         {emp.avatarUrl ? <AvatarImage src={emp.avatarUrl} className="object-cover" /> : null}
-                        <AvatarFallback className="text-xs">{emp.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                        <AvatarFallback className="text-xs">👤</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="text-white text-sm font-medium">{emp.name}</div>
