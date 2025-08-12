@@ -289,10 +289,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Assignment route MUST come before the general :id route
-  app.patch("/api/employees/:id/assignment", async (req, res) => {
+  // Assignment route with unique path to avoid conflicts
+  app.patch("/api/employees/:id/assign-to-project", async (req, res) => {
     try {
-      console.log(`Assignment endpoint hit: /api/employees/${req.params.id}/assignment`);
+      console.log(`Assignment endpoint hit: /api/employees/${req.params.id}/assign-to-project`);
       const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
       const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
       console.log(`Assignment result:`, employee);
@@ -351,9 +351,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/equipment/:id/assignment", async (req, res) => {
+  app.patch("/api/equipment/:id/assign-to-project", async (req, res) => {
     try {
-      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assignment`);
+      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assign-to-project`);
       const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
       const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
       console.log(`Equipment assignment result:`, equipment);

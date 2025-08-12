@@ -10,9 +10,9 @@ export function useDragDrop() {
 
   const assignEmployeeMutation = useMutation({
     mutationFn: async ({ employeeId, projectId }: { employeeId: string; projectId: string | null }) => {
-      console.log("Making assignment request to:", `/api/employees/${employeeId}/assignment`);
+      console.log("Making assignment request to:", `/api/employees/${employeeId}/assign-to-project`);
       console.log("Request payload:", { currentProjectId: projectId });
-      return await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
+      return await apiRequest("PATCH", `/api/employees/${employeeId}/assign-to-project`, {
         currentProjectId: projectId,
       });
     },
@@ -33,9 +33,9 @@ export function useDragDrop() {
 
   const assignEquipmentMutation = useMutation({
     mutationFn: async ({ equipmentId, projectId }: { equipmentId: string; projectId: string | null }) => {
-      console.log("Making assignment request to:", `/api/equipment/${equipmentId}/assignment`);
+      console.log("Making assignment request to:", `/api/equipment/${equipmentId}/assign-to-project`);
       console.log("Request payload:", { currentProjectId: projectId });
-      return await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
+      return await apiRequest("PATCH", `/api/equipment/${equipmentId}/assign-to-project`, {
         currentProjectId: projectId,
       });
     },
