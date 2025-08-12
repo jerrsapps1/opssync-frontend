@@ -17,6 +17,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import multer from 'multer';
 import * as XLSX from 'xlsx';
+import PDFDocument from 'pdfkit';
 import "./types"; // Import type declarations
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -553,6 +554,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error exporting projects:", error);
       res.status(500).json({ message: "Failed to export projects" });
+    }
+  });
+
+  // PDF Export endpoints
+  app.get("/api/employees/export-pdf", authenticateToken, async (req, res) => {
+    try {
+      const employees = await storage.getEmployees();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="employees-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Employee Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      employees.forEach((emp, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${emp.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        if (emp.role) {
+          doc.fontSize(10).font('Helvetica').text(`Role: ${emp.role}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.email) {
+          doc.text(`Email: ${emp.email}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.phone) {
+          doc.text(`Phone: ${emp.phone}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.yearsExperience) {
+          doc.text(`Experience: ${emp.yearsExperience} years`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.operates && emp.operates.length > 0) {
+          doc.text(`Equipment: ${emp.operates.join(', ')}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting employees PDF:", error);
+      res.status(500).json({ message: "Failed to export employees PDF" });
+    }
+  });
+
+  app.get("/api/equipment/export-pdf", authenticateToken, async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Equipment Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      equipment.forEach((eq, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${eq.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        doc.fontSize(10).font('Helvetica').text(`Type: ${eq.type}`, 70, yPosition);
+        yPosition += 15;
+        
+        if (eq.make) {
+          doc.text(`Make: ${eq.make}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.model) {
+          doc.text(`Model: ${eq.model}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.assetNumber) {
+          doc.text(`Asset Number: ${eq.assetNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.serialNumber) {
+          doc.text(`Serial Number: ${eq.serialNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.status) {
+          doc.text(`Status: ${eq.status}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting equipment PDF:", error);
+      res.status(500).json({ message: "Failed to export equipment PDF" });
+    }
+  });
+
+  app.get("/api/projects/export-pdf", authenticateToken, async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Project Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      projects.forEach((proj, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${proj.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        if (proj.projectNumber) {
+          doc.fontSize(10).font('Helvetica').text(`Project Number: ${proj.projectNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.location) {
+          doc.text(`Location: ${proj.location}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.status) {
+          doc.text(`Status: ${proj.status}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.progress !== undefined) {
+          doc.text(`Progress: ${proj.progress}%`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.description) {
+          doc.text(`Description: ${proj.description}`, 70, yPosition, { width: 400 });
+          yPosition += 30;
+        }
+        
+        if (proj.startDate) {
+          doc.text(`Start Date: ${new Date(proj.startDate).toLocaleDateString()}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.endDate) {
+          doc.text(`End Date: ${new Date(proj.endDate).toLocaleDateString()}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting projects PDF:", error);
+      res.status(500).json({ message: "Failed to export projects PDF" });
     }
   });
 

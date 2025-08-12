@@ -7,6 +7,8 @@ import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useNavigate } from "react-router-dom";
 import type { Project } from "@shared/schema";
+import { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type Employee = { id: string; name: string; role?: string; email?: string; phone?: string; yearsExperience?: number; operates?: string[]; currentProjectId?: string | null };
 type Equipment = { id: string; name: string; type: string; make?: string; model?: string; year?: number; serialNumber?: string; currentProjectId?: string | null };
@@ -44,22 +46,25 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
   const { data: projects = [] } = useQuery({ queryKey: ["dir-projects"], queryFn: getProjects });
   const [menu, setMenu] = React.useState<{ kind: "emp"|"eq"; id: string; x: number; y: number }|null>(null);
   const [assignPos, setAssignPos] = React.useState<{ id: string; x: number; y: number }|null>(null);
+  const [exportDialog, setExportDialog] = React.useState<{ type: "employees" | "equipment" | "projects" } | null>(null);
 
   function assign(kind: "emp"|"eq", id: string, to: string|null) {
     if (kind === "emp") return patch(`/api/employees/${id}/assignment`, { currentProjectId: to });
     return patch(`/api/equipment/${id}/assignment`, { currentProjectId: to });
   }
 
-  function exportEmployees() {
-    window.location.href = "/api/employees/export";
-  }
-
-  function exportEquipment() {
-    window.location.href = "/api/equipment/export";
-  }
-
-  function exportProjects() {
-    window.location.href = "/api/projects/export";
+  function handleExport(type: "employees" | "equipment" | "projects", format: "excel" | "pdf") {
+    if (format === "excel") {
+      if (type === "employees") window.location.href = "/api/employees/export";
+      else if (type === "equipment") window.location.href = "/api/equipment/export";
+      else if (type === "projects") window.location.href = "/api/projects/export";
+    } else {
+      // PDF export endpoints
+      if (type === "employees") window.location.href = "/api/employees/export-pdf";
+      else if (type === "equipment") window.location.href = "/api/equipment/export-pdf";
+      else if (type === "projects") window.location.href = "/api/projects/export-pdf";
+    }
+    setExportDialog(null);
   }
 
   const TabBtn = ({id,label}:{id:"employees"|"equipment"|"projects";label:string}) => (
@@ -81,7 +86,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
         <div className="flex items-center gap-2">
           {tab === "employees" && (
             <button 
-              onClick={exportEmployees}
+              onClick={() => setExportDialog({ type: "employees" })}
               className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
             >
               Export Employees
@@ -89,7 +94,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
           )}
           {tab === "equipment" && (
             <button 
-              onClick={exportEquipment}
+              onClick={() => setExportDialog({ type: "equipment" })}
               className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
             >
               Export Equipment
@@ -97,7 +102,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
           )}
           {tab === "projects" && (
             <button 
-              onClick={exportProjects}
+              onClick={() => setExportDialog({ type: "projects" })}
               className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
             >
               Export Projects
@@ -202,6 +207,41 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
           onCancel={()=>setAssignPos(null)}
           onSelect={async (pid)=>{ if(menu) await assign(menu.kind, assignPos.id, pid); setAssignPos(null);}}
         />
+      )}
+
+      {exportDialog && (
+        <Dialog 
+          open={true} 
+          onClose={() => setExportDialog(null)}
+          title={`Export ${exportDialog.type.charAt(0).toUpperCase() + exportDialog.type.slice(1)}`}
+        >
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm">
+              Choose your preferred export format:
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => handleExport(exportDialog.type, "excel")}
+                className="flex-1 bg-[color:var(--brand-primary)] hover:brightness-110 text-white"
+              >
+                Excel Spreadsheet
+              </Button>
+              <Button
+                onClick={() => handleExport(exportDialog.type, "pdf")}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                PDF Document
+              </Button>
+            </div>
+            <Button
+              onClick={() => setExportDialog(null)}
+              variant="outline"
+              className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+          </div>
+        </Dialog>
       )}
     </div>
   );
