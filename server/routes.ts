@@ -355,13 +355,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects", async (req, res) => {
     try {
-      console.log(`🚀🚀🚀 DEBUG: API route /api/projects called - about to call storage.getProjects()`);
-      console.log(`🚀🚀🚀 DEBUG: Storage instance type:`, storage.constructor.name);
       const projects = await storage.getProjects();
-      console.log(`🚀🚀🚀 DEBUG: storage.getProjects() returned ${projects.length} projects`);
       res.json(projects);
     } catch (error) {
-      console.error("🚀🚀🚀 ERROR in /api/projects:", error);
+      console.error("Error fetching projects:", error);
       res.status(500).json({ message: "Failed to fetch projects" });
     }
   });

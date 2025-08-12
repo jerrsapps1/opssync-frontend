@@ -40,12 +40,18 @@ async function initData() {
   
   console.log(`💾 initData: Found ${existingProjects.length} existing projects in PostgreSQL database`);
   
-  if (hasUserProjects) {
-    console.log(`💾 initData: User projects found, skipping mock data initialization`);
+  // Check if employees and equipment exist regardless of projects
+  const existingEmployees = (await db.get(EMPLOYEES_KEY)) || [];
+  const existingEquipment = (await db.get(EQUIPMENT_KEY)) || [];
+  const hasEmployeesAndEquipment = existingEmployees.length > 0 && existingEquipment.length > 0;
+  
+  if (hasUserProjects && hasEmployeesAndEquipment) {
+    console.log(`💾 initData: User projects and employees/equipment found, skipping mock data initialization`);
     return;
   }
   
-  if ((await db.get(EMPLOYEES_KEY)) === null) {
+  // Load employees and equipment if missing
+  if (!hasEmployeesAndEquipment) {
     const fs = await import('fs');
     const path = await import('path');
     
@@ -75,10 +81,21 @@ async function initData() {
 
       console.log(`✓ Standardized ${standardizedProjects.length} projects with required fields`);
 
+      // Load employees and equipment into PostgreSQL storage for consistency
+      console.log(`💾 initData: Loading ${mockEmployees.length} employees into PostgreSQL storage`);
+      for (const employee of mockEmployees) {
+        await storage.createEmployee(employee);
+      }
+      
+      console.log(`💾 initData: Loading ${mockEquipment.length} equipment into PostgreSQL storage`);
+      for (const equipment of mockEquipment) {
+        await storage.createEquipment(equipment);
+      }
+      
+      // Also save to shared DB for backward compatibility
       await db.set(EMPLOYEES_KEY, mockEmployees);
       await db.set(EQUIPMENT_KEY, mockEquipment);
-      // Don't load mock projects into sharedDb since we use PostgreSQL for projects
-      // await db.set(PROJECTS_KEY, standardizedProjects);
+      
       console.log(`💾 initData: Skipping mock projects - using PostgreSQL storage only`);
       
       // Verify all projects have required fields
@@ -95,19 +112,32 @@ async function initData() {
     } catch (error) {
       console.log('⚠ Mock data files not found, using basic sample data');
       
-      // Basic fallback data
-      await db.set(EMPLOYEES_KEY, [
-        { id: "emp-001", name: "John Smith", role: "Operator", skills: ["Excavator"], currentProjectId: null, isSupervisor: false },
-        { id: "emp-002", name: "Sarah Johnson", role: "Supervisor", skills: ["Management"], currentProjectId: null, isSupervisor: true }
-      ]);
+      // Basic fallback data loaded into PostgreSQL storage
+      const fallbackEmployees = [
+        { name: "John Smith", role: "Operator", skills: ["Excavator"], currentProjectId: null, isSupervisor: false },
+        { name: "Sarah Johnson", role: "Supervisor", skills: ["Management"], currentProjectId: null, isSupervisor: true }
+      ];
       
-      await db.set(EQUIPMENT_KEY, [
-        { id: "eq-001", name: "CAT Excavator", type: "Heavy Equipment", status: "available", currentProjectId: null },
-        { id: "eq-002", name: "Bulldozer", type: "Heavy Equipment", status: "available", currentProjectId: null }
-      ]);
+      const fallbackEquipment = [
+        { name: "CAT Excavator", type: "Heavy Equipment", status: "available", currentProjectId: null },
+        { name: "Bulldozer", type: "Heavy Equipment", status: "available", currentProjectId: null }
+      ];
       
-      // Don't load fallback projects into sharedDb since we use PostgreSQL for projects  
-      // await db.set(PROJECTS_KEY, [...]);
+      // Load fallback data into PostgreSQL storage
+      console.log(`💾 initData: Loading ${fallbackEmployees.length} fallback employees into PostgreSQL storage`);
+      for (const employee of fallbackEmployees) {
+        await storage.createEmployee(employee);
+      }
+      
+      console.log(`💾 initData: Loading ${fallbackEquipment.length} fallback equipment into PostgreSQL storage`);
+      for (const equipment of fallbackEquipment) {
+        await storage.createEquipment(equipment);
+      }
+      
+      // Also save to shared DB for backward compatibility
+      await db.set(EMPLOYEES_KEY, fallbackEmployees);
+      await db.set(EQUIPMENT_KEY, fallbackEquipment);
+      
       console.log(`💾 initData: Skipping fallback projects - using PostgreSQL storage only`);
     }
   }
@@ -146,17 +176,9 @@ app.use((req, res, next) => {
 
 /** ====== GET endpoints ====== **/
 
-app.get("/api/employees", async (req, res) => {
-  const employees = (await db.get(EMPLOYEES_KEY)) || [];
-  res.json(employees);
-});
-
-app.get("/api/equipment", async (req, res) => {
-  const equipment = (await db.get(EQUIPMENT_KEY)) || [];
-  res.json(equipment);
-});
-
-// Projects route moved to routes.ts to use PostgreSQL storage
+// Employees, equipment, and projects routes moved to routes.ts to use PostgreSQL storage
+// app.get("/api/employees", async (req, res) => { ... });
+// app.get("/api/equipment", async (req, res) => { ... });
 // app.get("/api/projects", async (req, res) => { ... });
 
 /** ====== PATCH endpoints ====== **/
