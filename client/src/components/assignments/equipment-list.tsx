@@ -73,7 +73,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`space-y-2 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
+            className={`space-y-1 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
           >
             {visible.map((eq, index) => {
               const IconComponent = getEquipmentIcon(eq.type);
@@ -97,8 +97,8 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                           <IconComponent className="text-[color:var(--brand-accent)]" size={14} />
                         </div>
                         <div className="flex-1">
-                          <div className="text-white text-sm font-medium">{eq.name}</div>
-                          <div className="text-xs text-[color:var(--muted-foreground)] font-medium">{eq.type}</div>
+                          <div className="text-white text-sm font-medium leading-tight">{eq.name}</div>
+                          <div className="text-xs text-[color:var(--muted-foreground)] font-medium leading-tight">{eq.type}</div>
                         </div>
                       </div>
                     </Card>

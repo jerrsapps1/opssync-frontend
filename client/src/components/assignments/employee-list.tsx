@@ -74,7 +74,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`space-y-2 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
+            className={`space-y-1 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
           >
             {filteredEmployees.map((emp, index) => (
               <Draggable key={emp.id} draggableId={emp.id} index={index}>
@@ -92,8 +92,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                   >
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        <div className="text-white text-sm font-medium">{emp.name}</div>
-                        <div className="text-[color:var(--muted-foreground)] text-xs font-medium">{(emp as any).role || "Employee"}</div>
+                        <div className="text-white text-sm font-medium leading-tight">{emp.name}</div>
+                        <div className="text-[color:var(--muted-foreground)] text-xs font-medium leading-tight">{(emp as any).role || "Employee"}</div>
                         {emp.currentProjectId && (
                           <div className="text-[color:var(--brand-primary)] text-xs mt-1 font-medium">
                             Assigned: {projects.find(p => p.id === emp.currentProjectId)?.name || "Unknown Project"}
