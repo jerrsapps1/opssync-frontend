@@ -10,7 +10,8 @@ import {
   updateEquipmentAssignmentSchema,
   updateProjectSchema,
   updateEmployeeSchema,
-  updateEquipmentSchema
+  updateEquipmentSchema,
+  updateBrandConfigSchema
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";

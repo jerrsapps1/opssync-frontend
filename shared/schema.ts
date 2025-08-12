@@ -69,6 +69,16 @@ export const alerts = pgTable("alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const brandConfigs = pgTable("brand_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyName: text("company_name"),
+  primaryColor: text("primary_color"),
+  secondaryColor: text("secondary_color"),
+  logoUrl: text("logo_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -111,6 +121,19 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
 export const insertAlertSchema = createInsertSchema(alerts).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertBrandConfigSchema = createInsertSchema(brandConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateBrandConfigSchema = z.object({
+  companyName: z.string().optional(),
+  primaryColor: z.string().optional(),
+  secondaryColor: z.string().optional(),
+  logoUrl: z.string().nullable().optional(),
 });
 
 // Update schemas for assignments
@@ -175,6 +198,10 @@ export type InsertAlert = z.infer<typeof insertAlertSchema>;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type BrandConfig = typeof brandConfigs.$inferSelect;
+export type InsertBrandConfig = z.infer<typeof insertBrandConfigSchema>;
+export type UpdateBrandConfig = z.infer<typeof updateBrandConfigSchema>;
 
 export type UpdateEmployeeAssignment = z.infer<typeof updateEmployeeAssignmentSchema>;
 export type UpdateEquipmentAssignment = z.infer<typeof updateEquipmentAssignmentSchema>;
