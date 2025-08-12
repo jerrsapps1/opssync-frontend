@@ -1,10 +1,19 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import stream from "./realtime/stream";
+import assignments from "./routes/assignments";
+import archive from "./routes/archive";
+
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Real-time SSE endpoints
+app.use("/api", stream);        // GET /api/stream (SSE endpoint)
+app.use("/api", assignments);   // PATCH /api/{employees|equipment}/:id/assignment with broadcast
+app.use("/api", archive);       // archive/restore/remove + GET /api/history with broadcast
 
 /** Mock Replit DB for development **/
 class MockReplitDB {

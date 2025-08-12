@@ -1,6 +1,7 @@
 import express from "express";
 import { appendHistory } from "../utils/audit";
 import fetch from "node-fetch";
+import { broadcast } from "../realtime/stream";
 
 const router = express.Router();
 const BASE = process.env.INTERNAL_BASE_URL || "http://localhost:" + (process.env.PORT || 3000);
@@ -21,6 +22,7 @@ router.post("/:entity/:id/archive", async (req, res) => {
     });
     if (!r.ok) throw new Error(`Failed to archive ${entity}/${id}`);
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "archive", at: new Date().toISOString(), payload: {} });
+    broadcast({ type: "entity.archived", entity: singular(entity), id });
     res.json(await r.json());
   } catch (e:any) {
     res.status(500).json({ error: e.message });
@@ -38,6 +40,7 @@ router.post("/:entity/:id/restore", async (req, res) => {
     });
     if (!r.ok) throw new Error(`Failed to restore ${entity}/${id}`);
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "restore", at: new Date().toISOString(), payload: {} });
+    broadcast({ type: "entity.restored", entity: singular(entity), id });
     res.json(await r.json());
   } catch (e:any) {
     res.status(500).json({ error: e.message });
@@ -55,6 +58,7 @@ router.delete("/:entity/:id", async (req, res) => {
     });
     if (!r.ok) throw new Error(`Failed to remove ${entity}/${id}`);
     appendHistory({ id: String(Date.now()), entity: singular(entity), entityId: id, action: "delete", at: new Date().toISOString(), payload: {} });
+    broadcast({ type: "entity.removed", entity: singular(entity), id });
     res.json(await r.json());
   } catch (e:any) {
     res.status(500).json({ error: e.message });
