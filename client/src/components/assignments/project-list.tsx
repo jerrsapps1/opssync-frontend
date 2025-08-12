@@ -30,14 +30,14 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       
 
       {/* Project List */}
-      <VStack spacing={3} align="stretch">
+      <VStack spacing={2} align="stretch">
         {projects.map((project) => (
           <Droppable key={project.id} droppableId={project.id}>
             {(provided, snapshot) => (
               <Box
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                p={4}
+                p={3}
                 bg={
                   projectId === project.id 
                     ? "blue.600" 
@@ -54,7 +54,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                     : "gray.600"
                 }
                 rounded="md"
-                minHeight="100px"
+                minHeight="60px"
                 transition="all 0.2s"
                 cursor="pointer"
                 _hover={{
@@ -67,17 +67,17 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   setContextMenu({ x: e.clientX, y: e.clientY, project });
                 }}
               >
-                <Text fontWeight="bold" fontSize="sm" mb={2} color="white">
+                <Text fontWeight="bold" fontSize="sm" mb={1} color="white">
                   {project.name}
                 </Text>
-                <Text fontSize="xs" color="#C0C0D8" mb={2}>
+                <Text fontSize="xs" color="#C0C0D8" mb={1}>
                   {project.location}
                 </Text>
                 
                 {/* Status Bar */}
-                <Box mb={2}>
+                <Box mb={1}>
                   <Box 
-                    h="3px" 
+                    h="2px" 
                     rounded="full" 
                     bg={
                       project.status === "Active" ? "green.400" :
@@ -85,31 +85,11 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                       project.status === "Paused" ? "yellow.400" :
                       "gray.400" // Planned or default
                     }
-                    mb={2}
+                    mb={1}
                   />
-                  <Text fontSize="xs" color="blue.300" fontWeight="medium" mb={1}>
-                    Status: {project.status || "Planned"}
+                  <Text fontSize="xs" color="blue.300" fontWeight="medium">
+                    {project.status || "Planned"}
                   </Text>
-                  {project.progress > 0 && (
-                    <Box>
-                      <Text fontSize="xs" color="gray.400" mb={1}>
-                        Progress: {project.progress}%
-                      </Text>
-                      <Box bg="gray.700" rounded="full" h="2" overflow="hidden">
-                        <Box 
-                          bg="blue.400" 
-                          h="full" 
-                          w={`${project.progress}%`}
-                          transition="width 0.3s"
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                  {project.startDate && project.endDate && (
-                    <Text fontSize="xs" color="gray.400" mt={1}>
-                      Duration: {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
-                    </Text>
-                  )}
                 </Box>
                 
                 {/* Show assigned employees and equipment only when project is focused */}
