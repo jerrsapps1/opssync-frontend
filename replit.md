@@ -2,6 +2,12 @@
 
 Asset Tracker Pro is a professional employee and equipment management application for construction and demolition. It offers drag-and-drop assignment, real-time conflict detection, and comprehensive asset management within a full-stack web application (React frontend, Express backend). Key features include enterprise-grade conflict management, a three-panel layout for assignments, JWT authentication, an enhanced navigation header, an advanced white-label system with page-level branding, object storage integration, a comprehensive settings system, a professional directory with profile management and a guided builder, complete archive/history tracking with audit trails, and live assignment synchronization with enhanced SSE real-time capabilities. The system includes a comprehensive Stripe billing integration with three pricing tiers and plan-based feature gates. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard, with authentic equipment data for realistic testing. It supports enterprise-grade real-time collaboration with event ID tracking and missed event replay.
 
+## Recent Changes (August 2025)
+- **Excel Export System**: Completely resolved data consistency and duplication issues in Excel exports
+- **Data Architecture**: Implemented shared database module ensuring consistent data across all API routes and exports
+- **Export Quality**: All Excel exports now provide complete authentic datasets (46 employees, 25 equipment, 15 projects) with clean formatting
+- **Professional Directory**: Directory functionality confirmed working perfectly with comprehensive asset management
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
