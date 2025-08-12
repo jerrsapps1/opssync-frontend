@@ -1,5 +1,6 @@
 import { Box, VStack, Text, Heading } from "@chakra-ui/react";
 import { Droppable } from "react-beautiful-dnd";
+import { useSelection } from "@/state/selection";
 import type { Project } from "@shared/schema";
 
 interface ProjectListProps {
@@ -7,6 +8,8 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ projects }: ProjectListProps) {
+  const { projectId, setProjectId } = useSelection();
+  
   return (
     <Box
       width="300px"
@@ -53,16 +56,30 @@ export function ProjectList({ projects }: ProjectListProps) {
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 p={4}
-                bg={snapshot.isDraggingOver ? "blue.700" : "gray.700"}
-                border="1px solid"
-                borderColor={snapshot.isDraggingOver ? "blue.400" : "gray.600"}
+                bg={
+                  projectId === project.id 
+                    ? "blue.600" 
+                    : snapshot.isDraggingOver 
+                    ? "blue.700" 
+                    : "gray.700"
+                }
+                border="2px solid"
+                borderColor={
+                  projectId === project.id
+                    ? "blue.400"
+                    : snapshot.isDraggingOver 
+                    ? "blue.400" 
+                    : "gray.600"
+                }
                 rounded="md"
                 minHeight="100px"
                 transition="all 0.2s"
+                cursor="pointer"
                 _hover={{
                   borderColor: "blue.500",
                   transform: "translateY(-1px)",
                 }}
+                onClick={() => setProjectId(project.id)}
               >
                 <Text fontWeight="bold" fontSize="sm" mb={2} color="white">
                   {project.name}

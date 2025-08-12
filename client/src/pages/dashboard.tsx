@@ -7,6 +7,7 @@ import { applyActions } from "@/lib/applyActions";
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
+import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
@@ -139,6 +140,9 @@ export default function Dashboard() {
       <div className="p-4 bg-gray-800 border-b border-gray-700">
         <CommandBar runActions={handleCommandActions} />
       </div>
+      
+      {/* Project Counts Bar */}
+      <ProjectCountsBar />
       
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
