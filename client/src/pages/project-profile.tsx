@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import type { Project, Employee, Equipment } from "@shared/schema";
 
@@ -38,6 +40,7 @@ export default function ProjectProfile() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { handleDragEnd, isAssigning } = useDragDrop();
 
   const { data: project } = useQuery({ 
     queryKey: ["projects", id], 
@@ -117,19 +120,25 @@ export default function ProjectProfile() {
   };
 
   return (
-    <div className="p-4 space-y-4 bg-gray-900 min-h-screen text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{project.name}</h1>
-          <div className="text-sm text-gray-400">{project.location || ""}</div>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div className="p-4 space-y-4 bg-gray-900 min-h-screen text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold">{project.name}</h1>
+            <div className="text-sm text-gray-400">{project.location || ""}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAssigning && (
+              <div className="text-sm text-blue-400">Moving asset...</div>
+            )}
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
 
       <div className="grid md:grid-cols-3 gap-3">
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
@@ -222,48 +231,94 @@ export default function ProjectProfile() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-3">
+        {/* Assigned Employees - Droppable for reassignment */}
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
           <div className="font-medium text-white mb-2">
             Assigned Employees ({assignedEmp.length})
           </div>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {assignedEmp.map(e => (
+          <Droppable droppableId="unassigned-employees">
+            {(provided, snapshot) => (
               <div 
-                key={e.id} 
-                className="text-sm text-gray-200 rounded border border-gray-800 p-2"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`grid sm:grid-cols-2 gap-2 min-h-[80px] rounded-md transition-colors ${
+                  snapshot.isDraggingOver ? 'bg-red-900/20 border border-red-600/50' : ''
+                }`}
               >
-                {e.name}
+                {assignedEmp.map((e, index) => (
+                  <Draggable key={e.id} draggableId={e.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div 
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 cursor-move transition-all ${
+                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : 'hover:bg-gray-700'
+                        }`}
+                      >
+                        {e.name}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+                {assignedEmp.length === 0 && (
+                  <div className="text-xs text-gray-400 col-span-2">
+                    No employees assigned yet. Drag employees here from dashboard or other projects.
+                  </div>
+                )}
               </div>
-            ))}
-            {assignedEmp.length === 0 && (
-              <div className="text-xs text-gray-400">No employees assigned yet.</div>
             )}
-          </div>
+          </Droppable>
         </div>
+
+        {/* Assigned Equipment - Droppable for reassignment */}
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
           <div className="font-medium text-white mb-2">
             Assigned Equipment ({assignedEq.length})
           </div>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {assignedEq.map(e => (
+          <Droppable droppableId="unassigned-equipment">
+            {(provided, snapshot) => (
               <div 
-                key={e.id} 
-                className="text-sm text-gray-200 rounded border border-gray-800 p-2 flex items-center gap-2"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`grid sm:grid-cols-2 gap-2 min-h-[80px] rounded-md transition-colors ${
+                  snapshot.isDraggingOver ? 'bg-red-900/20 border border-red-600/50' : ''
+                }`}
               >
-                <span>{e.name}</span>
-                {e.assetNumber && (
-                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-black/30 border border-white/10">
-                    {String(e.assetNumber)}
-                  </span>
+                {assignedEq.map((e, index) => (
+                  <Draggable key={e.id} draggableId={e.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div 
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 flex items-center gap-2 cursor-move transition-all ${
+                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : 'hover:bg-gray-700'
+                        }`}
+                      >
+                        <span>{e.name}</span>
+                        {e.assetNumber && (
+                          <span className="text-[11px] px-1.5 py-0.5 rounded bg-black/30 border border-white/10">
+                            {String(e.assetNumber)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+                {assignedEq.length === 0 && (
+                  <div className="text-xs text-gray-400 col-span-2">
+                    No equipment assigned yet. Drag equipment here from dashboard or other projects.
+                  </div>
                 )}
               </div>
-            ))}
-            {assignedEq.length === 0 && (
-              <div className="text-xs text-gray-400">No equipment assigned yet.</div>
             )}
-          </div>
+          </Droppable>
         </div>
       </div>
     </div>
+    </DragDropContext>
   );
 }

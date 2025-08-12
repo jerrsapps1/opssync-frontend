@@ -45,8 +45,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     );
   }
 
-  // Show all employees for drag and drop - no filtering by focus
-  const availableEmployees = employees;
+  // Dashboard shows only unassigned employees - assigned employees live on project pages
+  const availableEmployees = employees.filter(emp => !emp.currentProjectId);
 
   const q = query.trim().toLowerCase();
   const filterEmp = (e: Employee) => {

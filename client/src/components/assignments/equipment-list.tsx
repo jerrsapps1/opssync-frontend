@@ -51,8 +51,8 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     return Wrench;
   };
 
-  // Show all equipment for drag and drop - no filtering by focus
-  const availableEquipment = equipment;
+  // Dashboard shows only unassigned equipment - assigned equipment lives on project pages
+  const availableEquipment = equipment.filter(eq => !eq.currentProjectId);
 
   const q = query.trim().toLowerCase();
   const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
