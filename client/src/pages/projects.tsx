@@ -226,14 +226,16 @@ export default function ProjectSetUpPage() {
   function handleSubmit() {
     const submitData = {
       ...formData,
-      startDate: formData.startDate ? new Date(formData.startDate) : null,
-      endDate: formData.endDate ? new Date(formData.endDate) : null,
+      startDate: formData.startDate || null,
+      endDate: formData.endDate || null,
       // Convert budget amounts from dollars to cents
       estimatedBudget: formData.estimatedBudget ? Math.round(parseFloat(formData.estimatedBudget) * 100) : null,
       actualCost: formData.actualCost ? Math.round(parseFloat(formData.actualCost) * 100) : null,
       contractValue: formData.contractValue ? Math.round(parseFloat(formData.contractValue) * 100) : null,
       profitMargin: formData.profitMargin ? parseInt(formData.profitMargin) : null,
     };
+
+    console.log('Submitting project data:', submitData);
 
     if (editingProject) {
       updateProjectMutation.mutate({ id: editingProject.id, data: submitData });
@@ -255,11 +257,20 @@ export default function ProjectSetUpPage() {
   const isStepValid = () => {
     switch (currentStep) {
       case 1: return formData.name.trim() && formData.projectNumber.trim() && formData.location.trim();
-      case 2: return formData.projectType.trim();
-      case 3: return contacts.every(contact => 
-        contact.name.trim() && contact.position.trim() && 
-        contact.email.trim() && contact.mobile.trim() && contact.company.trim()
-      );
+      case 2: return true; // Analytics fields are optional
+      case 3: {
+        // At least one contact with all required fields filled, or allow empty contacts
+        if (contacts.length === 0) return true;
+        const validContacts = contacts.filter(contact => 
+          contact.name.trim() && contact.position.trim() && 
+          contact.email.trim() && contact.mobile.trim() && contact.company.trim()
+        );
+        // Allow submission if there's at least one valid contact or all contacts are empty
+        return validContacts.length > 0 || contacts.every(contact => 
+          !contact.name.trim() && !contact.position.trim() && 
+          !contact.email.trim() && !contact.mobile.trim() && !contact.company.trim()
+        );
+      }
       default: return false;
     }
   };
