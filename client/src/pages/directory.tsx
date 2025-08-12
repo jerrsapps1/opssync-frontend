@@ -54,6 +54,14 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
     window.location.href = "/api/employees/export";
   }
 
+  function exportEquipment() {
+    window.location.href = "/api/equipment/export";
+  }
+
+  function exportProjects() {
+    window.location.href = "/api/projects/export";
+  }
+
   const TabBtn = ({id,label}:{id:"employees"|"equipment"|"projects";label:string}) => (
     <button
       className={`px-3 py-1.5 rounded-[var(--brand-radius)] text-sm mr-2 ${tab===id?"bg-[color:var(--brand-primary)] text-white":"bg-gray-800 text-gray-200 hover:brightness-110"}`}
@@ -77,6 +85,22 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
               className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
             >
               Export Employees
+            </button>
+          )}
+          {tab === "equipment" && (
+            <button 
+              onClick={exportEquipment}
+              className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
+            >
+              Export Equipment
+            </button>
+          )}
+          {tab === "projects" && (
+            <button 
+              onClick={exportProjects}
+              className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
+            >
+              Export Projects
             </button>
           )}
           <button className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm" onClick={()=>nav("/dashboard")}>

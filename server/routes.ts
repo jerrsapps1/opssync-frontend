@@ -498,6 +498,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/projects/export", authenticateToken, async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      
+      // Transform project data for Excel export
+      const exportData = projects.map(proj => ({
+        'Project Number': proj.projectNumber || '',
+        'Name': proj.name,
+        'Location': proj.location || '',
+        'Status': proj.status || '',
+        'Progress %': proj.progress || 0,
+        'GPS Latitude': proj.gpsLatitude || '',
+        'GPS Longitude': proj.gpsLongitude || '',
+        'Description': proj.description || '',
+        'Start Date': proj.startDate ? new Date(proj.startDate).toLocaleDateString() : '',
+        'End Date': proj.endDate ? new Date(proj.endDate).toLocaleDateString() : '',
+        'Created Date': proj.createdAt ? new Date(proj.createdAt).toLocaleDateString() : '',
+        'Updated Date': proj.updatedAt ? new Date(proj.updatedAt).toLocaleDateString() : ''
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 15 }, // Project Number
+        { wch: 25 }, // Name
+        { wch: 20 }, // Location
+        { wch: 12 }, // Status
+        { wch: 10 }, // Progress %
+        { wch: 12 }, // GPS Latitude
+        { wch: 12 }, // GPS Longitude
+        { wch: 30 }, // Description
+        { wch: 12 }, // Start Date
+        { wch: 12 }, // End Date
+        { wch: 12 }, // Created Date
+        { wch: 12 }, // Updated Date
+      ];
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Projects');
+
+      // Generate Excel file buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Set headers for file download
+      const timestamp = new Date().toISOString().split('T')[0];
+      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.xlsx"`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error exporting projects:", error);
+      res.status(500).json({ message: "Failed to export projects" });
+    }
+  });
+
   // Activities routes
   app.get("/api/activities", async (req, res) => {
     try {
