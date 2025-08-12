@@ -38,12 +38,10 @@ export default function CommandBar({
         onChange={(e) => setQ(e.target.value)}
         placeholder='Try: "move John Smith to Downtown Mall"'
         className="flex-1 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
-        data-testid="command-input"
       />
       <button
         className="px-3 py-2 bg-blue-600 rounded text-white disabled:opacity-60"
         disabled={loading}
-        data-testid="command-submit"
       >
         {loading ? "…" : "Run"}
       </button>

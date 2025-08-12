@@ -77,6 +77,7 @@ function authenticateToken(req: Request, res: Response, next: NextFunction) {
     req.user = decoded;
     next();
   });
+
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -523,15 +524,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const stats = {
         totalEmployees: employees.length,
-        employeeGrowth: "+2 this week",
+        employeeGrowth: "+5.2%",
         totalEquipment: equipment.length,
-        equipmentIssues: equipment.filter(eq => eq.status === "maintenance").length,
-        activeProjects: projects.filter(p => p.status === "active").length,
-        projectsOnTrack: "All on schedule",
-        utilizationRate: Math.round(
-          (employees.filter(emp => emp.currentProjectId).length / employees.length) * 100
-        ),
-        utilizationTrend: "+5% from last month",
+        equipmentIssues: equipment.filter(eq => eq.status === 'maintenance' || eq.status === 'broken').length,
+        activeProjects: projects.filter(p => p.status === 'active').length,
+        projectsOnTrack: "92% on track",
+        utilizationRate: Math.round((employees.filter(emp => emp.currentProjectId).length / employees.length) * 100),
+        utilizationTrend: "+2.1%",
       };
 
       res.json(stats);

@@ -1,298 +1,206 @@
-import React from "react";
-import { 
-  Box, 
-  Flex, 
-  VStack, 
-  Text, 
-  Heading, 
-  HStack,
-  useToast
-} from "@chakra-ui/react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useQuery } from "@tanstack/react-query";
+import CommandBar from "@/components/CommandBar";
+import { applyActions } from "@/lib/applyActions";
+import { apiRequest } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "../lib/queryClient";
-import { useApp } from "../App";
-import { EmployeeList } from "../components/assignments/employee-list";
-import { EquipmentList } from "../components/assignments/equipment-list";
-import CommandBar from "../components/CommandBar";
-import { applyActions } from "../lib/applyActions";
-
-/** ======= Project Filter Context ======= **/
-const ProjectFilterContext = React.createContext<any>(null);
-export function useProjectFilter() {
-  return React.useContext(ProjectFilterContext);
-}
-
-export function ProjectFilterProvider({ children }: { children: React.ReactNode }) {
-  const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
-  
-  return (
-    <ProjectFilterContext.Provider value={{ selectedProjectId, setSelectedProjectId }}>
-      {children}
-    </ProjectFilterContext.Provider>
-  );
-}
-
-/** ======= Project List (Left Panel) ======= **/
-function ProjectList() {
-  const appContext = useApp();
-  const { selectedProjectId, setSelectedProjectId } = useProjectFilter();
-  
-  if (!appContext) return null;
-  const { projects } = appContext;
-
-  return (
-    <Box
-      width="250px"
-      borderRight="1px solid"
-      borderColor="brand.700"
-      p={3}
-      overflowY="auto"
-      bg="#1E1E2F"
-    >
-      <Heading size="sm" mb={3}>Projects</Heading>
-      
-      <Droppable droppableId="unassigned">
-        {(provided, snapshot) => (
-          <Box
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            p={3}
-            bg={snapshot.isDraggingOver ? "red.800" : "#2A2A3D"}
-            border="2px dashed"
-            borderColor={snapshot.isDraggingOver ? "red.400" : "#4A4A5E"}
-            rounded="md"
-            mb={3}
-            minHeight="60px"
-            transition="all 0.2s"
-          >
-            <Text fontSize="sm" color="gray.400" textAlign="center">
-              Unassigned Area
-            </Text>
-            {provided.placeholder}
-          </Box>
-        )}
-      </Droppable>
-
-      <VStack spacing={2} align="stretch">
-        {projects.map((project: any) => (
-          <Droppable key={project.id} droppableId={project.id}>
-            {(provided, snapshot) => (
-              <Box
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                p={3}
-                bg={
-                  selectedProjectId === project.id
-                    ? "brand.600"
-                    : snapshot.isDraggingOver
-                    ? "brand.800"
-                    : "#2A2A3D"
-                }
-                border="1px solid"
-                borderColor={
-                  selectedProjectId === project.id
-                    ? "brand.400"
-                    : snapshot.isDraggingOver
-                    ? "brand.400"
-                    : "#4A4A5E"
-                }
-                rounded="md"
-                minHeight="80px"
-                cursor="pointer"
-                onClick={() => setSelectedProjectId(
-                  selectedProjectId === project.id ? null : project.id
-                )}
-                transition="all 0.2s"
-                _hover={{
-                  borderColor: "brand.500",
-                  transform: "translateY(-1px)",
-                }}
-              >
-                <Text fontWeight="bold" fontSize="sm" mb={1}>
-                  {project.name}
-                </Text>
-                <Text fontSize="xs" color="gray.400" mb={2}>
-                  {project.description}
-                </Text>
-                
-                {provided.placeholder}
-              </Box>
-            )}
-          </Droppable>
-        ))}
-      </VStack>
-    </Box>
-  );
-}
-
-/** ======= Employee List Wrapper (Middle Panel) ======= **/
-function EmployeeListWrapper() {
-  const appContext = useApp();
-  
-  if (!appContext) return null;
-  const { employees, projects } = appContext;
-
-  return (
-    <Box
-      width="250px"
-      borderRight="1px solid"
-      borderColor="brand.700"
-      bg="#1E1E2F"
-    >
-      <EmployeeList employees={employees} projects={projects} />
-    </Box>
-  );
-}
-
-/** ======= Equipment List Wrapper (Right Panel) ======= **/
-function EquipmentListWrapper() {
-  const appContext = useApp();
-  
-  if (!appContext) return null;
-  const { equipment, projects } = appContext;
-
-  return (
-    <Box
-      width="250px"
-      borderLeft="1px solid"
-      borderColor="brand.700"
-      bg="#1E1E2F"
-    >
-      <EquipmentList equipment={equipment} projects={projects} />
-    </Box>
-  );
-}
+import { DragDropContext } from "react-beautiful-dnd";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Bell, Plus, ChevronDown } from "lucide-react";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { StatsGrid } from "@/components/dashboard/stats-grid";
+import { UnassignedAssets } from "@/components/dashboard/unassigned-assets";
+import { ActiveProjects } from "@/components/dashboard/active-projects";
+import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { AlertsPanel } from "@/components/dashboard/alerts-panel";
+import { useDragDrop } from "@/hooks/use-drag-drop";
+import type { Project, Employee, Equipment, Activity, Alert } from "@shared/schema";
 
 export default function Dashboard() {
-  const appContext = useApp();
-  const toast = useToast();
-  
-  // Add null check for context
-  if (!appContext) {
-    return (
-      <Box height="100%" display="flex" alignItems="center" justifyContent="center">
-        <Text color="white">Loading...</Text>
-      </Box>
-    );
-  }
-  
-  const { onDragEnd, employees, equipment, projects } = appContext;
-  const qc = useQueryClient();
+  const { handleDragEnd, isAssigning } = useDragDrop();
 
-  // helpers that hit the SAME endpoints as DnD:
-  async function handleMoveEmployee(employeeId: string, destProjectId: string | null) {
-    await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
-      currentProjectId: destProjectId,
-    });
-    // keep UI fresh
-    await Promise.allSettled([
-      qc.invalidateQueries(),
-    ]);
-  }
+  const queryClient = useQueryClient();
 
-  async function handleMoveEquipment(equipmentId: string, destProjectId: string | null) {
-    await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
-      currentProjectId: destProjectId,
-    });
-    await Promise.allSettled([qc.invalidateQueries()]);
-  }
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
 
-  const handleCommandActions = (actions: any[]) => {
-    applyActions({
-      actions,
-      // fuzzy resolvers: tweak as needed
-      findEmployeeByQuery: (q) => {
-        const qq = q.toLowerCase();
-        return employees.find((e: any) => e.name.toLowerCase().includes(qq));
-      },
-      findEquipmentByQuery: (q) => {
-        const qq = q.toLowerCase();
-        return equipment.find(
-          (x: any) =>
-            x.name.toLowerCase().includes(qq) ||
-            x.type.toLowerCase().includes(qq)
-        );
-      },
-      // use project NAME in command → map to ID here
-      moveEmployee: async (employeeId, projectName) => {
-        const dest = projects.find(
-          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
-        );
-        if (!dest) {
-          toast({
-            title: "Project Not Found",
-            description: `Could not find project "${projectName}"`,
-            status: "warning",
-            duration: 3000,
-          });
-          return;
-        }
-        await handleMoveEmployee(employeeId, dest.id);
-        
-        const employee = employees.find((emp: any) => emp.id === employeeId);
-        toast({
-          title: "Employee Assigned",
-          description: `${employee?.name} moved to ${dest.name}`,
-          status: 'success',
-          duration: 3000,
-        });
-      },
-      assignEquipment: async (equipmentId, projectName) => {
-        const dest = projects.find(
-          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
-        );
-        if (!dest) {
-          toast({
-            title: "Project Not Found",
-            description: `Could not find project "${projectName}"`,
-            status: "warning",
-            duration: 3000,
-          });
-          return;
-        }
-        await handleMoveEquipment(equipmentId, dest.id);
-        
-        const eq = equipment.find((eq: any) => eq.id === equipmentId);
-        toast({
-          title: "Equipment Assigned",
-          description: `${eq?.name} assigned to ${dest.name}`,
-          status: 'success',
-          duration: 3000,
-        });
-      },
-      showUnassigned: (date) => {
-        // optional: scroll to Unassigned group or open a modal
-        const unassignedEmployees = employees.filter((emp: any) => !emp.currentProjectId);
-        const unassignedEquipment = equipment.filter((eq: any) => !eq.currentProjectId);
-        
-        console.log("Unassigned requested for", date);
-        toast({
-          title: 'Unassigned Assets',
-          description: `${unassignedEmployees.length} employees, ${unassignedEquipment.length} equipment items unassigned`,
-          status: 'info',
-          duration: 5000,
-        });
-      },
-    });
-  };
+  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
+    queryKey: ["/api/employees"],
+  });
+
+  const { data: equipment = [], isLoading: equipmentLoading } = useQuery<Equipment[]>({
+    queryKey: ["/api/equipment"],
+  });
+
+  const { data: activities = [], isLoading: activitiesLoading } = useQuery<Activity[]>({
+    queryKey: ["/api/activities"],
+  });
+
+  const { data: alerts = [], isLoading: alertsLoading } = useQuery<Alert[]>({
+    queryKey: ["/api/alerts"],
+  });
+
+  const { data: stats, isLoading: statsLoading } = useQuery<{
+    totalEmployees: number;
+    employeeGrowth: string;
+    totalEquipment: number;
+    equipmentIssues: number;
+    activeProjects: number;
+    projectsOnTrack: string;
+    utilizationRate: number;
+    utilizationTrend: string;
+  }>({
+    queryKey: ["/api/stats"],
+  });
+
+  const isLoading = projectsLoading || employeesLoading || equipmentLoading;
 
   return (
-    <ProjectFilterProvider>
-      <Box height="100%" overflow="hidden">
-        {/* Command Bar */}
-        <Box p={4} bg="#1A1A2E" borderBottom="1px solid" borderColor="brand.700">
-          <CommandBar runActions={handleCommandActions} />
-        </Box>
-        
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Flex height="calc(100vh - 180px)">
-            <ProjectList />
-            <EmployeeListWrapper />
-            <EquipmentListWrapper />
-          </Flex>
-        </DragDropContext>
-      </Box>
-    </ProjectFilterProvider>
+    <div className="flex h-screen bg-gray-900 text-gray-100">
+      {/* Sidebar */}
+      <Sidebar 
+        activeView="dashboard" 
+        stats={{
+          totalEmployees: employees.length,
+          totalEquipment: equipment.length,
+          activeProjects: projects.filter(p => p.status === "active").length,
+        }}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Bar */}
+        <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Project Assignment Dashboard</h2>
+              <p className="text-sm text-gray-400">Manage employee and equipment assignments across active projects</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              {/* Search */}
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search assets..."
+                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 w-64 pl-10"
+                  data-testid="search-input"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+              
+              {/* Notifications */}
+              <Button variant="ghost" size="sm" className="relative text-gray-400 hover:text-white" data-testid="notifications-btn">
+                <Bell size={18} />
+                {alerts.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {alerts.length}
+                  </span>
+                )}
+              </Button>
+
+              {/* Add New Button */}
+              <Button className="bg-blue-500 hover:bg-blue-600 text-white" data-testid="add-new-btn">
+                <Plus size={16} className="mr-2" />
+                Add New
+                <ChevronDown size={16} className="ml-2" />
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Dashboard */}
+        <main className="flex-1 overflow-auto p-6">
+          {/* AI Command Bar */}
+          <CommandBar
+            runActions={(actions) =>
+              applyActions({
+                actions,
+                findEmployeeByQuery: (q) => {
+                  const qq = q.toLowerCase();
+                  return employees.find((e) => e.name.toLowerCase().includes(qq));
+                },
+                findEquipmentByQuery: (q) => {
+                  const qq = q.toLowerCase();
+                  return equipment.find(
+                    (x) =>
+                      x.name.toLowerCase().includes(qq) ||
+                      x.type.toLowerCase().includes(qq)
+                  );
+                },
+                moveEmployee: async (employeeId, projectName) => {
+                  const dest = projects.find(
+                    (p) => p.name.toLowerCase() === projectName.toLowerCase()
+                  );
+                  if (!dest) return;
+                  await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
+                    currentProjectId: dest.id,
+                  });
+                  await Promise.allSettled([queryClient.invalidateQueries()]);
+                },
+                assignEquipment: async (equipmentId, projectName) => {
+                  const dest = projects.find(
+                    (p) => p.name.toLowerCase() === projectName.toLowerCase()
+                  );
+                  if (!dest) return;
+                  await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
+                    currentProjectId: dest.id,
+                  });
+                  await Promise.allSettled([queryClient.invalidateQueries()]);
+                },
+                showUnassigned: (date) => {
+                  console.log("Unassigned requested for", date);
+                },
+              })
+            }
+          />
+
+          {/* Quick Stats */}
+          <StatsGrid stats={stats} isLoading={statsLoading} />
+
+          {/* Assignment Management Grid */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Unassigned Assets */}
+              <UnassignedAssets 
+                employees={employees}
+                equipment={equipment}
+                isLoading={isLoading}
+              />
+
+              {/* Active Projects */}
+              <ActiveProjects 
+                projects={projects}
+                employees={employees}
+                equipment={equipment}
+                isLoading={isLoading}
+              />
+            </div>
+          </DragDropContext>
+
+          {/* Recent Activity & Alerts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <RecentActivity 
+              activities={activities}
+              isLoading={activitiesLoading}
+            />
+            <AlertsPanel 
+              alerts={alerts}
+              isLoading={alertsLoading}
+            />
+          </div>
+
+          {/* Loading overlay */}
+          {isAssigning && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-gray-800 rounded-lg p-6 text-white">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p>Updating assignment...</p>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
   );
 }
