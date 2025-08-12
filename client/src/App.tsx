@@ -1354,9 +1354,9 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
                     ? "Unassigned"
                     : projects.find((p: any) => p.id === projId)?.name}
                 </Text>
-                  <Text fontSize="xs" color="brand.200" fontWeight="bold">
-                  </Text>
-                )}
+                <Text fontSize="xs" color="brand.200" fontWeight="bold">
+                  ({emps.length} {emps.length === 1 ? 'employee' : 'employees'})
+                </Text>
               </HStack>
 
               {emps.map((emp: any, index: number) => (
