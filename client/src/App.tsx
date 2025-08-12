@@ -1533,8 +1533,8 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
                       <VStack align="start" spacing={0}>
                         <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
                         <Text fontSize="xs" color="gray.300">{eq.type}</Text>
-                        {/* Assignment status badge */}
-                        {eq.currentProjectId ? (
+                        {/* Assignment status badge - only show when assigned */}
+                        {eq.currentProjectId && (
                           <Badge 
                             size="sm" 
                             colorScheme="green" 
@@ -1542,29 +1542,9 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
                           >
                             {projects.find((p: any) => p.id === eq.currentProjectId)?.name || "Assigned"}
                           </Badge>
-                        ) : (
-                          <Badge 
-                            size="sm" 
-                            colorScheme="gray" 
-                            fontSize="xs"
-                          >
-                            Unassigned
-                          </Badge>
                         )}
                       </VStack>
-                      <IconButton
-                        size="xs"
-                        variant="ghost"
-                        color="purple.100"
-                        _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
-                        transition="all 0.2s"
-                        icon={<StarIcon />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEndorse('equipment', eq.id, eq.name);
-                        }}
-                        aria-label="Endorse equipment performance"
-                      />
+
                     </HStack>
                   </Box>
                 )}
