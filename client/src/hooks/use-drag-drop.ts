@@ -3,10 +3,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { DropResult } from "react-beautiful-dnd";
+import { onDragEndFactory } from "@/dnd/onDragEnd";
 
 export function useDragDrop() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Create assignment functions for the onDragEndFactory
+  const setEmployeeAssignment = async (id: string, projectId: string | null) => {
+    return assignEmployeeMutation.mutateAsync({ employeeId: id, projectId });
+  };
+
+  const setEquipmentAssignment = async (id: string, projectId: string | null) => {
+    return assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
+  };
 
   const assignEmployeeMutation = useMutation({
     mutationFn: async ({ employeeId, projectId }: { employeeId: string; projectId: string | null }) => {
@@ -56,66 +66,14 @@ export function useDragDrop() {
     },
   });
 
-  const handleDragEnd = useCallback((result: DropResult) => {
-    const { draggableId, destination, source } = result;
-
-    // If dropped outside a droppable area
-    if (!destination) return;
-
-    // If dropped in the same position
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    // Extract asset type and ID from draggableId
-    // Format: "emp-emp-001" -> assetType="emp", assetId="emp-001"
-    // Format: "eq-eq-001" -> assetType="eq", assetId="eq-001"
-    const parts = draggableId.split("-");
-    const assetType = parts[0];
-    const assetId = parts.slice(1).join("-"); // Rejoin remaining parts for full ID
-    
-    // Extract project ID from destination droppableId
-    let projectId = null;
-    if (destination.droppableId === "project-unassigned" || destination.droppableId === "employee-list" || destination.droppableId === "equipment-list") {
-      projectId = null;
-    } else if (destination.droppableId.startsWith("project-")) {
-      projectId = destination.droppableId.replace("project-", "");
-    } else {
-      projectId = destination.droppableId;
-    }
-
-    console.log("Drag and Drop Debug:", {
-      draggableId,
-      source: source.droppableId,
-      destination: destination.droppableId,
-      assetType,
-      assetId,
-      projectId
-    });
-
-    if (assetType === "emp") {
-      assignEmployeeMutation.mutate({ employeeId: assetId, projectId });
-      
-      toast({
-        title: "Employee Assignment",
-        description: projectId 
-          ? "Employee assigned to project successfully" 
-          : "Employee unassigned successfully",
-      });
-    } else if (assetType === "eq") {
-      assignEquipmentMutation.mutate({ equipmentId: assetId, projectId });
-      
-      toast({
-        title: "Equipment Assignment",
-        description: projectId 
-          ? "Equipment assigned to project successfully" 
-          : "Equipment unassigned successfully",
-      });
-    }
-  }, [assignEmployeeMutation, assignEquipmentMutation, toast]);
+  // Create the proper drag end handler using the factory
+  const handleDragEnd = useCallback(
+    onDragEndFactory({
+      setEmployeeAssignment,
+      setEquipmentAssignment,
+    }),
+    [setEmployeeAssignment, setEquipmentAssignment]
+  );
 
   return {
     handleDragEnd,

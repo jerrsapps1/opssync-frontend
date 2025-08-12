@@ -7,6 +7,7 @@ import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import { useSelection } from "@/state/selection";
+import { buildDroppableId } from "@/dnd/ids";
 import type { Employee, Project } from "@shared/schema";
 
 interface EmployeeListProps {
@@ -82,7 +83,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
       />
       
       {/* Single employee list - drag to projects */}
-      <Droppable droppableId="employee-list">
+      <Droppable droppableId={buildDroppableId("employee", projectId)}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}

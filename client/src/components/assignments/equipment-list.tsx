@@ -7,6 +7,7 @@ import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import { useSelection } from "@/state/selection";
+import { buildDroppableId } from "@/dnd/ids";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
@@ -81,7 +82,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
         placeholder="Search equipment or types…"
         className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
       />
-      <Droppable droppableId="equipment-list">
+      <Droppable droppableId={buildDroppableId("equipment", projectId)}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
