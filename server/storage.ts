@@ -1028,6 +1028,198 @@ export class PostgreSQLStorage extends MemStorage {
     
     console.log(`💾 PostgreSQLStorage.deleteProject: Deleted project ${id} successfully`);
   }
+
+  // Override employee methods to use PostgreSQL instead of in-memory storage
+  async getEmployees(): Promise<Employee[]> {
+    const dbEmployees = await db.select().from(employees);
+    
+    // Update in-memory cache for consistency with parent class
+    this.employees.clear();
+    for (const employee of dbEmployees) {
+      this.employees.set(employee.id, employee);
+    }
+    
+    return dbEmployees;
+  }
+
+  async getEmployee(id: string): Promise<Employee | undefined> {
+    const [dbEmployee] = await db.select().from(employees).where(eq(employees.id, id));
+    if (dbEmployee) {
+      this.employees.set(id, dbEmployee);
+    }
+    return dbEmployee;
+  }
+
+  async createEmployee(employee: InsertEmployee): Promise<Employee> {
+    const [newEmployee] = await db.insert(employees).values({
+      ...employee,
+      email: employee.email || null,
+      phone: employee.phone || null,
+      avatarUrl: employee.avatarUrl || null,
+      currentProjectId: employee.currentProjectId || null,
+      employmentStatus: employee.employmentStatus || "active",
+      status: employee.status || "available",
+    }).returning();
+    
+    // Update in-memory cache
+    this.employees.set(newEmployee.id, newEmployee);
+    
+    return newEmployee;
+  }
+
+  async updateEmployee(id: string, updates: UpdateEmployee): Promise<Employee> {
+    const [updatedEmployee] = await db
+      .update(employees)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(employees.id, id))
+      .returning();
+    
+    if (!updatedEmployee) {
+      throw new Error(`Employee with id ${id} not found`);
+    }
+    
+    // Update in-memory cache
+    this.employees.set(id, updatedEmployee);
+    
+    return updatedEmployee;
+  }
+
+  async updateEmployeeAssignment(id: string, assignment: UpdateEmployeeAssignment): Promise<Employee> {
+    const [updatedEmployee] = await db
+      .update(employees)
+      .set({
+        currentProjectId: assignment.currentProjectId,
+        status: assignment.currentProjectId ? "assigned" : "available",
+        updatedAt: new Date(),
+      })
+      .where(eq(employees.id, id))
+      .returning();
+    
+    if (!updatedEmployee) {
+      throw new Error(`Employee with id ${id} not found`);
+    }
+    
+    // Update in-memory cache
+    this.employees.set(id, updatedEmployee);
+    
+    // Create activity
+    const projectName = assignment.currentProjectId 
+      ? this.projects.get(assignment.currentProjectId)?.name 
+      : null;
+    
+    const description = assignment.currentProjectId
+      ? `${updatedEmployee.name} was assigned to ${projectName}`
+      : `${updatedEmployee.name} was unassigned from project`;
+    
+    await this.createActivity({
+      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      description,
+      entityType: "employee",
+      entityId: id,
+      projectId: assignment.currentProjectId,
+    });
+    
+    return updatedEmployee;
+  }
+
+  // Override equipment methods to use PostgreSQL instead of in-memory storage
+  async getEquipment(): Promise<Equipment[]> {
+    const dbEquipment = await db.select().from(equipment);
+    
+    // Update in-memory cache for consistency with parent class
+    this.equipment.clear();
+    for (const equipmentItem of dbEquipment) {
+      this.equipment.set(equipmentItem.id, equipmentItem);
+    }
+    
+    return dbEquipment;
+  }
+
+  async getEquipmentItem(id: string): Promise<Equipment | undefined> {
+    const [dbEquipment] = await db.select().from(equipment).where(eq(equipment.id, id));
+    if (dbEquipment) {
+      this.equipment.set(id, dbEquipment);
+    }
+    return dbEquipment;
+  }
+
+  async createEquipment(equipmentData: InsertEquipment): Promise<Equipment> {
+    const [newEquipment] = await db.insert(equipment).values({
+      ...equipmentData,
+      make: equipmentData.make || null,
+      model: equipmentData.model || null,
+      assetNumber: equipmentData.assetNumber || null,
+      serialNumber: equipmentData.serialNumber || null,
+      currentProjectId: equipmentData.currentProjectId || null,
+      status: equipmentData.status || "available",
+    }).returning();
+    
+    // Update in-memory cache
+    this.equipment.set(newEquipment.id, newEquipment);
+    
+    return newEquipment;
+  }
+
+  async updateEquipment(id: string, updates: UpdateEquipment): Promise<Equipment> {
+    const [updatedEquipment] = await db
+      .update(equipment)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(equipment.id, id))
+      .returning();
+    
+    if (!updatedEquipment) {
+      throw new Error(`Equipment with id ${id} not found`);
+    }
+    
+    // Update in-memory cache
+    this.equipment.set(id, updatedEquipment);
+    
+    return updatedEquipment;
+  }
+
+  async updateEquipmentAssignment(id: string, assignment: UpdateEquipmentAssignment): Promise<Equipment> {
+    const [updatedEquipment] = await db
+      .update(equipment)
+      .set({
+        currentProjectId: assignment.currentProjectId,
+        status: assignment.currentProjectId ? "in-use" : "available",
+        updatedAt: new Date(),
+      })
+      .where(eq(equipment.id, id))
+      .returning();
+    
+    if (!updatedEquipment) {
+      throw new Error(`Equipment with id ${id} not found`);
+    }
+    
+    // Update in-memory cache
+    this.equipment.set(id, updatedEquipment);
+    
+    // Create activity
+    const projectName = assignment.currentProjectId 
+      ? this.projects.get(assignment.currentProjectId)?.name 
+      : null;
+    
+    const description = assignment.currentProjectId
+      ? `${updatedEquipment.name} was assigned to ${projectName}`
+      : `${updatedEquipment.name} was unassigned from project`;
+    
+    await this.createActivity({
+      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      description,
+      entityType: "equipment",
+      entityId: id,
+      projectId: assignment.currentProjectId,
+    });
+    
+    return updatedEquipment;
+  }
 }
 
 export const storage = new PostgreSQLStorage();
