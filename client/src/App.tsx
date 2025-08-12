@@ -26,6 +26,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Dashboard from "./pages/dashboard";
 import Settings from "./pages/settings";
 import WhiteLabelPage from "./pages/white-label";
+import EmployeesPage from "./pages/employees";
+import EquipmentPage from "./pages/equipment";
+import AnalyticsPage from "./pages/analytics";
 import AppLayout from "./components/layout/AppLayout";
 
 // Create QueryClient
@@ -240,6 +243,9 @@ export default function App() {
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/employees" element={<EmployeesPage />} />
+                <Route path="/equipment" element={<EquipmentPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/assignments" element={<Dashboard />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />

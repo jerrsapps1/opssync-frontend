@@ -1,6 +1,6 @@
 # Overview
 
-Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. It provides drag-and-drop functionality for assigning employees and equipment to projects, real-time conflict detection, and comprehensive asset management. Built as a full-stack web application with a React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows. Key capabilities include enterprise-grade conflict management with real-time detection and professional alerts, a three-panel layout for streamlined project assignments, JWT authentication, an enhanced navigation header, an advanced white-label system, object storage integration for assets, and a comprehensive settings system. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard.
+Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. It provides drag-and-drop functionality for assigning employees and equipment to projects, real-time conflict detection, and comprehensive asset management. Built as a full-stack web application with a React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows. Key capabilities include enterprise-grade conflict management with real-time detection and professional alerts, a three-panel layout for streamlined project assignments, JWT authentication, an enhanced navigation header, an advanced white-label system with comprehensive page-level branding support, object storage integration for assets, and a comprehensive settings system. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard.
 
 # User Preferences
 
@@ -36,6 +36,14 @@ The useBrandTheme hook automatically applies brand configuration to CSS custom p
 - Dialog component with branded headers and professional modal design
 - Table components (Table, THead, TBody, TR, TH, TD) with branded headers and zebra striping
 - All components automatically inherit brand configuration through CSS variables
+
+**Page-Level White Label Integration:**
+- Every page includes branded header sections with company logo placeholders
+- Dynamic company name integration in page titles and descriptions
+- Footer branding with organization name references
+- Statistics cards and UI elements using CSS brand color variables
+- Professional page layouts optimized for white-label client presentation
+- Consistent branding across Dashboard, Employees, Equipment, Analytics, and Settings pages
 
 ## Enhanced Settings Management System
 A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.
