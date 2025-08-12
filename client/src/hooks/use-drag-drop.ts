@@ -10,11 +10,14 @@ export function useDragDrop() {
 
   const assignEmployeeMutation = useMutation({
     mutationFn: async ({ employeeId, projectId }: { employeeId: string; projectId: string | null }) => {
+      console.log("Making assignment request to:", `/api/employees/${employeeId}/assignment`);
+      console.log("Request payload:", { currentProjectId: projectId });
       return await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
         currentProjectId: projectId,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Employee assignment success:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
@@ -30,11 +33,14 @@ export function useDragDrop() {
 
   const assignEquipmentMutation = useMutation({
     mutationFn: async ({ equipmentId, projectId }: { equipmentId: string; projectId: string | null }) => {
+      console.log("Making assignment request to:", `/api/equipment/${equipmentId}/assignment`);
+      console.log("Request payload:", { currentProjectId: projectId });
       return await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
         currentProjectId: projectId,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Equipment assignment success:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });

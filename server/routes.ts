@@ -289,10 +289,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assignment route MUST come before the general :id route
   app.patch("/api/employees/:id/assignment", async (req, res) => {
     try {
+      console.log(`Assignment endpoint hit: /api/employees/${req.params.id}/assignment`);
       const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
       const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
+      console.log(`Assignment result:`, employee);
       res.json(employee);
     } catch (error) {
       console.error("Error updating employee assignment:", error);
@@ -303,6 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employee profile update route  
   app.patch("/api/employees/:id", async (req, res) => {
     try {
+      console.log(`General employee endpoint hit: /api/employees/${req.params.id}`);
       const updateData = updateEmployeeSchema.parse(req.body);
       const employee = await storage.updateEmployee(req.params.id, updateData);
       res.json(employee);
@@ -349,8 +353,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/equipment/:id/assignment", async (req, res) => {
     try {
+      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assignment`);
       const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
       const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
+      console.log(`Equipment assignment result:`, equipment);
       res.json(equipment);
     } catch (error) {
       console.error("Error updating equipment assignment:", error);
@@ -361,6 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Equipment profile update route
   app.patch("/api/equipment/:id", async (req, res) => {
     try {
+      console.log(`General equipment endpoint hit: /api/equipment/${req.params.id}`);
       const updateData = updateEquipmentSchema.parse(req.body);
       const equipment = await storage.updateEquipment(req.params.id, updateData);
       res.json(equipment);
