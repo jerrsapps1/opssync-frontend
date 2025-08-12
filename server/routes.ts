@@ -6,6 +6,7 @@ import {
   insertProjectSchema, 
   insertEmployeeSchema, 
   insertEquipmentSchema,
+  insertProjectContactSchema,
   updateEmployeeAssignmentSchema,
   updateEquipmentAssignmentSchema,
   updateProjectSchema,

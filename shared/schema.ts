@@ -18,6 +18,14 @@ export const projects = pgTable("projects", {
   percentMode: text("percent_mode").default("auto"), // auto, manual
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
+  // Analytics fields
+  projectType: text("project_type"), // Residential Construction, Commercial, etc.
+  estimatedBudget: integer("estimated_budget"), // Budget in cents
+  actualCost: integer("actual_cost"), // Actual cost in cents
+  contractValue: integer("contract_value"), // Contract value in cents
+  profitMargin: integer("profit_margin"), // Profit margin percentage
+  riskLevel: text("risk_level").default("medium"), // low, medium, high, critical
+  priority: text("priority").default("medium"), // low, medium, high, urgent
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -92,6 +100,19 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const projectContacts = pgTable("project_contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  position: text("position").notNull(),
+  email: text("email").notNull(),
+  mobile: text("mobile").notNull(),
+  company: text("company").notNull(),
+  isPrimary: boolean("is_primary").default(false), // Mark primary contact
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -120,6 +141,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertProjectContactSchema = createInsertSchema(projectContacts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertAlertSchema = createInsertSchema(alerts).omit({
@@ -159,6 +186,14 @@ export const updateProjectSchema = z.object({
   percentMode: z.enum(["auto", "manual"]).optional(),
   startDate: z.date().nullable().optional(),
   endDate: z.date().nullable().optional(),
+  // Analytics fields
+  projectType: z.string().nullable().optional(),
+  estimatedBudget: z.number().nullable().optional(),
+  actualCost: z.number().nullable().optional(),
+  contractValue: z.number().nullable().optional(),
+  profitMargin: z.number().nullable().optional(),
+  riskLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
 });
 
 export const updateEquipmentAssignmentSchema = z.object({
@@ -209,6 +244,9 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type BrandConfig = typeof brandConfigs.$inferSelect;
 export type InsertBrandConfig = z.infer<typeof insertBrandConfigSchema>;
 export type UpdateBrandConfig = z.infer<typeof updateBrandConfigSchema>;
+
+export type ProjectContact = typeof projectContacts.$inferSelect;
+export type InsertProjectContact = z.infer<typeof insertProjectContactSchema>;
 
 export type UpdateEmployeeAssignment = z.infer<typeof updateEmployeeAssignmentSchema>;
 export type UpdateEquipmentAssignment = z.infer<typeof updateEquipmentAssignmentSchema>;

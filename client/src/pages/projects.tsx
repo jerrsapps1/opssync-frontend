@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import ImportExportPanel from "@/components/common/ImportExportPanel";
-import { Plus, Edit3, MapPin, Calendar, Building, Target } from "lucide-react";
+import { Plus, Edit3, MapPin, Calendar, Building, Target, X, UserPlus, DollarSign, AlertTriangle, Flag } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Project = {
   id: string;
@@ -18,6 +24,14 @@ type Project = {
   percentComplete?: number;
   percentMode?: "auto" | "manual";
   description?: string;
+  // Analytics fields
+  projectType?: string;
+  estimatedBudget?: number;
+  actualCost?: number;
+  contractValue?: number;
+  profitMargin?: number;
+  riskLevel?: "low" | "medium" | "high" | "critical";
+  priority?: "low" | "medium" | "high" | "urgent";
   createdAt?: string;
   updatedAt?: string;
 };
@@ -61,8 +75,28 @@ export default function ProjectSetUpPage() {
     endDate: "",
     description: "",
     percentMode: "auto" as "auto" | "manual",
-    percentComplete: 0
+    percentComplete: 0,
+    // Analytics fields
+    projectType: "",
+    estimatedBudget: "",
+    actualCost: "",
+    contractValue: "",
+    profitMargin: "",
+    riskLevel: "medium" as "low" | "medium" | "high" | "critical",
+    priority: "medium" as "low" | "medium" | "high" | "urgent"
   });
+
+  // Contact persons state
+  const [contacts, setContacts] = useState([
+    {
+      name: "",
+      position: "",
+      email: "",
+      mobile: "",
+      company: "",
+      isPrimary: false
+    }
+  ]);
 
   const filteredProjects = React.useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -131,8 +165,25 @@ export default function ProjectSetUpPage() {
       endDate: "",
       description: "",
       percentMode: "auto",
-      percentComplete: 0
+      percentComplete: 0,
+      projectType: "",
+      estimatedBudget: "",
+      actualCost: "",
+      contractValue: "",
+      profitMargin: "",
+      riskLevel: "medium",
+      priority: "medium"
     });
+    setContacts([
+      {
+        name: "",
+        position: "",
+        email: "",
+        mobile: "",
+        company: "",
+        isPrimary: false
+      }
+    ]);
     setCurrentStep(1);
   }
 
@@ -151,7 +202,14 @@ export default function ProjectSetUpPage() {
       endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : "",
       description: project.description || "",
       percentMode: project.percentMode || "auto",
-      percentComplete: project.percentComplete || 0
+      percentComplete: project.percentComplete || 0,
+      projectType: project.projectType || "",
+      estimatedBudget: project.estimatedBudget ? (project.estimatedBudget / 100).toString() : "",
+      actualCost: project.actualCost ? (project.actualCost / 100).toString() : "",
+      contractValue: project.contractValue ? (project.contractValue / 100).toString() : "",
+      profitMargin: project.profitMargin ? project.profitMargin.toString() : "",
+      riskLevel: project.riskLevel || "medium",
+      priority: project.priority || "medium"
     });
     setEditingProject(project);
     setCurrentStep(1);
@@ -170,6 +228,11 @@ export default function ProjectSetUpPage() {
       ...formData,
       startDate: formData.startDate ? new Date(formData.startDate) : null,
       endDate: formData.endDate ? new Date(formData.endDate) : null,
+      // Convert budget amounts from dollars to cents
+      estimatedBudget: formData.estimatedBudget ? Math.round(parseFloat(formData.estimatedBudget) * 100) : null,
+      actualCost: formData.actualCost ? Math.round(parseFloat(formData.actualCost) * 100) : null,
+      contractValue: formData.contractValue ? Math.round(parseFloat(formData.contractValue) * 100) : null,
+      profitMargin: formData.profitMargin ? parseInt(formData.profitMargin) : null,
     };
 
     if (editingProject) {
@@ -191,12 +254,39 @@ export default function ProjectSetUpPage() {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1: return formData.name.trim() && formData.status.trim();
-      case 2: return formData.location.trim();
-      case 3: return true;
+      case 1: return formData.name.trim() && formData.projectNumber.trim() && formData.location.trim();
+      case 2: return formData.projectType.trim();
+      case 3: return contacts.every(contact => 
+        contact.name.trim() && contact.position.trim() && 
+        contact.email.trim() && contact.mobile.trim() && contact.company.trim()
+      );
       default: return false;
     }
   };
+
+  function addContact() {
+    setContacts([...contacts, {
+      name: "",
+      position: "",
+      email: "",
+      mobile: "",
+      company: "",
+      isPrimary: false
+    }]);
+  }
+
+  function removeContact(index: number) {
+    if (contacts.length > 1) {
+      setContacts(contacts.filter((_, i) => i !== index));
+    }
+  }
+
+  function updateContact(index: number, field: string, value: string | boolean) {
+    const updatedContacts = contacts.map((contact, i) => 
+      i === index ? { ...contact, [field]: value } : contact
+    );
+    setContacts(updatedContacts);
+  }
 
   const formatDate = (dateStr?: Date | string | null) => {
     if (!dateStr) return "Not set";
@@ -358,9 +448,9 @@ export default function ProjectSetUpPage() {
                   </h2>
                   <p className="text-gray-400 text-sm">
                     Step {currentStep} of 3 - {
-                      currentStep === 1 ? "Basic Information" :
-                      currentStep === 2 ? "Location & Dates" :
-                      "Progress & Details"
+                      currentStep === 1 ? "Project Details" :
+                      currentStep === 2 ? "Analytics & Financial" :
+                      "Contact Persons"
                     }
                   </p>
                 </div>
@@ -394,160 +484,316 @@ export default function ProjectSetUpPage() {
 
               {/* Step Content */}
               <div className="space-y-4">
+                {/* STEP 1: Basic Information */}
                 {currentStep === 1 && (
                   <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Project Name *
-                      </label>
-                      <input
-                        data-testid="input-project-name"
-                        type="text"
-                        value={formData.name}
-                        onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
-                        placeholder="Enter project name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Project Number
-                      </label>
-                      <input
-                        data-testid="input-project-number"
-                        type="text"
-                        value={formData.projectNumber}
-                        onChange={e => setFormData(prev => ({ ...prev, projectNumber: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
-                        placeholder="e.g., PROJ-2025-001"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Status *
-                      </label>
-                      <select
-                        data-testid="select-project-status"
-                        value={formData.status}
-                        onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
-                      >
-                        {PROJECT_STATUSES.map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {currentStep === 2 && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Project Location *
-                      </label>
-                      <input
-                        data-testid="input-project-location"
-                        type="text"
-                        value={formData.location}
-                        onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
-                        placeholder="Enter project location or address"
-                      />
-                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Start Date
-                        </label>
-                        <input
+                        <Label className="text-gray-300">Project Name *</Label>
+                        <Input
+                          data-testid="input-project-name"
+                          value={formData.name}
+                          onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Enter project name"
+                          className="bg-[#121212] border-gray-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Project Number *</Label>
+                        <Input
+                          data-testid="input-project-number"
+                          value={formData.projectNumber}
+                          onChange={e => setFormData(prev => ({ ...prev, projectNumber: e.target.value }))}
+                          placeholder="e.g., PROJ-2025-001"
+                          className="bg-[#121212] border-gray-700 text-white"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-gray-300">Location *</Label>
+                      <Input
+                        data-testid="input-project-location"
+                        value={formData.location}
+                        onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter project location or address"
+                        className="bg-[#121212] border-gray-700 text-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300">Status</Label>
+                        <Select
+                          value={formData.status}
+                          onValueChange={value => setFormData(prev => ({ ...prev, status: value }))}
+                        >
+                          <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PROJECT_STATUSES.map(status => (
+                              <SelectItem key={status} value={status}>{status}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-gray-300">Priority</Label>
+                        <Select
+                          value={formData.priority}
+                          onValueChange={value => setFormData(prev => ({ ...prev, priority: value as any }))}
+                        >
+                          <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300">Start Date</Label>
+                        <Input
                           data-testid="input-project-start-date"
                           type="date"
                           value={formData.startDate}
                           onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
+                          className="bg-[#121212] border-gray-700 text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          End Date
-                        </label>
-                        <input
+                        <Label className="text-gray-300">End Date</Label>
+                        <Input
                           data-testid="input-project-end-date"
                           type="date"
                           value={formData.endDate}
                           onChange={e => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
+                          className="bg-[#121212] border-gray-700 text-white"
                         />
                       </div>
                     </div>
                   </>
                 )}
 
-                {currentStep === 3 && (
+                {/* STEP 2: Analytics & Financial */}
+                {currentStep === 2 && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Project Description
-                      </label>
-                      <textarea
+                      <Label className="text-gray-300">Project Type *</Label>
+                      <Select
+                        value={formData.projectType}
+                        onValueChange={value => setFormData(prev => ({ ...prev, projectType: value }))}
+                      >
+                        <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
+                          <SelectValue placeholder="Select project type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PROJECT_TYPES.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-gray-300">Description</Label>
+                      <Textarea
                         data-testid="textarea-project-description"
                         value={formData.description}
                         onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        rows={4}
-                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent resize-none"
+                        rows={3}
                         placeholder="Enter project description, scope, or notes..."
+                        className="bg-[#121212] border-gray-700 text-white resize-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Progress Tracking
-                      </label>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            id="auto-progress"
-                            name="progressMode"
-                            checked={formData.percentMode === "auto"}
-                            onChange={() => setFormData(prev => ({ ...prev, percentMode: "auto" }))}
-                            className="text-[#4A90E2]"
-                          />
-                          <label htmlFor="auto-progress" className="text-sm text-gray-300">
-                            Automatic (based on dates)
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            id="manual-progress"
-                            name="progressMode"
-                            checked={formData.percentMode === "manual"}
-                            onChange={() => setFormData(prev => ({ ...prev, percentMode: "manual" }))}
-                            className="text-[#4A90E2]"
-                          />
-                          <label htmlFor="manual-progress" className="text-sm text-gray-300">
-                            Manual tracking
-                          </label>
-                        </div>
-                        {formData.percentMode === "manual" && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              Completion Percentage
-                            </label>
-                            <input
-                              data-testid="input-project-progress"
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={formData.percentComplete}
-                              onChange={e => setFormData(prev => ({ ...prev, percentComplete: parseInt(e.target.value) || 0 }))}
-                              className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
-                              placeholder="0"
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300 flex items-center gap-2">
+                          <DollarSign size={16} />
+                          Contract Value
+                        </Label>
+                        <Input
+                          type="number"
+                          value={formData.contractValue}
+                          onChange={e => setFormData(prev => ({ ...prev, contractValue: e.target.value }))}
+                          placeholder="0.00"
+                          className="bg-[#121212] border-gray-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-300 flex items-center gap-2">
+                          <DollarSign size={16} />
+                          Estimated Budget
+                        </Label>
+                        <Input
+                          type="number"
+                          value={formData.estimatedBudget}
+                          onChange={e => setFormData(prev => ({ ...prev, estimatedBudget: e.target.value }))}
+                          placeholder="0.00"
+                          className="bg-[#121212] border-gray-700 text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-gray-300 flex items-center gap-2">
+                          <Flag size={16} />
+                          Profit Margin (%)
+                        </Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={formData.profitMargin}
+                          onChange={e => setFormData(prev => ({ ...prev, profitMargin: e.target.value }))}
+                          placeholder="0"
+                          className="bg-[#121212] border-gray-700 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-300 flex items-center gap-2">
+                          <AlertTriangle size={16} />
+                          Risk Level
+                        </Label>
+                        <Select
+                          value={formData.riskLevel}
+                          onValueChange={value => setFormData(prev => ({ ...prev, riskLevel: value as any }))}
+                        >
+                          <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
+                            <SelectValue placeholder="Select risk level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* STEP 3: Contact Persons */}
+                {currentStep === 3 && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <Label className="text-gray-300 text-base">Contact Persons</Label>
+                        <p className="text-sm text-gray-400">General contractors and project contacts</p>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={addContact}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-700 text-gray-300 hover:text-white"
+                      >
+                        <UserPlus size={16} className="mr-2" />
+                        Add Contact
+                      </Button>
+                    </div>
+
+                    <div className="space-y-6">
+                      {contacts.map((contact, index) => (
+                        <div key={index} className="border border-gray-700 rounded-lg p-4 bg-[#0F0F0F]">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-white font-medium">Contact {index + 1}</h4>
+                            {contacts.length > 1 && (
+                              <Button
+                                type="button"
+                                onClick={() => removeContact(index)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                              >
+                                <X size={16} />
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-gray-300">Name *</Label>
+                              <Input
+                                value={contact.name}
+                                onChange={e => updateContact(index, 'name', e.target.value)}
+                                placeholder="Full name"
+                                className="bg-[#121212] border-gray-700 text-white"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-gray-300">Position *</Label>
+                              <Input
+                                value={contact.position}
+                                onChange={e => updateContact(index, 'position', e.target.value)}
+                                placeholder="Job title/role"
+                                className="bg-[#121212] border-gray-700 text-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                              <Label className="text-gray-300">Email *</Label>
+                              <Input
+                                type="email"
+                                value={contact.email}
+                                onChange={e => updateContact(index, 'email', e.target.value)}
+                                placeholder="email@company.com"
+                                className="bg-[#121212] border-gray-700 text-white"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-gray-300">Mobile *</Label>
+                              <Input
+                                type="tel"
+                                value={contact.mobile}
+                                onChange={e => updateContact(index, 'mobile', e.target.value)}
+                                placeholder="(555) 123-4567"
+                                className="bg-[#121212] border-gray-700 text-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4">
+                            <Label className="text-gray-300">Company *</Label>
+                            <Input
+                              value={contact.company}
+                              onChange={e => updateContact(index, 'company', e.target.value)}
+                              placeholder="Company name"
+                              className="bg-[#121212] border-gray-700 text-white"
                             />
                           </div>
-                        )}
-                      </div>
+
+                          <div className="mt-4 flex items-center space-x-2">
+                            <Checkbox
+                              id={`primary-${index}`}
+                              checked={contact.isPrimary}
+                              onCheckedChange={checked => {
+                                // Only one contact can be primary
+                                const updatedContacts = contacts.map((c, i) => 
+                                  i === index ? { ...c, isPrimary: !!checked } : { ...c, isPrimary: false }
+                                );
+                                setContacts(updatedContacts);
+                              }}
+                              className="border-gray-700"
+                            />
+                            <Label htmlFor={`primary-${index}`} className="text-gray-300 text-sm">
+                              Primary contact
+                            </Label>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </>
                 )}

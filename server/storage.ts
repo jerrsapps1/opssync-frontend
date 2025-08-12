@@ -1,11 +1,12 @@
 import { 
-  projects, employees, equipment, activities, alerts, users,
+  projects, employees, equipment, activities, alerts, users, projectContacts,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
   type Equipment, type InsertEquipment, type UpdateEquipment,
   type Activity, type InsertActivity,
   type Alert, type InsertAlert,
   type User, type InsertUser,
+  type ProjectContact, type InsertProjectContact,
   type UpdateEmployeeAssignment,
   type UpdateEquipmentAssignment
 } from "@shared/schema";
@@ -48,6 +49,12 @@ export interface IStorage {
   getActiveAlerts(): Promise<Alert[]>;
   createAlert(alert: InsertAlert): Promise<Alert>;
   dismissAlert(id: string): Promise<void>;
+  
+  // Project Contacts
+  getProjectContacts(projectId: string): Promise<ProjectContact[]>;
+  createProjectContact(contact: InsertProjectContact): Promise<ProjectContact>;
+  updateProjectContact(id: string, updates: Partial<ProjectContact>): Promise<ProjectContact>;
+  deleteProjectContact(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -57,6 +64,7 @@ export class MemStorage implements IStorage {
   private equipment: Map<string, Equipment>;
   private activities: Activity[];
   private alerts: Map<string, Alert>;
+  private projectContacts: Map<string, ProjectContact>;
 
   constructor() {
     this.users = new Map();
@@ -65,6 +73,7 @@ export class MemStorage implements IStorage {
     this.equipment = new Map();
     this.activities = [];
     this.alerts = new Map();
+    this.projectContacts = new Map();
     
     // Initialize with some sample data
     this.initializeSampleData();
@@ -834,6 +843,43 @@ export class MemStorage implements IStorage {
     if (alert) {
       this.alerts.set(id, { ...alert, isDismissed: true });
     }
+  }
+
+  // Project Contacts
+  async getProjectContacts(projectId: string): Promise<ProjectContact[]> {
+    return Array.from(this.projectContacts.values()).filter(contact => contact.projectId === projectId);
+  }
+
+  async createProjectContact(contact: InsertProjectContact): Promise<ProjectContact> {
+    const id = randomUUID();
+    const newContact: ProjectContact = {
+      ...contact,
+      id,
+      isPrimary: contact.isPrimary || false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.projectContacts.set(id, newContact);
+    return newContact;
+  }
+
+  async updateProjectContact(id: string, updates: Partial<ProjectContact>): Promise<ProjectContact> {
+    const contact = this.projectContacts.get(id);
+    if (!contact) {
+      throw new Error(`Project contact with id ${id} not found`);
+    }
+
+    const updatedContact: ProjectContact = {
+      ...contact,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.projectContacts.set(id, updatedContact);
+    return updatedContact;
+  }
+
+  async deleteProjectContact(id: string): Promise<void> {
+    this.projectContacts.delete(id);
   }
 }
 
