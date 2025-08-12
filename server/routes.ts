@@ -20,6 +20,41 @@ import "./types"; // Import type declarations
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
+// Simple command parser for basic functionality
+function parseSimpleCommands(text: string): any[] {
+  const lower = text.toLowerCase();
+  const actions: any[] = [];
+
+  // Parse "move [employee] to [project]" commands
+  const moveMatch = lower.match(/move\s+(.+?)\s+to\s+(.+)/);
+  if (moveMatch) {
+    actions.push({
+      type: "move_employee",
+      employee_query: moveMatch[1].trim(),
+      project: moveMatch[2].trim()
+    });
+  }
+
+  // Parse "assign [equipment] to [project]" commands
+  const assignMatch = lower.match(/assign\s+(.+?)\s+to\s+(.+)/);
+  if (assignMatch) {
+    actions.push({
+      type: "assign_equipment",
+      equipment_query: assignMatch[1].trim(),
+      project: assignMatch[2].trim()
+    });
+  }
+
+  // Parse "list unassigned" or "show unassigned" commands
+  if (lower.includes("list unassigned") || lower.includes("show unassigned")) {
+    actions.push({
+      type: "list_unassigned"
+    });
+  }
+
+  return actions;
+}
+
 // Configure multer for file uploads
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -530,6 +565,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating logo upload URL:", error);
       res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  });
+
+  // Natural language command processing endpoint
+  app.post("/api/nl", async (req, res) => {
+    const { text } = req.body as { text: string };
+    
+    try {
+      const actions = parseSimpleCommands(text);
+      return res.json({ actions });
+    } catch (error) {
+      return res.json({ actions: [] });
     }
   });
 

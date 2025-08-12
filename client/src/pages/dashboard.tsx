@@ -5,12 +5,15 @@ import {
   VStack, 
   Text, 
   Heading, 
-  HStack
+  HStack,
+  useToast
 } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useApp } from "../App";
 import { EmployeeList } from "../components/assignments/employee-list";
 import { EquipmentList } from "../components/assignments/equipment-list";
+import CommandBar from "../components/CommandBar";
+import { applyActions } from "../lib/applyActions";
 
 /** ======= Project Filter Context ======= **/
 const ProjectFilterContext = React.createContext<any>(null);
@@ -161,6 +164,7 @@ function EquipmentListWrapper() {
 
 export default function Dashboard() {
   const appContext = useApp();
+  const toast = useToast();
   
   // Add null check for context
   if (!appContext) {
@@ -171,13 +175,103 @@ export default function Dashboard() {
     );
   }
   
-  const { onDragEnd } = appContext;
+  const { onDragEnd, employees, equipment, projects, setEmployees, setEquipment } = appContext;
+
+  // Helper functions for command bar actions
+  const findEmployeeByQuery = (query: string) => {
+    const q = query.toLowerCase();
+    return employees.find((emp: any) => 
+      emp.name.toLowerCase().includes(q) || 
+      emp.role.toLowerCase().includes(q)
+    );
+  };
+
+  const findEquipmentByQuery = (query: string) => {
+    const q = query.toLowerCase();
+    return equipment.find((eq: any) => 
+      eq.name.toLowerCase().includes(q) || 
+      eq.type.toLowerCase().includes(q)
+    );
+  };
+
+  const findProjectByName = (projectName: string) => {
+    const q = projectName.toLowerCase();
+    return projects.find((proj: any) => 
+      proj.name.toLowerCase().includes(q)
+    );
+  };
+
+  const moveEmployee = (employeeId: string, projectName: string) => {
+    const project = findProjectByName(projectName);
+    const projectId = project ? project.id : null;
+    
+    setEmployees((prev: any[]) => 
+      prev.map(emp => 
+        emp.id === employeeId ? { ...emp, currentProjectId: projectId } : emp
+      )
+    );
+
+    const employee = employees.find((emp: any) => emp.id === employeeId);
+    toast({
+      title: `Employee ${project ? 'Assigned' : 'Unassigned'}`,
+      description: `${employee?.name} ${project ? `moved to ${project.name}` : 'unassigned from project'}`,
+      status: 'success',
+      duration: 3000,
+    });
+  };
+
+  const assignEquipment = (equipmentId: string, projectName: string) => {
+    const project = findProjectByName(projectName);
+    const projectId = project ? project.id : null;
+    
+    setEquipment((prev: any[]) => 
+      prev.map(eq => 
+        eq.id === equipmentId ? { ...eq, currentProjectId: projectId } : eq
+      )
+    );
+
+    const eq = equipment.find((eq: any) => eq.id === equipmentId);
+    toast({
+      title: `Equipment ${project ? 'Assigned' : 'Unassigned'}`,
+      description: `${eq?.name} ${project ? `assigned to ${project.name}` : 'unassigned from project'}`,
+      status: 'success',
+      duration: 3000,
+    });
+  };
+
+  const showUnassigned = (date?: string) => {
+    const unassignedEmployees = employees.filter((emp: any) => !emp.currentProjectId);
+    const unassignedEquipment = equipment.filter((eq: any) => !eq.currentProjectId);
+    
+    toast({
+      title: 'Unassigned Assets',
+      description: `${unassignedEmployees.length} employees, ${unassignedEquipment.length} equipment items unassigned`,
+      status: 'info',
+      duration: 5000,
+    });
+  };
+
+  const handleCommandActions = (actions: any[]) => {
+    applyActions({
+      actions,
+      findEmployeeByQuery,
+      findEquipmentByQuery,
+      moveEmployee,
+      assignEquipment,
+      showUnassigned,
+    });
+  };
 
   return (
     <ProjectFilterProvider>
       <Box height="100%" overflow="hidden">
+        {/* Command Bar */}
+        <Box p={4} bg="#1A1A2E" borderBottom="1px solid" borderColor="brand.700">
+          <CommandBar runActions={handleCommandActions} />
+        </Box>
+        
         <DragDropContext onDragEnd={onDragEnd}>
-          <Flex height="calc(100vh - 120px)">
+          <Flex height="calc(100vh - 180px)">
             <ProjectList />
             <EmployeeListWrapper />
             <EquipmentListWrapper />

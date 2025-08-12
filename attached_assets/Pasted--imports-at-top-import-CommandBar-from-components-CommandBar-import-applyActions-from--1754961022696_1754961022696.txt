@@ -1,0 +1,56 @@
+// imports at top
+import CommandBar from "@/components/CommandBar";
+import { applyActions } from "@/lib/applyActions";
+
+// ...inside your component (where you have `employees`, `equipment`, `projects` in scope)
+// and where you already have your existing move/persist helpers used by onDragEnd.
+// Replace the two functions below with YOUR actual helpers if the names differ.
+async function handleMoveEmployee(employeeId: string, destProjectId: string) {
+  // TODO: call your existing API/state update used by DnD
+  // e.g., await api.assignEmployee({ employeeId, projectId: destProjectId });
+}
+async function handleMoveEquipment(equipmentId: string, destProjectId: string) {
+  // TODO: call your existing API/state update used by DnD
+  // e.g., await api.assignEquipment({ equipmentId, projectId: destProjectId });
+}
+
+// Somewhere near the top of your layout (above the lists is nice)
+<CommandBar
+  runActions={(actions) =>
+    applyActions({
+      actions,
+      // basic fuzzy finders (make smarter later if you like)
+      findEmployeeByQuery: (q) => {
+        const qq = q.toLowerCase();
+        return employees.find((e) => e.name.toLowerCase().includes(qq));
+      },
+      findEquipmentByQuery: (q) => {
+        const qq = q.toLowerCase();
+        return equipment.find(
+          (x) =>
+            x.name.toLowerCase().includes(qq) ||
+            x.type.toLowerCase().includes(qq)
+        );
+      },
+      // reuse the same persistence used by DnD
+      moveEmployee: async (employeeId, projectName) => {
+        const dest = projects.find(
+          (p) => p.name.toLowerCase() === projectName.toLowerCase()
+        );
+        if (!dest) return; // optionally toast "Project not found"
+        await handleMoveEmployee(employeeId, dest.id);
+      },
+      assignEquipment: async (equipmentId, projectName) => {
+        const dest = projects.find(
+          (p) => p.name.toLowerCase() === projectName.toLowerCase()
+        );
+        if (!dest) return;
+        await handleMoveEquipment(equipmentId, dest.id);
+      },
+      showUnassigned: (date) => {
+        // Optional: scroll to "Unassigned" group, open a modal, etc.
+        console.log("Unassigned requested for", date);
+      },
+    })
+  }
+/>
