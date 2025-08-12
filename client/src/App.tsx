@@ -229,25 +229,6 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** ======= Main App Component ======= **/
-function MainApp() {
-  return (
-    <Routes>
-      {/* App shell with sidebar on every page */}
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/assignments" element={<Dashboard />} />
-        <Route path="/white-label" element={<WhiteLabelPage />} />
-      </Route>
-
-      {/* Public routes (e.g., login) can live outside the layout */}
-      {/* <Route path="/login" element={<LoginPage />} /> */}
-    </Routes>
-  );
-}
-
 /** ======= Root App Component ======= **/
 export default function App() {
   return (
@@ -255,7 +236,15 @@ export default function App() {
       <ChakraProvider theme={createTheme(defaultBrandConfig)}>
         <AppProvider>
           <BrowserRouter>
-            <MainApp />
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/assignments" element={<Dashboard />} />
+                <Route path="/white-label" element={<WhiteLabelPage />} />
+              </Route>
+            </Routes>
           </BrowserRouter>
         </AppProvider>
       </ChakraProvider>
