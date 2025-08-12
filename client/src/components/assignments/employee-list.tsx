@@ -45,16 +45,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     );
   }
 
-  // Focus-based filtering with no-duplicate logic
-  const focusedEmployees = employees.filter(emp => {
-    if (!projectId) {
-      // No project focused: show only unassigned employees
-      return !emp.currentProjectId || emp.currentProjectId === null;
-    } else {
-      // Project focused: show only employees assigned to that project
-      return emp.currentProjectId === projectId;
-    }
-  });
+  // Show all employees for drag and drop - no filtering by focus
+  const availableEmployees = employees;
 
   const q = query.trim().toLowerCase();
   const filterEmp = (e: Employee) => {
@@ -63,7 +55,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
   };
 
-  const filteredEmployees = focusedEmployees.filter(filterEmp);
+  const filteredEmployees = availableEmployees.filter(filterEmp);
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -73,7 +65,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   return (
     <div className="flex-1 p-3 overflow-y-auto">
       <h2 className="text-sm font-medium mb-3">
-        Employees {projectId ? `(${projects.find(p => p.id === projectId)?.name || 'Unknown'})` : '(Unassigned)'}
+        Employees ({filteredEmployees.length})
       </h2>
       <input
         value={query}
@@ -83,7 +75,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
       />
       
       {/* Single employee list - drag to projects */}
-      <Droppable droppableId={buildDroppableId("employee", projectId)}>
+      <Droppable droppableId="employees">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}

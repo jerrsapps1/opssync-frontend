@@ -51,20 +51,12 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     return Wrench;
   };
 
-  // Focus-based filtering with no-duplicate logic
-  const focusedEquipment = equipment.filter(eq => {
-    if (!projectId) {
-      // No project focused: show only unassigned equipment
-      return !eq.currentProjectId || eq.currentProjectId === null;
-    } else {
-      // Project focused: show only equipment assigned to that project
-      return eq.currentProjectId === projectId;
-    }
-  });
+  // Show all equipment for drag and drop - no filtering by focus
+  const availableEquipment = equipment;
 
   const q = query.trim().toLowerCase();
   const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
-  const visible = useMemo(() => focusedEquipment.filter(filterEq), [focusedEquipment, q]);
+  const visible = useMemo(() => availableEquipment.filter(filterEq), [availableEquipment, q]);
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -74,7 +66,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   return (
     <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-gray-800">
       <h2 className="text-sm font-medium mb-3">
-        Equipment {projectId ? `(${projects.find(p => p.id === projectId)?.name || 'Unknown'})` : '(Unassigned)'}
+        Equipment ({visible.length})
       </h2>
       <input
         value={query}
@@ -82,7 +74,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
         placeholder="Search equipment or types…"
         className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
       />
-      <Droppable droppableId={buildDroppableId("equipment", projectId)}>
+      <Droppable droppableId="equipment">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
