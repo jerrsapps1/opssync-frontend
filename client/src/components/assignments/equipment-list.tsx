@@ -1,29 +1,30 @@
 import { useMemo, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
+import { Wrench, Truck, Hammer } from "lucide-react";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
   equipment: Equipment[];
-  projects: Project[];
+  projects: Project[]; // not used, kept for prop compatibility
   isLoading?: boolean;
 }
 
-export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
+export function EquipmentList({ equipment, projects: _projects, isLoading }: EquipmentListProps) {
   const [query, setQuery] = useState("");
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-3 overflow-y-auto">
+      <div className="w-72 border-l border-blue-700 p-3 overflow-y-auto bg-gray-800">
         <h2 className="text-sm font-medium mb-3">Equipment</h2>
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="mb-6 p-3 bg-gray-800 border-gray-700 min-h-20">
+            <Card key={i} className="mb-6 p-3 bg-gray-700 border-gray-600 min-h-20">
               <div className="animate-pulse">
-                <div className="h-4 bg-gray-700 rounded mb-2 w-24" />
+                <div className="h-4 bg-gray-600 rounded mb-2 w-24" />
                 <div className="space-y-2">
-                  <div className="h-10 bg-gray-700 rounded" />
-                  <div className="h-10 bg-gray-700 rounded" />
+                  <div className="h-10 bg-gray-600 rounded" />
+                  <div className="h-10 bg-gray-600 rounded" />
                 </div>
               </div>
             </Card>
@@ -33,26 +34,19 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     );
   }
 
-  // Group equipment by project or unassigned
-  const grouped: Record<string, Equipment[]> = {};
-  projects.forEach((p) => (grouped[p.id] = []));
-  grouped["unassigned"] = [];
-  equipment.forEach((eq) => {
-    if (eq.currentProjectId && grouped[eq.currentProjectId]) {
-      grouped[eq.currentProjectId].push(eq);
-    } else {
-      grouped["unassigned"].push(eq);
-    }
-  });
-
-  const q = query.trim().toLowerCase();
-  const filterEq = (e: Equipment) => {
-    if (!q) return true;
-    return e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
+  const getEquipmentIcon = (type: string) => {
+    if (type.toLowerCase().includes("heavy")) return Truck;
+    if (type.toLowerCase().includes("tool") || type.toLowerCase().includes("drill")) return Hammer;
+    return Wrench;
   };
 
+  const q = query.trim().toLowerCase();
+  const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
+
+  const visible = useMemo(() => equipment.filter(filterEq), [equipment, q]);
+
   return (
-    <div className="flex-1 p-3 overflow-y-auto">
+    <div className="w-72 border-l border-blue-700 p-3 overflow-y-auto bg-gray-800">
       <h2 className="text-sm font-medium mb-3">Equipment</h2>
       <input
         value={query}
@@ -60,53 +54,46 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
         placeholder="Search equipment or types…"
         className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
       />
-      {Object.entries(grouped).map(([projId, items]) => {
-        const visible = useMemo(() => items.filter(filterEq), [items, q]);
-        return (
-          <Droppable key={projId} droppableId={`equipment-${projId}`}>
-            {(provided, snapshot) => (
-              <Card
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={`mb-6 p-3 min-h-20 border-gray-700 transition-colors ${
-                  snapshot.isDraggingOver ? "bg-purple-500/20 border-purple-500" : "bg-gray-800"
-                }`}
-                data-testid={`equipment-group-${projId}`}
-              >
-                <div className="font-medium mb-2 text-white">
-                  {projId === "unassigned"
-                    ? "Unassigned"
-                    : projects.find((p) => p.id === projId)?.name || "Unknown Project"}
-                </div>
+      <Droppable droppableId="equipment-list">
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`space-y-2 ${snapshot.isDraggingOver ? "bg-purple-500/10 rounded-lg p-2" : ""}`}
+          >
+            {visible.map((eq, index) => {
+              const IconComponent = getEquipmentIcon(eq.type);
 
-                {visible.map((eq, index) => (
-                  <Draggable key={eq.id} draggableId={`eq-${eq.id}`} index={index}>
-                    {(dragProvided, dragSnapshot) => (
-                      <Card
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        {...dragProvided.dragHandleProps}
-                        className={`p-2 mb-2 transition-all select-none cursor-move border-none ${
-                          dragSnapshot.isDragging ? "bg-purple-500 shadow-lg" : "bg-purple-600 hover:bg-purple-500"
-                        }`}
-                        data-testid={`equipment-${eq.id}`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-orange-500 bg-opacity-20 rounded flex items-center justify-center">
-                            <span className="text-orange-500 text-xs">EQ</span>
-                          </div>
-                          <div className="text-white text-sm">{eq.name}</div>
+              return (
+                <Draggable key={eq.id} draggableId={`eq-${eq.id}`} index={index}>
+                  {(dragProvided, dragSnapshot) => (
+                    <Card
+                      ref={dragProvided.innerRef}
+                      {...dragProvided.draggableProps}
+                      {...dragProvided.dragHandleProps}
+                      className={`p-3 transition-all select-none cursor-move border-gray-600 ${
+                        dragSnapshot.isDragging ? "bg-purple-500 shadow-lg" : "bg-blue-600 hover:bg-purple-500"
+                      }`}
+                      data-testid={`equipment-${eq.id}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-orange-500/20 rounded flex items-center justify-center">
+                          <IconComponent className="text-orange-500" size={14} />
                         </div>
-                      </Card>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </Card>
-            )}
-          </Droppable>
-        );
-      })}
+                        <div className="flex-1">
+                          <div className="text-white text-sm font-medium">{eq.name}</div>
+                          <div className="text-xs text-gray-200/80">{eq.type}</div>
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+                </Draggable>
+              );
+            })}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
     </div>
   );
 }
