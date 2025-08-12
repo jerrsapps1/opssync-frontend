@@ -50,6 +50,10 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
     return patch(`/api/equipment/${id}/assignment`, { currentProjectId: to });
   }
 
+  function exportEmployees() {
+    window.location.href = "/api/employees/export";
+  }
+
   const TabBtn = ({id,label}:{id:"employees"|"equipment"|"projects";label:string}) => (
     <button
       className={`px-3 py-1.5 rounded-[var(--brand-radius)] text-sm mr-2 ${tab===id?"bg-[color:var(--brand-primary)] text-white":"bg-gray-800 text-gray-200 hover:brightness-110"}`}
@@ -66,9 +70,19 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
           <TabBtn id="equipment" label="Equipment" />
           <TabBtn id="projects" label="Projects" />
         </div>
-        <button className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm" onClick={()=>nav("/dashboard")}>
-          ← Back to Dashboard
-        </button>
+        <div className="flex items-center gap-2">
+          {tab === "employees" && (
+            <button 
+              onClick={exportEmployees}
+              className="px-3 py-2 rounded bg-[color:var(--brand-primary)] hover:brightness-110 text-white text-sm"
+            >
+              Export Employees
+            </button>
+          )}
+          <button className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm" onClick={()=>nav("/dashboard")}>
+            ← Back to Dashboard
+          </button>
+        </div>
       </div>
 
       {tab==="employees" && (
