@@ -36,7 +36,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
   // Group employees by project or unassigned
   const grouped: Record<string, Employee[]> = {};
-  projects.forEach((p) => (grouped[p.id] = []));
+  (projects || []).forEach((p) => (grouped[p.id] = []));
   grouped["unassigned"] = [];
   employees.forEach((emp) => {
     if (emp.currentProjectId && grouped[emp.currentProjectId]) {
