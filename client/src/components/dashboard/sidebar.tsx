@@ -19,8 +19,14 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="w-56 bg-[#111827] border-r border-gray-800 text-gray-200 flex flex-col">
-      <div className="h-14 flex items-center px-4 text-lg font-semibold border-b border-gray-800">
+    <aside 
+      className="w-56 border-r border-gray-800 text-gray-200 flex flex-col"
+      style={{ backgroundColor: 'var(--brand-sidebar-bg, #111827)' }}
+    >
+      <div 
+        className="h-14 flex items-center px-4 text-lg font-semibold border-b border-gray-800"
+        style={{ color: 'var(--brand-text, white)' }}
+      >
         StaffTrak
       </div>
 

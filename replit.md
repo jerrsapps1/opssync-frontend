@@ -24,7 +24,10 @@ The application features a complete JWT-based authentication system including us
 The application implements a comprehensive design system using Tailwind CSS with CSS custom properties for theme variables, supporting both light and dark themes, primarily optimized for dark mode. The system includes semantic color tokens and consistent spacing/typography scales.
 
 ## White Label Configuration
-The application includes a comprehensive white-label system configurable during account registration and via an enhanced settings modal. This allows clients to configure app name, branding, primary/secondary colors, and company logo URL with real-time theme preview. A professional logo upload system supports drag & drop, file validation, direct upload to object storage with presigned URLs, and real-time logo preview. The dynamic theme system automatically updates the UI based on brand configurations.
+The application includes a comprehensive white-label system configurable during account registration and via an enhanced settings modal. This allows clients to configure app name, branding, primary/secondary colors, and company logo URL with real-time theme preview. A professional logo upload system supports drag & drop, file validation, direct upload to object storage with presigned URLs, and real-time logo preview. The dynamic theme system automatically updates the UI based on brand configurations using CSS variables.
+
+### Dynamic CSS Variable Theming
+The useBrandTheme hook automatically applies brand configuration to CSS custom properties at runtime, enabling real-time theme updates across the entire application. Key components use CSS variables like --brand-primary, --brand-secondary, and --brand-accent for consistent branding. The AppLayout component fetches brand configuration and applies it globally, while individual components reference these variables for buttons, navigation highlights, and interactive elements.
 
 ## Enhanced Settings Management System
 A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.

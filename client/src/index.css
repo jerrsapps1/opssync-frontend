@@ -63,6 +63,11 @@
   --brand-primary-foreground: white;
   --brand-secondary-foreground: white;
   --brand-accent-foreground: white;
+  --brand-text: white;
+  --brand-header-bg: hsl(217, 16%, 14%);
+  --brand-sidebar-bg: hsl(217, 16%, 14%);
+  --brand-button-radius: 0.5rem;
+  --brand-font-family: 'Inter', sans-serif;
 }
 
 .dark {
