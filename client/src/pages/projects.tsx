@@ -54,7 +54,7 @@ export default function ProjectSetUpPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: projects = [], isLoading, refetch } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ["/api", "projects"],
     queryFn: fetchProjects,
     refetchOnWindowFocus: true
   });
@@ -108,7 +108,7 @@ export default function ProjectSetUpPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
       resetForm();
       setShowCreateDialog(false);
       toast({
@@ -131,7 +131,7 @@ export default function ProjectSetUpPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
       resetForm();
       setEditingProject(null);
       toast({
