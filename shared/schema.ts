@@ -140,7 +140,7 @@ export const updateBrandConfigSchema = z.object({
 
 // Update schemas for assignments and projects
 export const updateEmployeeAssignmentSchema = z.object({
-  currentProjectId: z.string().nullable(),
+  projectId: z.string().nullable(),
 });
 
 export const updateProjectSchema = z.object({
@@ -160,7 +160,7 @@ export const updateProjectSchema = z.object({
 });
 
 export const updateEquipmentAssignmentSchema = z.object({
-  currentProjectId: z.string().nullable(),
+  projectId: z.string().nullable(),
 });
 
 // Update schemas for employee details

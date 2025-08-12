@@ -289,14 +289,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Assignment route with unique path to avoid conflicts
-  app.patch("/api/employees/:id/assign-to-project", async (req, res) => {
+
+
+  // Employee assignment route - MUST be defined before general PATCH route  
+  app.patch("/api/employees/:id/assignment", async (req, res) => {
     try {
-      console.log(`Assignment endpoint hit: /api/employees/${req.params.id}/assign-to-project`);
+      console.log(`🎯🎯🎯 ASSIGNMENT ENDPOINT HIT: /api/employees/${req.params.id}/assignment`);
+      console.log(`🎯🎯🎯 REQUEST URL: ${req.url} | ORIGINAL URL: ${req.originalUrl} | PATH: ${req.path}`);
       console.log('Request body:', req.body);
-      console.log('Request params:', req.params);
       
-      // Validate the request body
+      // Validate the request body for assignment
       const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
       console.log('Parsed assignment data:', assignmentData);
       
@@ -308,23 +310,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.log('Found employee:', existingEmployee.name);
       
-      const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
+      // Map projectId to currentProjectId for storage
+      const storageAssignment = { currentProjectId: assignmentData.projectId };
+      const employee = await storage.updateEmployeeAssignment(req.params.id, storageAssignment);
       console.log(`Assignment result:`, employee.name, 'assigned to project:', employee.currentProjectId);
       res.json(employee);
     } catch (error) {
       console.error("Detailed error updating employee assignment:", error);
-      if (error instanceof Error) {
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
       res.status(400).json({ message: "Failed to update employee assignment", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
-  // Employee profile update route  
+  // Employee profile update route - MUST come after assignment route
   app.patch("/api/employees/:id", async (req, res) => {
     try {
-      console.log(`General employee endpoint hit: /api/employees/${req.params.id}`);
+      console.log(`❌❌❌ GENERAL EMPLOYEE ENDPOINT HIT: /api/employees/${req.params.id}`);
+      console.log(`❌❌❌ REQUEST URL: ${req.url} | ORIGINAL URL: ${req.originalUrl} | PATH: ${req.path}`);
       const updateData = updateEmployeeSchema.parse(req.body);
       const employee = await storage.updateEmployee(req.params.id, updateData);
       res.json(employee);
@@ -369,11 +370,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/equipment/:id/assign-to-project", async (req, res) => {
+  // Equipment assignment route - MUST come before general PATCH route
+  app.patch("/api/equipment/:id/assignment", async (req, res) => {
     try {
-      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assign-to-project`);
+      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assignment`);
       const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
-      const equipment = await storage.updateEquipmentAssignment(req.params.id, assignmentData);
+      // Map projectId to currentProjectId for storage
+      const storageAssignment = { currentProjectId: assignmentData.projectId };
+      const equipment = await storage.updateEquipmentAssignment(req.params.id, storageAssignment);
       console.log(`Equipment assignment result:`, equipment);
       res.json(equipment);
     } catch (error) {
@@ -382,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Equipment profile update route
+  // Equipment profile update route - MUST come after assignment route
   app.patch("/api/equipment/:id", async (req, res) => {
     try {
       console.log(`General equipment endpoint hit: /api/equipment/${req.params.id}`);
