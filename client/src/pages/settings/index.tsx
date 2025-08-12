@@ -50,6 +50,7 @@ export default function SettingsIndex() {
         <Item to="projects">📋 Project Details</Item>
         <Item to="equipment">🚜 Equipment Management</Item>
         <Item to="employees">👥 Employee Management</Item>
+        <Item to="privacy">🔒 Data & Privacy</Item>
       </div>
       
       {/* Content Area */}

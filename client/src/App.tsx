@@ -34,6 +34,7 @@ import SettingsIndex from "./pages/settings";
 import ProjectSettings from "./pages/settings/projects";
 import SettingsEquipment from "./pages/settings/equipment";
 import SettingsEmployees from "./pages/settings/employees";
+import PrivacySettings from "./pages/settings/privacy";
 import EquipmentDetail from "./pages/equipment-detail";
 import EmployeeDetail from "./pages/employee-detail";
 import DirectoryPage from "./pages/directory";
@@ -255,6 +256,7 @@ export default function App() {
                   <Route path="projects" element={<ProjectSettings />} />
                   <Route path="equipment" element={<SettingsEquipment />} />
                   <Route path="employees" element={<SettingsEmployees />} />
+                  <Route path="privacy" element={<PrivacySettings />} />
                 </Route>
                 <Route path="/equipment/:id" element={<EquipmentDetail />} />
                 <Route path="/employees/:id" element={<EmployeeDetail />} />
