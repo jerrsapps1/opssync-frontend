@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+// Removed Chakra UI imports - using Tailwind classes instead
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "react-beautiful-dnd";
 import CommandBar from "@/components/CommandBar";
@@ -72,53 +72,42 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <Box height="100vh" display="flex" alignItems="center" justifyContent="center" bg="gray.900" color="white">
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
         Loading StaffTrak...
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box height="100vh" bg="gray.900" color="white">
-      <Flex height="100vh">
+    <div className="h-screen bg-gray-900 text-white">
+      <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar />
         
         {/* Main Content */}
-        <Box flex="1" display="flex" flexDirection="column">
+        <div className="flex-1 flex flex-col">
           {/* Command Bar */}
-          <Box p={4} bg="gray.800" borderBottom="1px solid" borderColor="gray.700">
+          <div className="p-4 bg-gray-800 border-b border-gray-700">
             <CommandBar runActions={handleCommandActions} />
-          </Box>
+          </div>
           
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Flex height="calc(100vh - 120px)">
+            <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
               <ProjectList projects={projects} />
               <EmployeeList employees={employees} projects={projects} />
               <EquipmentList equipment={equipment} projects={projects} />
-            </Flex>
+            </div>
           </DragDropContext>
-        </Box>
-      </Flex>
+        </div>
+      </div>
 
       {isAssigning && (
-        <Box
-          position="fixed"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          bg="blackAlpha.500"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          zIndex={1000}
-        >
-          <Box bg="gray.800" p={6} rounded="lg" color="white">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg text-white">
             Updating assignment...
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
