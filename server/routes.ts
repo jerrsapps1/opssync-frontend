@@ -293,13 +293,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/employees/:id/assign-to-project", async (req, res) => {
     try {
       console.log(`Assignment endpoint hit: /api/employees/${req.params.id}/assign-to-project`);
+      console.log('Request body:', req.body);
+      console.log('Request params:', req.params);
+      
+      // Validate the request body
       const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
+      console.log('Parsed assignment data:', assignmentData);
+      
+      // Check if employee exists before updating
+      const existingEmployee = await storage.getEmployee(req.params.id);
+      if (!existingEmployee) {
+        console.log(`Employee ${req.params.id} not found`);
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      console.log('Found employee:', existingEmployee.name);
+      
       const employee = await storage.updateEmployeeAssignment(req.params.id, assignmentData);
-      console.log(`Assignment result:`, employee);
+      console.log(`Assignment result:`, employee.name, 'assigned to project:', employee.currentProjectId);
       res.json(employee);
     } catch (error) {
-      console.error("Error updating employee assignment:", error);
-      res.status(400).json({ message: "Failed to update employee assignment" });
+      console.error("Detailed error updating employee assignment:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(400).json({ message: "Failed to update employee assignment", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
