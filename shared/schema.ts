@@ -12,8 +12,10 @@ export const projects = pgTable("projects", {
   gpsLongitude: text("gps_longitude"),
   kmzFileUrl: text("kmz_file_url"),
   description: text("description"),
-  status: text("status").notNull().default("active"), // active, planning, completed, paused
+  status: text("status").notNull().default("Planned"), // Planned, Active, Paused, Completed
   progress: integer("progress").notNull().default(0), // 0-100
+  percentComplete: integer("percent_complete").default(0), // 0-100 for manual mode
+  percentMode: text("percent_mode").default("auto"), // auto, manual
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -136,16 +138,11 @@ export const updateBrandConfigSchema = z.object({
   logoUrl: z.string().nullable().optional(),
 });
 
-// Update schemas for assignments
+// Update schemas for assignments and projects
 export const updateEmployeeAssignmentSchema = z.object({
   currentProjectId: z.string().nullable(),
 });
 
-export const updateEquipmentAssignmentSchema = z.object({
-  currentProjectId: z.string().nullable(),
-});
-
-// Update schemas for project details
 export const updateProjectSchema = z.object({
   projectNumber: z.string().optional(),
   name: z.string().optional(),
@@ -155,7 +152,15 @@ export const updateProjectSchema = z.object({
   kmzFileUrl: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   status: z.string().optional(),
-  progress: z.number().optional(),
+  progress: z.number().min(0).max(100).optional(),
+  percentComplete: z.number().min(0).max(100).optional(),
+  percentMode: z.enum(["auto", "manual"]).optional(),
+  startDate: z.date().nullable().optional(),
+  endDate: z.date().nullable().optional(),
+});
+
+export const updateEquipmentAssignmentSchema = z.object({
+  currentProjectId: z.string().nullable(),
 });
 
 // Update schemas for employee details

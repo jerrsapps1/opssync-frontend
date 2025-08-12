@@ -40,6 +40,7 @@ import ProfileBuilder from "./pages/profile-builder";
 import HistoryPage from "./pages/history";
 import PricingPage from "./pages/billing/pricing";
 import BillingHome from "./pages/billing";
+import ProjectProfile from "./pages/project-profile";
 
 // Import the properly configured QueryClient
 import { queryClient } from "./lib/queryClient";
@@ -256,6 +257,7 @@ export default function App() {
                 </Route>
                 <Route path="/equipment/:id" element={<EquipmentDetail />} />
                 <Route path="/employees/:id" element={<EmployeeDetail />} />
+                <Route path="/projects/:id" element={<ProjectProfile />} />
                 <Route path="/directory" element={<DirectoryPage />} />
                 <Route path="/builder" element={<ProfileBuilder />} />
                 <Route path="/history" element={<HistoryPage />} />
