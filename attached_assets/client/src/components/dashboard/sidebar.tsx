@@ -1,17 +1,16 @@
 import React from "react";
-import { Link, useLocation } from "wouter";
+import { NavLink } from "react-router-dom";
 
 export function Sidebar() {
-  const [location] = useLocation();
-  
   const Item = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <Link href={to} className={`block px-3 py-2 rounded text-sm ${
-      location === to 
-        ? "bg-gray-800 text-white" 
-        : "text-gray-300 hover:bg-gray-800"
-    }`}>
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `block px-3 py-2 rounded text-sm ${isActive ? "bg-gray-800 text-white" : "text-gray-300 hover:bg-gray-800"}`
+      }
+    >
       {children}
-    </Link>
+    </NavLink>
   );
 
   return (
@@ -21,7 +20,7 @@ export function Sidebar() {
       </div>
 
       <nav className="p-3 space-y-1">
-        <Item to="/">Dashboard</Item>
+        <Item to="/dashboard">Dashboard</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>
         <Item to="/analytics">Analytics</Item>

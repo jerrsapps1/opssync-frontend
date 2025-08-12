@@ -29,6 +29,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Import pages
 import Dashboard from "./pages/dashboard";
 import Settings from "./pages/settings";
+import WhiteLabelPage from "./pages/white-label";
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -306,6 +307,7 @@ function MainApp() {
       <Route path="/" component={Dashboard} />
       <Route path="/settings" component={Settings} />
       <Route path="/assignments" component={Dashboard} />
+      <Route path="/white-label" component={WhiteLabelPage} />
     </Box>
   );
 }
