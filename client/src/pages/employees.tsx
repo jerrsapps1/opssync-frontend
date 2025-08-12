@@ -14,6 +14,7 @@ type Employee = {
   role?: string;
   email?: string; 
   phone?: string;
+  emergencyContactPhone?: string;
   yearsExperience?: number; 
   operates?: string[]; 
   currentProjectId?: string | null;
@@ -64,6 +65,7 @@ export default function EmployeeManagementPage() {
     role: "",
     email: "",
     phone: "",
+    emergencyContactPhone: "",
     yearsExperience: 0,
     operates: [] as string[],
     employmentStatus: "active"
@@ -127,6 +129,7 @@ export default function EmployeeManagementPage() {
       role: "",
       email: "",
       phone: "",
+      emergencyContactPhone: "",
       yearsExperience: 0,
       operates: [],
       employmentStatus: "active"
@@ -145,6 +148,7 @@ export default function EmployeeManagementPage() {
       role: employee.role || "",
       email: employee.email || "",
       phone: employee.phone || "",
+      emergencyContactPhone: employee.emergencyContactPhone || "",
       yearsExperience: employee.yearsExperience || 0,
       operates: employee.operates || [],
       employmentStatus: employee.employmentStatus || "active"
@@ -478,6 +482,19 @@ export default function EmployeeManagementPage() {
                         onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
                         placeholder="Enter phone number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Emergency Contact Phone
+                      </label>
+                      <input
+                        data-testid="input-employee-emergency-phone"
+                        type="tel"
+                        value={formData.emergencyContactPhone}
+                        onChange={e => setFormData(prev => ({ ...prev, emergencyContactPhone: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
+                        placeholder="Enter emergency contact phone"
                       />
                     </div>
                     <div>
