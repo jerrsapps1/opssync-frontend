@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Select } from "@/components/ui/select";
+import { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type BrandConfig = {
   companyName?: string;
@@ -78,6 +81,7 @@ export default function WhiteLabelPage() {
     queryFn: fetchBrandConfig,
   });
   const [form, setForm] = useState<BrandConfig>(DEFAULTS);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (data) setForm({ ...DEFAULTS, ...data });
@@ -88,6 +92,7 @@ export default function WhiteLabelPage() {
       const res = await apiRequest("PATCH", "/api/auth/brand-config", payload);
       return res.json();
     },
+    onSuccess: () => setOpen(true),
   });
 
   const preview = useMemo(
@@ -126,6 +131,23 @@ export default function WhiteLabelPage() {
 
   return (
     <div className="p-6 text-gray-200">
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Theme Saved"
+        description="Your white-label settings were saved successfully."
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setOpen(false)}>Close</Button>
+            <Button onClick={() => (window.location.href = '/dashboard')}>Back to Dashboard</Button>
+          </div>
+        }
+      >
+        <div className="text-sm text-gray-300">
+          Changes are now applied app-wide. You can continue editing or go back to the dashboard.
+        </div>
+      </Dialog>
+
       <h1 className="text-2xl font-semibold mb-1">White Label Configuration</h1>
       <p className="text-sm text-gray-400 mb-6">
         Customize the look & feel for your organization.
@@ -138,7 +160,7 @@ export default function WhiteLabelPage() {
             <input
               value={form.companyName || ""}
               onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-              className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-[color:var(--brand-primary)]"
               placeholder="Acme Construction Co."
             />
           </Field>
@@ -204,14 +226,14 @@ export default function WhiteLabelPage() {
                 type="number"
                 value={form.buttonRadius ?? 10}
                 onChange={(e) => setForm({ ...form, buttonRadius: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-[color:var(--brand-primary)]"
               />
             </Field>
             <Field label="Font Family">
               <input
                 value={form.fontFamily || ""}
                 onChange={(e) => setForm({ ...form, fontFamily: e.target.value })}
-                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-[color:var(--brand-primary)]"
                 placeholder="Inter, Segoe UI, Roboto, …"
               />
             </Field>
@@ -219,25 +241,23 @@ export default function WhiteLabelPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Date Format">
-              <select
+              <Select
                 value={form.dateFormat || "MM/DD/YYYY"}
                 onChange={(e) => setForm({ ...form, dateFormat: e.target.value as any })}
-                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option>MM/DD/YYYY</option>
                 <option>DD/MM/YYYY</option>
                 <option>YYYY-MM-DD</option>
-              </select>
+              </Select>
             </Field>
             <Field label="Time Format">
-              <select
+              <Select
                 value={form.timeFormat || "12h"}
                 onChange={(e) => setForm({ ...form, timeFormat: e.target.value as any })}
-                className="w-full px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="12h">12h</option>
                 <option value="24h">24h</option>
-              </select>
+              </Select>
             </Field>
           </div>
 
@@ -258,13 +278,13 @@ export default function WhiteLabelPage() {
                 {form.logoUrl && (
                   <>
                     <img src={form.logoUrl} alt="Logo" className="h-10 rounded bg-white p-1" />
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => downloadUrlToFile(form.logoUrl!, "brand-logo")}
-                      className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white"
                     >
                       Download
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
@@ -311,7 +331,7 @@ export default function WhiteLabelPage() {
             <textarea
               value={form.customCss || ""}
               onChange={(e) => setForm({ ...form, customCss: e.target.value })}
-              className="w-full h-28 px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-28 px-3 py-2 rounded bg-gray-800 text-white outline-none focus:ring-2 focus:ring-[color:var(--brand-primary)]"
               placeholder=":root { --brand-radius: 12px }"
             />
           </Field>
@@ -328,90 +348,57 @@ export default function WhiteLabelPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
+            <Button
               type="submit"
-              className="px-4 py-2 rounded text-white disabled:opacity-60 hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: 'var(--brand-primary)', color: 'var(--brand-primary-foreground)' }}
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? "Saving…" : "Save Changes"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setForm(DEFAULTS)}
-              className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white"
             >
               Reset to Defaults
-            </button>
+            </Button>
           </div>
-
-          {updateMutation.isSuccess && (
-            <div className="text-green-400 text-sm">✓ Configuration saved successfully!</div>
-          )}
-          {updateMutation.isError && (
-            <div className="text-red-400 text-sm">
-              ✗ Error saving config: {String(updateMutation.error)}
-            </div>
-          )}
         </form>
 
         {/* LIVE PREVIEW */}
-        <div className="sticky top-6">
-          <h3 className="text-lg font-medium mb-4">Live Preview</h3>
-          <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-800">
-            {/* Mock Header */}
-            <div className="h-14 flex items-center px-4" style={preview.header}>
-              <div className="flex items-center gap-3">
-                {form.logoUrl && (
-                  <img src={form.logoUrl} alt="Logo" className="h-8 w-8 rounded" />
-                )}
-                <span className="font-semibold">{form.companyName || "Your Company"}</span>
+        <div className="rounded-lg border border-gray-800 overflow-hidden">
+          <div className="p-3" style={{ fontFamily: form.fontFamily }}>
+            <div className="h-12 flex items-center px-4" style={preview.header}>
+              <div className="flex items-center gap-2">
+                {form.logoUrl && <img src={form.logoUrl} className="h-8 rounded bg-white p-1" />}
+                <span className="font-semibold">{form.companyName || "Company"}</span>
               </div>
             </div>
-
-            {/* Mock Sidebar + Content */}
-            <div className="flex h-48">
-              <div className="w-40 p-3 space-y-2" style={preview.sidebar}>
-                <div className="text-xs opacity-75">Navigation</div>
-                <div className="text-sm">Dashboard</div>
-                <div className="text-sm">Settings</div>
-                <div className="text-sm">Reports</div>
+            <div className="flex">
+              <div className="w-44 p-3 text-sm" style={preview.sidebar}>
+                <div className="opacity-80 mb-2">Sidebar</div>
+                <div className="space-y-1">
+                  <div className="px-2 py-1 rounded bg-gray-900/40">Dashboard</div>
+                  <div className="px-2 py-1 rounded hover:bg-gray-900/40">Employees</div>
+                  <div className="px-2 py-1 rounded hover:bg-gray-900/40">Equipment</div>
+                </div>
               </div>
-              <div className="flex-1 p-4 bg-gray-900">
-                <div className="flex gap-2 mb-3">
-                  <button className="px-3 py-1.5 text-sm rounded" style={preview.button}>
-                    Primary Button
-                  </button>
-                  <span className="px-2 py-1 text-xs rounded" style={preview.chip}>
-                    Accent
-                  </span>
+              <div className="flex-1 p-4 space-y-3" style={{ color: form.textColor || DEFAULTS.textColor }}>
+                <div className="inline-block px-2 py-1 rounded text-xs" style={preview.chip}>
+                  Accent Chip
                 </div>
-                <div className="text-sm text-gray-400">
-                  Font: {form.fontFamily?.split(",")[0] || "Inter"}
+                <div>
+                  <button style={preview.button} className="px-3 py-2">Primary Button</button>
                 </div>
-                <div className="text-sm text-gray-400">
-                  Button radius: {form.buttonRadius ?? 10}px
-                </div>
-                <div className="text-sm text-gray-400">
-                  Date format: {form.dateFormat || "MM/DD/YYYY"}
-                </div>
-                <div className="text-sm text-gray-400">
-                  Time format: {form.timeFormat || "12h"}
+                <div className="text-xs opacity-70">
+                  {form.dateFormat} • {form.timeFormat}
                 </div>
               </div>
             </div>
           </div>
-
-          {form.customCss && (
-            <div className="mt-4 p-3 bg-gray-800 rounded border border-gray-700">
-              <div className="text-sm text-gray-400 mb-2">Custom CSS Preview:</div>
-              <pre className="text-xs text-green-400 whitespace-pre-wrap break-words">
-                {form.customCss}
-              </pre>
-            </div>
-          )}
         </div>
       </div>
+
+      {form.customCss && <style>{form.customCss}</style>}
     </div>
   );
 }
