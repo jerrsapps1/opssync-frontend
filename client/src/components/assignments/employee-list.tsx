@@ -18,10 +18,10 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           {[1, 2, 3].map((i) => (
             <Card key={i} className="mb-6 p-3 bg-gray-800 border-gray-700 min-h-20">
               <div className="animate-pulse">
-                <div className="h-4 bg-gray-700 rounded mb-2 w-24"></div>
+                <div className="h-4 bg-gray-700 rounded mb-2 w-24" />
                 <div className="space-y-2">
-                  <div className="h-10 bg-gray-700 rounded"></div>
-                  <div className="h-10 bg-gray-700 rounded"></div>
+                  <div className="h-10 bg-gray-700 rounded" />
+                  <div className="h-10 bg-gray-700 rounded" />
                 </div>
               </div>
             </Card>
@@ -35,7 +35,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   const grouped: Record<string, Employee[]> = {};
   projects.forEach((p) => (grouped[p.id] = []));
   grouped["unassigned"] = [];
-  
+
   employees.forEach((emp) => {
     if (emp.currentProjectId && grouped[emp.currentProjectId]) {
       grouped[emp.currentProjectId].push(emp);
@@ -54,8 +54,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
               ref={provided.innerRef}
               {...provided.droppableProps}
               className={`mb-6 p-3 min-h-20 border-gray-700 transition-colors ${
-                snapshot.isDraggingOver 
-                  ? "bg-blue-500 bg-opacity-20 border-blue-500" 
+                snapshot.isDraggingOver
+                  ? "bg-blue-500/20 border-blue-500"
                   : "bg-gray-800"
               }`}
               data-testid={`employee-group-${projId}`}
@@ -65,34 +65,31 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                   ? "Unassigned"
                   : projects.find((p) => p.id === projId)?.name || "Unknown Project"}
               </div>
+
               {emps.map((emp, index) => (
-                <Draggable
-                  key={emp.id}
-                  draggableId={`emp-${emp.id}`}
-                  index={index}
-                >
-                  {(provided, snapshot) => (
+                <Draggable key={emp.id} draggableId={`emp-${emp.id}`} index={index}>
+                  {(dragProvided, dragSnapshot) => (
                     <Card
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
+                      ref={dragProvided.innerRef}
+                      {...dragProvided.draggableProps}
+                      {...dragProvided.dragHandleProps}
                       className={`p-2 mb-2 transition-all select-none cursor-move border-none ${
-                        snapshot.isDragging 
-                          ? "bg-blue-500 shadow-lg transform rotate-1" 
+                        dragSnapshot.isDragging
+                          ? "bg-blue-500 shadow-lg"
                           : "bg-blue-600 hover:bg-blue-500"
                       }`}
                       data-testid={`employee-${emp.id}`}
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
-                          {emp.avatarUrl && (
-                            <AvatarImage 
-                              src={emp.avatarUrl}
-                              className="object-cover"
-                            />
-                          )}
+                          {emp.avatarUrl ? (
+                            <AvatarImage src={emp.avatarUrl} className="object-cover" />
+                          ) : null}
                           <AvatarFallback className="text-xs">
-                            {emp.name.split(' ').map(n => n[0]).join('')}
+                            {emp.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="text-white text-sm">{emp.name}</div>
