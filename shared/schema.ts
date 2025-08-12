@@ -29,6 +29,7 @@ export const employees = pgTable("employees", {
   email: text("email"),
   phone: text("phone"),
   emergencyContactPhone: text("emergency_contact_phone"),
+  company: text("company"),
   avatarUrl: text("avatar_url"),
   employmentStatus: text("employment_status").notNull().default("active"), // active, terminated, standby
   status: text("status").notNull().default("available"), // available, busy, offline

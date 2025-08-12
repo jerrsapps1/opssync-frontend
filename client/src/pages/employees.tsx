@@ -15,6 +15,7 @@ type Employee = {
   email?: string; 
   phone?: string;
   emergencyContactPhone?: string;
+  company?: string;
   yearsExperience?: number; 
   operates?: string[]; 
   currentProjectId?: string | null;
@@ -66,6 +67,7 @@ export default function EmployeeManagementPage() {
     email: "",
     phone: "",
     emergencyContactPhone: "",
+    company: "",
     yearsExperience: 0,
     operates: [] as string[],
     employmentStatus: "active"
@@ -130,6 +132,7 @@ export default function EmployeeManagementPage() {
       email: "",
       phone: "",
       emergencyContactPhone: "",
+      company: "",
       yearsExperience: 0,
       operates: [],
       employmentStatus: "active"
@@ -149,6 +152,7 @@ export default function EmployeeManagementPage() {
       email: employee.email || "",
       phone: employee.phone || "",
       emergencyContactPhone: employee.emergencyContactPhone || "",
+      company: employee.company || "",
       yearsExperience: employee.yearsExperience || 0,
       operates: employee.operates || [],
       employmentStatus: employee.employmentStatus || "active"
@@ -435,6 +439,19 @@ export default function EmployeeManagementPage() {
                         onChange={e => setFormData(prev => ({ ...prev, role: e.target.value }))}
                         className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
                         placeholder="e.g., Heavy Equipment Operator"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Labor Company
+                      </label>
+                      <input
+                        data-testid="input-employee-company"
+                        type="text"
+                        value={formData.company}
+                        onChange={e => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
+                        placeholder="e.g., ABC Construction Labor"
                       />
                     </div>
                     <div>
