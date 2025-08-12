@@ -63,7 +63,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   }
 
   return (
-    <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
+    <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
       <h2 className="text-sm font-medium mb-3 text-white">
         Equipment ({visible.length})
       </h2>

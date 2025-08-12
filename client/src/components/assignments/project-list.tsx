@@ -19,7 +19,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
   
   return (
     <Box
-      width="300px"
+      flex="1"
       borderRight="1px solid"
       borderColor="gray.700"
       p={4}
