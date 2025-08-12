@@ -37,7 +37,6 @@ import SettingsEmployees from "./pages/settings/employees";
 import EquipmentDetail from "./pages/equipment-detail";
 import EmployeeDetail from "./pages/employee-detail";
 import DirectoryPage from "./pages/directory";
-import ProfileBuilder from "./pages/profile-builder";
 import HistoryPage from "./pages/history";
 import PricingPage from "./pages/billing/pricing";
 import BillingHome from "./pages/billing";
@@ -262,7 +261,6 @@ export default function App() {
                 <Route path="/projects/:id" element={<ProjectProfile />} />
                 <Route path="/project/:id" element={<ProjectProfile />} />
                 <Route path="/directory" element={<DirectoryPage />} />
-                <Route path="/builder" element={<ProfileBuilder />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/billing" element={<BillingHome />} />
