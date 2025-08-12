@@ -6,6 +6,7 @@ import { applyActions } from "@/lib/applyActions";
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
+import { Sidebar } from "@/components/dashboard/sidebar";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import type { Project, Employee, Equipment } from "@shared/schema";
@@ -79,18 +80,26 @@ export default function Dashboard() {
 
   return (
     <Box height="100vh" bg="gray.900" color="white">
-      {/* Command Bar */}
-      <Box p={4} bg="gray.800" borderBottom="1px solid" borderColor="gray.700">
-        <CommandBar runActions={handleCommandActions} />
-      </Box>
-      
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Flex height="calc(100vh - 120px)">
-          <ProjectList projects={projects} />
-          <EmployeeList employees={employees} projects={projects} />
-          <EquipmentList equipment={equipment} projects={projects} />
-        </Flex>
-      </DragDropContext>
+      <Flex height="100vh">
+        {/* Sidebar */}
+        <Sidebar />
+        
+        {/* Main Content */}
+        <Box flex="1" display="flex" flexDirection="column">
+          {/* Command Bar */}
+          <Box p={4} bg="gray.800" borderBottom="1px solid" borderColor="gray.700">
+            <CommandBar runActions={handleCommandActions} />
+          </Box>
+          
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Flex height="calc(100vh - 120px)">
+              <ProjectList projects={projects} />
+              <EmployeeList employees={employees} projects={projects} />
+              <EquipmentList equipment={equipment} projects={projects} />
+            </Flex>
+          </DragDropContext>
+        </Box>
+      </Flex>
 
       {isAssigning && (
         <Box
