@@ -96,7 +96,7 @@ export default function Dashboard() {
         );
         if (!dest) return;
         await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
-          currentProjectId: dest.id,
+          projectId: dest.id,
         });
         await Promise.allSettled([queryClient.invalidateQueries()]);
       },
@@ -106,7 +106,7 @@ export default function Dashboard() {
         );
         if (!dest) return;
         await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
-          currentProjectId: dest.id,
+          projectId: dest.id,
         });
         await Promise.allSettled([queryClient.invalidateQueries()]);
       },
