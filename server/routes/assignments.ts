@@ -16,7 +16,7 @@ router.patch("/employees/:id/assignment", async (req, res) => {
     console.log("Request body:", req.body);
     
     // Update employee assignment directly via storage
-    const updatedEmployee = await storage.updateEmployeeAssignment(id, { projectId });
+    const updatedEmployee = await storage.updateEmployeeAssignment(id, { currentProjectId: projectId });
     
     console.log("Assignment complete:", updatedEmployee);
     console.log("=================================");
@@ -41,7 +41,7 @@ router.patch("/equipment/:id/assignment", async (req, res) => {
     console.log("Request body:", req.body);
     
     // Update equipment assignment directly via storage
-    const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+    const updatedEquipment = await storage.updateEquipmentAssignment(id, { currentProjectId: projectId });
     
     console.log("Equipment assignment complete:", updatedEquipment);
     console.log("=================================");

@@ -291,8 +291,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Employee assignment route - DISABLED: using dedicated assignment routes in server/routes/assignments.ts
-  // app.patch("/api/employees/:id/assignment", ...)
+  // Employee assignment route - MUST be defined before general PATCH route  
+  app.patch("/api/employees/:id/assignment", async (req, res) => {
+    try {
+      console.log(`Employee assignment endpoint hit: /api/employees/${req.params.id}/assignment`);
+      const assignmentData = updateEmployeeAssignmentSchema.parse(req.body);
+      console.log("Assignment data:", assignmentData);
+      
+      // Map projectId to currentProjectId for storage
+      const storageAssignment = { currentProjectId: assignmentData.projectId };
+      const employee = await storage.updateEmployeeAssignment(req.params.id, storageAssignment);
+      console.log(`Employee assignment success:`, employee.name, 'assigned to project:', employee.currentProjectId);
+      res.json(employee);
+    } catch (error) {
+      console.error("Error updating employee assignment:", error);
+      res.status(400).json({ message: "Failed to update employee assignment" });
+    }
+  });
 
   // Employee profile update route - MUST come after assignment route
   app.patch("/api/employees/:id", async (req, res) => {
@@ -343,8 +358,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Equipment assignment route - DISABLED: using dedicated assignment routes in server/routes/assignments.ts
-  // app.patch("/api/equipment/:id/assignment", ...)
+  // Equipment assignment route - MUST come before general PATCH route
+  app.patch("/api/equipment/:id/assignment", async (req, res) => {
+    try {
+      console.log(`Equipment assignment endpoint hit: /api/equipment/${req.params.id}/assignment`);
+      const assignmentData = updateEquipmentAssignmentSchema.parse(req.body);
+      // Map projectId to currentProjectId for storage
+      const storageAssignment = { currentProjectId: assignmentData.projectId };
+      const equipment = await storage.updateEquipmentAssignment(req.params.id, storageAssignment);
+      console.log(`Equipment assignment result:`, equipment);
+      res.json(equipment);
+    } catch (error) {
+      console.error("Error updating equipment assignment:", error);
+      res.status(400).json({ message: "Failed to update equipment assignment" });
+    }
+  });
 
   // Equipment profile update route - MUST come after assignment route
   app.patch("/api/equipment/:id", async (req, res) => {

@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Real-time SSE endpoints
 app.use("/api", stream);        // GET /api/stream (SSE endpoint)
-app.use("/api", assignments);   // PATCH /api/{employees|equipment}/:id/assignment with broadcast
+// DISABLED: app.use("/api", assignments);   // Using main routes assignment endpoints instead
 app.use("/api", archive);       // archive/restore/remove + GET /api/history with broadcast
 
 // Billing endpoints

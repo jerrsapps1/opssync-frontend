@@ -654,10 +654,18 @@ export class MemStorage implements IStorage {
   }
 
   async updateEmployeeAssignment(id: string, assignment: UpdateEmployeeAssignment): Promise<Employee> {
+    console.log("=== STORAGE ASSIGNMENT DEBUG ===");
+    console.log("Employee ID:", id);
+    console.log("Assignment object:", assignment);
+    console.log("Current employees count:", this.employees.size);
+    
     const employee = this.employees.get(id);
     if (!employee) {
+      console.log("Employee not found in storage");
       throw new Error(`Employee with id ${id} not found`);
     }
+    
+    console.log("Found employee:", employee.name, "current project:", employee.currentProjectId);
     
     const updatedEmployee: Employee = {
       ...employee,
@@ -666,7 +674,19 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
     
+    console.log("Updated employee data:", {
+      id: updatedEmployee.id,
+      name: updatedEmployee.name,
+      currentProjectId: updatedEmployee.currentProjectId,
+      status: updatedEmployee.status
+    });
+    
     this.employees.set(id, updatedEmployee);
+    
+    // Verify the assignment was saved
+    const savedEmployee = this.employees.get(id);
+    console.log("Verified saved employee currentProjectId:", savedEmployee?.currentProjectId);
+    console.log("=== STORAGE ASSIGNMENT DEBUG END ===");
     
     // Create activity
     const projectName = assignment.currentProjectId 
