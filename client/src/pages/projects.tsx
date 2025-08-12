@@ -4,9 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import ImportExportPanel from "@/components/common/ImportExportPanel";
 import { Plus, Edit3, MapPin, Calendar, Building, Target, X, UserPlus, DollarSign, AlertTriangle, Flag } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,7 +58,7 @@ export default function ProjectSetUpPage() {
     refetchOnWindowFocus: true
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -98,22 +96,10 @@ export default function ProjectSetUpPage() {
     }
   ]);
 
-  const filteredProjects = React.useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    let filtered = projects;
-    
-    if (query) {
-      filtered = projects.filter(proj =>
-        proj.name.toLowerCase().includes(query) ||
-        (proj.projectNumber || "").toLowerCase().includes(query) ||
-        (proj.location || "").toLowerCase().includes(query) ||
-        (proj.status || "").toLowerCase().includes(query)
-      );
-    }
-    
+  const sortedProjects = React.useMemo(() => {
     // Sort alphabetically by name
-    return filtered.sort((a, b) => a.name.localeCompare(b.name));
-  }, [projects, searchQuery]);
+    return projects.sort((a, b) => a.name.localeCompare(b.name));
+  }, [projects]);
 
   const createProjectMutation = useMutation({
     mutationFn: async (projectData: any) => {
@@ -250,15 +236,7 @@ export default function ProjectSetUpPage() {
     }
   }
 
-  function importProjects(file: File) {
-    const body = new FormData();
-    body.append("file", file);
-    fetch("/api/projects/import", { method: "POST", body }).then(() => refetch());
-  }
 
-  function exportProjects() {
-    window.location.href = "/api/projects/export";
-  }
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -329,38 +307,23 @@ export default function ProjectSetUpPage() {
           <h1 className="text-2xl font-bold text-white">Project Set-Up</h1>
           <p className="text-gray-400 text-sm">Create, configure, and manage your construction projects</p>
         </div>
-        <div className="flex gap-3">
-          <input
-            data-testid="input-project-search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search projects..."
-            className="px-4 py-2 rounded-lg bg-[#1E1E2F] border border-gray-700 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent w-64"
-          />
-          <Button
-            data-testid="button-create-project"
-            onClick={openCreateDialog}
-            className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Project
-          </Button>
-        </div>
+        <Button
+          data-testid="button-create-project"
+          onClick={openCreateDialog}
+          className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Add Project
+        </Button>
       </div>
 
-      {/* Import/Export Panel */}
-      <ImportExportPanel
-        title="Project Data"
-        onImport={importProjects}
-        onExport={exportProjects}
-        templateUrl="/templates/projects_template.csv"
-      />
+
 
       {/* Project Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
-            Current Projects ({filteredProjects.length})
+            Current Projects ({sortedProjects.length})
           </h2>
         </div>
 
@@ -378,7 +341,7 @@ export default function ProjectSetUpPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProjects.map(project => (
+            {sortedProjects.map(project => (
               <Card
                 key={project.id}
                 className="p-4 bg-[#1E1E2F] border-gray-700 hover:border-[#4A90E2] transition-colors cursor-pointer"
@@ -444,7 +407,7 @@ export default function ProjectSetUpPage() {
                 </div>
               </Card>
             ))}
-            {filteredProjects.length === 0 && (
+            {sortedProjects.length === 0 && (
               <div className="col-span-full text-center py-12 text-gray-400">
                 No projects found matching your search.
               </div>

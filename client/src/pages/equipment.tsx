@@ -4,7 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import ImportExportPanel from "@/components/common/ImportExportPanel";
+
 import { Plus, Edit3, Wrench, Truck, Calendar, Settings } from "lucide-react";
 
 type Equipment = {
@@ -53,7 +53,7 @@ export default function EquipmentSetUpPage() {
   });
   const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
 
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -71,17 +71,10 @@ export default function EquipmentSetUpPage() {
 
   const projName = React.useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.name])), [projects]);
 
-  const filteredEquipment = React.useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return equipment;
-    return equipment.filter(eq =>
-      eq.name.toLowerCase().includes(query) ||
-      eq.type.toLowerCase().includes(query) ||
-      (eq.make || "").toLowerCase().includes(query) ||
-      (eq.model || "").toLowerCase().includes(query) ||
-      (eq.serialNumber || "").toLowerCase().includes(query)
-    );
-  }, [equipment, searchQuery]);
+  const sortedEquipment = React.useMemo(() => {
+    // Sort alphabetically by name
+    return equipment.sort((a, b) => a.name.localeCompare(b.name));
+  }, [equipment]);
 
   const createEquipmentMutation = useMutation({
     mutationFn: async (equipmentData: any) => {
@@ -177,15 +170,7 @@ export default function EquipmentSetUpPage() {
     }
   }
 
-  function importEquipment(file: File) {
-    const body = new FormData();
-    body.append("file", file);
-    fetch("/api/equipment/import", { method: "POST", body }).then(() => refetch());
-  }
 
-  function exportEquipment() {
-    window.location.href = "/api/equipment/export";
-  }
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -204,38 +189,23 @@ export default function EquipmentSetUpPage() {
           <h1 className="text-2xl font-bold text-white">Equipment Set-Up</h1>
           <p className="text-gray-400 text-sm">Create, configure, and manage your equipment fleet</p>
         </div>
-        <div className="flex gap-3">
-          <input
-            data-testid="input-equipment-search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search equipment..."
-            className="px-4 py-2 rounded-lg bg-[#1E1E2F] border border-gray-700 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent w-64"
-          />
-          <Button
-            data-testid="button-create-equipment"
-            onClick={openCreateDialog}
-            className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Equipment
-          </Button>
-        </div>
+        <Button
+          data-testid="button-create-equipment"
+          onClick={openCreateDialog}
+          className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Add Equipment
+        </Button>
       </div>
 
-      {/* Import/Export Panel */}
-      <ImportExportPanel
-        title="Equipment Data"
-        onImport={importEquipment}
-        onExport={exportEquipment}
-        templateUrl="/templates/equipment_template.csv"
-      />
+
 
       {/* Equipment Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
-            Current Equipment ({filteredEquipment.length})
+            Current Equipment ({sortedEquipment.length})
           </h2>
         </div>
 
@@ -253,7 +223,7 @@ export default function EquipmentSetUpPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEquipment.map(equipment => (
+            {sortedEquipment.map(equipment => (
               <Card
                 key={equipment.id}
                 className="p-4 bg-[#1E1E2F] border-gray-700 hover:border-[#4A90E2] transition-colors cursor-pointer"
@@ -320,7 +290,7 @@ export default function EquipmentSetUpPage() {
                 </div>
               </Card>
             ))}
-            {filteredEquipment.length === 0 && (
+            {sortedEquipment.length === 0 && (
               <div className="col-span-full text-center py-12 text-gray-400">
                 No equipment found matching your search.
               </div>
