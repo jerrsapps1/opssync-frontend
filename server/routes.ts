@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const worksheet = XLSX.utils.aoa_to_sheet([]);
 
       // Add total count in first row
       XLSX.utils.sheet_add_aoa(worksheet, [['PROJECT DIRECTORY - TOTAL RECORDS: ' + projects.length]], { origin: 'A1' });
@@ -434,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const worksheet = XLSX.utils.aoa_to_sheet([]);
 
       // Add total count in first row
       XLSX.utils.sheet_add_aoa(worksheet, [['EMPLOYEE DIRECTORY - TOTAL RECORDS: ' + employees.length]], { origin: 'A1' });
@@ -647,7 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const worksheet = XLSX.utils.aoa_to_sheet([]);
 
       // Add total count in first row
       XLSX.utils.sheet_add_aoa(worksheet, [['EQUIPMENT DIRECTORY - TOTAL RECORDS: ' + equipment.length]], { origin: 'A1' });
