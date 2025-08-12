@@ -113,12 +113,17 @@ export const projectContacts = pgTable("project_contacts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Insert schemas
-export const insertProjectSchema = createInsertSchema(projects).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// Insert schemas with proper date handling
+export const insertProjectSchema = createInsertSchema(projects)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    startDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
+    endDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
+  });
 
 export const insertEmployeeSchema = createInsertSchema(employees).omit({
   id: true,
@@ -184,8 +189,8 @@ export const updateProjectSchema = z.object({
   progress: z.number().min(0).max(100).optional(),
   percentComplete: z.number().min(0).max(100).optional(),
   percentMode: z.enum(["auto", "manual"]).optional(),
-  startDate: z.date().nullable().optional(),
-  endDate: z.date().nullable().optional(),
+  startDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
+  endDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
   // Analytics fields
   projectType: z.string().nullable().optional(),
   estimatedBudget: z.number().nullable().optional(),
