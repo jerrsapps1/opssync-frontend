@@ -19,7 +19,7 @@ import {
   CloseButton,
 } from "@chakra-ui/react";
 // Removed unused icon imports
-import { Route, Link, useLocation } from "wouter";
+import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import pages
@@ -234,24 +234,47 @@ function MainApp() {
   const { conflicts, alertDismissed, setAlertDismissed } = useApp();
 
   return (
-    <AppLayout>
-      {/* Conflict Alerts */}
-      {!alertDismissed && (
-        <Box p={4}>
-          <ConflictAlert 
-            conflicts={conflicts} 
-            onClose={() => setAlertDismissed(true)} 
-          />
-        </Box>
-      )}
+    <BrowserRouter>
+      <Routes>
+        {/* App shell with sidebar on every page */}
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={
+            <>
+              {/* Conflict Alerts */}
+              {!alertDismissed && (
+                <Box p={4}>
+                  <ConflictAlert 
+                    conflicts={conflicts} 
+                    onClose={() => setAlertDismissed(true)} 
+                  />
+                </Box>
+              )}
+              <Dashboard />
+            </>
+          } />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/assignments" element={
+            <>
+              {/* Conflict Alerts */}
+              {!alertDismissed && (
+                <Box p={4}>
+                  <ConflictAlert 
+                    conflicts={conflicts} 
+                    onClose={() => setAlertDismissed(true)} 
+                  />
+                </Box>
+              )}
+              <Dashboard />
+            </>
+          } />
+          <Route path="/white-label" element={<WhiteLabelPage />} />
+        </Route>
 
-      {/* Router */}
-      <Route path="/" component={Dashboard} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/settings" component={Settings} />
-      <Route path="/assignments" component={Dashboard} />
-      <Route path="/white-label" component={WhiteLabelPage} />
-    </AppLayout>
+        {/* Public routes (e.g., login) can live outside the layout */}
+        {/* <Route path="/login" element={<LoginPage />} /> */}
+      </Routes>
+    </BrowserRouter>
   );
 }
 

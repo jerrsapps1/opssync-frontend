@@ -1,11 +1,8 @@
 import React from "react";
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/dashboard/sidebar";
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout() {
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <Sidebar />
@@ -14,7 +11,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <div className="font-semibold text-white">StaffTrak</div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>
