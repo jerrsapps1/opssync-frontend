@@ -1,0 +1,26 @@
+[
+  {
+    "id": "proj-001",
+    "name": "Downtown Mall Renovation",
+    "location": "123 Main St, Downtown",
+    "status": "active",
+    "startDate": "2024-01-15",
+    "endDate": "2024-06-30"
+  },
+  {
+    "id": "proj-002",
+    "name": "Highway 95 Construction",
+    "location": "Highway 95, Mile Marker 45-52",
+    "status": "active",
+    "startDate": "2024-02-01",
+    "endDate": "2024-08-15"
+  },
+  {
+    "id": "proj-003",
+    "name": "Residential Complex Demo",
+    "location": "456 Oak Avenue",
+    "status": "planning",
+    "startDate": "2024-03-01",
+    "endDate": "2024-05-30"
+  }
+]

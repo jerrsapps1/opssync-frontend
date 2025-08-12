@@ -1,0 +1,84 @@
+[
+  {
+    "id": "emp-001",
+    "name": "John Martinez",
+    "role": "Heavy Equipment Operator",
+    "email": "john.martinez@company.com",
+    "phone": "(555) 234-5678",
+    "yearsExperience": 12,
+    "operates": [
+      "Excavator",
+      "Bulldozer",
+      "Loader"
+    ],
+    "currentProjectId": null,
+    "status": "active"
+  },
+  {
+    "id": "emp-002",
+    "name": "Sarah Chen",
+    "role": "Site Supervisor",
+    "email": "sarah.chen@company.com",
+    "phone": "(555) 345-6789",
+    "yearsExperience": 8,
+    "operates": [
+      "Crane",
+      "Forklift"
+    ],
+    "currentProjectId": null,
+    "status": "active"
+  },
+  {
+    "id": "emp-003",
+    "name": "Mike Rodriguez",
+    "role": "Equipment Technician",
+    "email": "mike.rodriguez@company.com",
+    "phone": "(555) 456-7890",
+    "yearsExperience": 15,
+    "operates": [
+      "All Equipment Types"
+    ],
+    "currentProjectId": null,
+    "status": "active"
+  },
+  {
+    "id": "emp-004",
+    "name": "Lisa Thompson",
+    "role": "Crane Operator",
+    "email": "lisa.thompson@company.com",
+    "phone": "(555) 567-8901",
+    "yearsExperience": 6,
+    "operates": [
+      "Mobile Crane",
+      "Tower Crane"
+    ],
+    "currentProjectId": null,
+    "status": "active"
+  },
+  {
+    "id": "emp-005",
+    "name": "David Kim",
+    "role": "Demolition Specialist",
+    "email": "david.kim@company.com",
+    "phone": "(555) 678-9012",
+    "yearsExperience": 10,
+    "operates": [
+      "Demolition Equipment",
+      "Excavator",
+      "Compactor"
+    ],
+    "currentProjectId": null,
+    "status": "active"
+  },
+  {
+    "id": "emp-006",
+    "name": "Jennifer Walsh",
+    "role": "Project Coordinator",
+    "email": "jennifer.walsh@company.com",
+    "phone": "(555) 789-0123",
+    "yearsExperience": 5,
+    "operates": [],
+    "currentProjectId": null,
+    "status": "active"
+  }
+]

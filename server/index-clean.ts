@@ -1,10 +1,20 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createUserRoute } from "./routes/auth";
+import { projectContacts } from "./routes/project-contacts";
+import { notes } from "./routes/notes";
+import { archive } from "./routes/archive";
+
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(createUserRoute);
+app.use("/api", projectContacts);
+app.use("/api", notes);
+app.use("/api", archive);
 
 /** Mock Replit DB for development **/
 class MockReplitDB {
