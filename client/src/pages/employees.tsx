@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import ImportExportPanel from "@/components/common/ImportExportPanel";
+
 import { Plus, Edit3, Trash2, User, MapPin, Phone, Mail, Calendar, Wrench } from "lucide-react";
 
 type Employee = { 
@@ -51,7 +51,6 @@ export default function EmployeeManagementPage() {
   });
   const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   
-  const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -69,17 +68,9 @@ export default function EmployeeManagementPage() {
 
   const projName = React.useMemo(() => Object.fromEntries(projects.map(p => [p.id, p.name])), [projects]);
 
-  const filteredEmployees = React.useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return employees;
-    return employees.filter(emp =>
-      emp.name.toLowerCase().includes(query) ||
-      (emp.role || "").toLowerCase().includes(query) ||
-      (emp.email || "").toLowerCase().includes(query) ||
-      String(emp.yearsExperience || "").includes(query) ||
-      (emp.operates || []).some(x => x.toLowerCase().includes(query))
-    );
-  }, [employees, searchQuery]);
+  const sortedEmployees = React.useMemo(() => {
+    return [...employees].sort((a, b) => a.name.localeCompare(b.name));
+  }, [employees]);
 
   const createEmployeeMutation = useMutation({
     mutationFn: async (employeeData: any) => {
@@ -184,15 +175,7 @@ export default function EmployeeManagementPage() {
     }));
   }
 
-  function importEmployees(file: File) {
-    const body = new FormData();
-    body.append("file", file);
-    fetch("/api/employees/import", { method: "POST", body }).then(() => refetch());
-  }
 
-  function exportEmployees() { 
-    window.location.href = "/api/employees/export"; 
-  }
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -211,38 +194,23 @@ export default function EmployeeManagementPage() {
           <h1 className="text-2xl font-bold text-white">Employee Management</h1>
           <p className="text-gray-400 text-sm">Create, edit, and manage your workforce</p>
         </div>
-        <div className="flex gap-3">
-          <input
-            data-testid="input-employee-search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search employees..."
-            className="px-4 py-2 rounded-lg bg-[#1E1E2F] border border-gray-700 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent w-64"
-          />
-          <Button
-            data-testid="button-create-employee"
-            onClick={openCreateDialog}
-            className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Employee
-          </Button>
-        </div>
+        <Button
+          data-testid="button-create-employee"
+          onClick={openCreateDialog}
+          className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
+        >
+          <Plus size={16} />
+          Add Employee
+        </Button>
       </div>
 
-      {/* Import/Export Panel */}
-      <ImportExportPanel 
-        title="Employee Data" 
-        onImport={importEmployees} 
-        onExport={exportEmployees} 
-        templateUrl="/templates/employees_template.csv" 
-      />
+
 
       {/* Employee Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
-            Current Employees ({filteredEmployees.length})
+            Current Employees ({sortedEmployees.length})
           </h2>
         </div>
 
@@ -260,7 +228,7 @@ export default function EmployeeManagementPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEmployees.map(employee => (
+            {sortedEmployees.map((employee: Employee) => (
               <Card 
                 key={employee.id} 
                 className="p-4 bg-[#1E1E2F] border-gray-700 hover:border-[#4A90E2] transition-colors cursor-pointer"
@@ -331,9 +299,9 @@ export default function EmployeeManagementPage() {
                 </div>
               </Card>
             ))}
-            {filteredEmployees.length === 0 && (
+            {sortedEmployees.length === 0 && (
               <div className="col-span-full text-center py-12 text-gray-400">
-                No employees found matching your search.
+                No employees found.
               </div>
             )}
           </div>
