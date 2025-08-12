@@ -72,14 +72,14 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#0f172a] text-white">
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
         Loading StaffTrak...
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#0f172a]">
+    <div className="flex h-screen bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         {/* keep your existing header / CommandBar / grid exactly as-is */}
