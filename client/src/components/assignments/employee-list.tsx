@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +20,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("employees");
   const { projectId } = useSelection();
-  const [query, setQuery] = useState("");
+
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
 
@@ -53,15 +53,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     a.name.localeCompare(b.name)
   );
 
-  // Column-specific search - only searches within the employee name and role fields
-  const q = query.trim().toLowerCase();
-  const filterEmp = (e: Employee) => {
-    if (!q) return true;
-    const role = (e as any).role || (e as any).title || (e as any).position || "";
-    return e.name.toLowerCase().includes(q) || String(role).toLowerCase().includes(q);
-  };
-
-  const filteredEmployees = sortedEmployees.filter(filterEmp);
+  // Use all sorted employees directly
+  const filteredEmployees = sortedEmployees;
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -73,12 +66,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
       <h2 className="text-sm font-medium mb-3 text-white">
         Employees ({filteredEmployees.length})
       </h2>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search employees by name or role (this column only)…"
-        className="w-full mb-3 px-3 py-2 rounded bg-[color:var(--card)] text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-[var(--brand-primary)] border border-[color:var(--border)]"
-      />
+
       
       {/* Single employee list - drag to projects */}
       <Droppable droppableId="employees">

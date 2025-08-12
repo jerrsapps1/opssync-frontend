@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Wrench, Truck, Hammer } from "lucide-react";
@@ -20,7 +20,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("equipment");
   const { projectId } = useSelection();
-  const [query, setQuery] = useState("");
+
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [assignPos, setAssignPos] = useState<{ id: string; x: number; y: number } | null>(null);
 
@@ -54,9 +54,8 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   // Dashboard shows only unassigned equipment - assigned equipment lives on project pages
   const availableEquipment = equipment.filter(eq => !eq.currentProjectId);
 
-  const q = query.trim().toLowerCase();
-  const filterEq = (e: Equipment) => !q || e.name.toLowerCase().includes(q) || e.type.toLowerCase().includes(q);
-  const visible = useMemo(() => availableEquipment.filter(filterEq), [availableEquipment, q]);
+  // Use all available equipment directly
+  const visible = availableEquipment;
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -68,12 +67,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
       <h2 className="text-sm font-medium mb-3 text-white">
         Equipment ({visible.length})
       </h2>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search equipment by name or type (this column only)…"
-        className="w-full mb-3 px-3 py-2 rounded bg-[color:var(--card)] text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-[var(--brand-primary)] border border-[color:var(--border)]"
-      />
+
       <Droppable droppableId="equipment">
         {(provided, snapshot) => (
           <div
