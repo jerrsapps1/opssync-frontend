@@ -73,8 +73,20 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                 <Text fontSize="xs" color="#C0C0D8" mb={2}>
                   {project.location}
                 </Text>
-                {/* Status and Progress */}
+                
+                {/* Status Bar */}
                 <Box mb={2}>
+                  <Box 
+                    h="3px" 
+                    rounded="full" 
+                    bg={
+                      project.status === "Active" ? "green.400" :
+                      project.status === "Completed" ? "blue.400" :
+                      project.status === "Paused" ? "yellow.400" :
+                      "gray.400" // Planned or default
+                    }
+                    mb={2}
+                  />
                   <Text fontSize="xs" color="blue.300" fontWeight="medium" mb={1}>
                     Status: {project.status || "Planned"}
                   </Text>
