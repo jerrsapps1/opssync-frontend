@@ -1,157 +1,350 @@
-import { useQuery } from "@tanstack/react-query";
-import { DragDropContext } from "react-beautiful-dnd";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Bell, Plus, ChevronDown } from "lucide-react";
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { StatsGrid } from "@/components/dashboard/stats-grid";
-import { UnassignedAssets } from "@/components/dashboard/unassigned-assets";
-import { ActiveProjects } from "@/components/dashboard/active-projects";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { AlertsPanel } from "@/components/dashboard/alerts-panel";
-import { useDragDrop } from "@/hooks/use-drag-drop";
-import type { Project, Employee, Equipment, Activity, Alert } from "@shared/schema";
+import React from "react";
+import { 
+  Box, 
+  Flex, 
+  VStack, 
+  Text, 
+  Heading, 
+  HStack
+} from "@chakra-ui/react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useApp } from "../App";
 
-export default function Dashboard() {
-  const { handleDragEnd, isAssigning } = useDragDrop();
+/** ======= Project Filter Context ======= **/
+const ProjectFilterContext = React.createContext<any>(null);
+export function useProjectFilter() {
+  return React.useContext(ProjectFilterContext);
+}
 
-  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-  });
+export function ProjectFilterProvider({ children }: { children: React.ReactNode }) {
+  const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
+  
+  return (
+    <ProjectFilterContext.Provider value={{ selectedProjectId, setSelectedProjectId }}>
+      {children}
+    </ProjectFilterContext.Provider>
+  );
+}
 
-  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
-    queryKey: ["/api/employees"],
-  });
-
-  const { data: equipment = [], isLoading: equipmentLoading } = useQuery<Equipment[]>({
-    queryKey: ["/api/equipment"],
-  });
-
-  const { data: activities = [], isLoading: activitiesLoading } = useQuery<Activity[]>({
-    queryKey: ["/api/activities"],
-  });
-
-  const { data: alerts = [], isLoading: alertsLoading } = useQuery<Alert[]>({
-    queryKey: ["/api/alerts"],
-  });
-
-  const { data: stats, isLoading: statsLoading } = useQuery<{
-    totalEmployees: number;
-    employeeGrowth: string;
-    totalEquipment: number;
-    equipmentIssues: number;
-    activeProjects: number;
-    projectsOnTrack: string;
-    utilizationRate: number;
-    utilizationTrend: string;
-  }>({
-    queryKey: ["/api/stats"],
-  });
-
-  const isLoading = projectsLoading || employeesLoading || equipmentLoading;
+/** ======= Project List (Left Panel) ======= **/
+function ProjectList() {
+  const appContext = useApp();
+  const { selectedProjectId, setSelectedProjectId } = useProjectFilter();
+  
+  if (!appContext) return null;
+  const { projects } = appContext;
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100">
-      {/* Sidebar */}
-      <Sidebar 
-        activeView="dashboard" 
-        stats={{
-          totalEmployees: employees.length,
-          totalEquipment: equipment.length,
-          activeProjects: projects.filter(p => p.status === "active").length,
-        }}
-      />
+    <Box
+      width="250px"
+      borderRight="1px solid"
+      borderColor="brand.700"
+      p={3}
+      overflowY="auto"
+      bg="#1E1E2F"
+    >
+      <Heading size="sm" mb={3}>Projects</Heading>
+      
+      <Droppable droppableId="unassigned">
+        {(provided, snapshot) => (
+          <Box
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            p={3}
+            bg={snapshot.isDraggingOver ? "red.800" : "#2A2A3D"}
+            border="2px dashed"
+            borderColor={snapshot.isDraggingOver ? "red.400" : "#4A4A5E"}
+            rounded="md"
+            mb={3}
+            minHeight="60px"
+            transition="all 0.2s"
+          >
+            <Text fontSize="sm" color="gray.400" textAlign="center">
+              Unassigned Area
+            </Text>
+            {provided.placeholder}
+          </Box>
+        )}
+      </Droppable>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-white">Project Assignment Dashboard</h2>
-              <p className="text-sm text-gray-400">Manage employee and equipment assignments across active projects</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search assets..."
-                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 w-64 pl-10"
-                  data-testid="search-input"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              </div>
-              
-              {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative text-gray-400 hover:text-white" data-testid="notifications-btn">
-                <Bell size={18} />
-                {alerts.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center p-0">
-                    {alerts.length}
-                  </Badge>
+      <VStack spacing={2} align="stretch">
+        {projects.map((project: any) => (
+          <Droppable key={project.id} droppableId={project.id}>
+            {(provided, snapshot) => (
+              <Box
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                p={3}
+                bg={
+                  selectedProjectId === project.id
+                    ? "brand.600"
+                    : snapshot.isDraggingOver
+                    ? "brand.800"
+                    : "#2A2A3D"
+                }
+                border="1px solid"
+                borderColor={
+                  selectedProjectId === project.id
+                    ? "brand.400"
+                    : snapshot.isDraggingOver
+                    ? "brand.400"
+                    : "#4A4A5E"
+                }
+                rounded="md"
+                minHeight="80px"
+                cursor="pointer"
+                onClick={() => setSelectedProjectId(
+                  selectedProjectId === project.id ? null : project.id
                 )}
-              </Button>
+                transition="all 0.2s"
+                _hover={{
+                  borderColor: "brand.500",
+                  transform: "translateY(-1px)",
+                }}
+              >
+                <Text fontWeight="bold" fontSize="sm" mb={1}>
+                  {project.name}
+                </Text>
+                <Text fontSize="xs" color="gray.400" mb={2}>
+                  {project.description}
+                </Text>
+                
+                {provided.placeholder}
+              </Box>
+            )}
+          </Droppable>
+        ))}
+      </VStack>
+    </Box>
+  );
+}
 
-              {/* Add New Button */}
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white" data-testid="add-new-btn">
-                <Plus size={16} className="mr-2" />
-                Add New
-                <ChevronDown size={16} className="ml-2" />
-              </Button>
-            </div>
-          </div>
-        </header>
+/** ======= Employee List (Middle Panel) ======= **/
+function EmployeeList() {
+  const appContext = useApp();
+  const { selectedProjectId } = useProjectFilter();
+  
+  if (!appContext) return null;
+  const { employees } = appContext;
 
-        {/* Main Dashboard */}
-        <main className="flex-1 overflow-auto p-6">
-          {/* Quick Stats */}
-          <StatsGrid stats={stats} isLoading={statsLoading} />
+  // Apply project filtering if selected
+  const filteredEmployees = selectedProjectId && selectedProjectId !== 'all'
+    ? employees.filter((emp: any) => emp.currentProjectId === selectedProjectId)
+    : employees;
 
-          {/* Assignment Management Grid */}
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Unassigned Assets */}
-              <UnassignedAssets 
-                employees={employees}
-                equipment={equipment}
-                isLoading={isLoading}
-              />
-
-              {/* Active Projects */}
-              <ActiveProjects 
-                projects={projects}
-                employees={employees}
-                equipment={equipment}
-                isLoading={isLoading}
-              />
-            </div>
-          </DragDropContext>
-
-          {/* Recent Activity & Alerts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <RecentActivity 
-              activities={activities}
-              isLoading={activitiesLoading}
-            />
-            <AlertsPanel 
-              alerts={alerts}
-              isLoading={alertsLoading}
-            />
-          </div>
-
-          {/* Loading overlay */}
-          {isAssigning && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 rounded-lg p-6 text-white">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <p>Updating assignment...</p>
-              </div>
-            </div>
+  return (
+    <Box
+      width="250px"
+      borderRight="1px solid"
+      borderColor="brand.700"
+      p={3}
+      overflowY="auto"
+      bg="#1E1E2F"
+    >
+      <HStack justify="space-between" mb={3}>
+        <Heading size="sm">
+          Employees
+          {selectedProjectId && (
+            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
+              (Filtered: {filteredEmployees.length})
+            </Text>
           )}
-        </main>
-      </div>
-    </div>
+        </Heading>
+        {selectedProjectId && filteredEmployees.length === 0 && (
+          <Text fontSize="xs" color="yellow.400">
+            No employees assigned
+          </Text>
+        )}
+      </HStack>
+
+      <Droppable droppableId="employee-list">
+        {(provided, snapshot) => (
+          <Box
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            p={3}
+            bg={snapshot.isDraggingOver ? "blue.800" : "#2A2A3D"}
+            border="2px dashed"
+            borderColor={snapshot.isDraggingOver ? "blue.400" : "#4A4A5E"}
+            rounded="md"
+            minHeight="200px"
+            transition="all 0.2s"
+          >
+            {filteredEmployees.map((employee: any, index: number) => (
+              <Draggable
+                key={employee.id}
+                draggableId={`employee-${employee.id}`}
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <Box
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    p={2}
+                    mb={2}
+                    bg={snapshot.isDragging ? "blue.500" : "#4A90E2"}
+                    rounded="md"
+                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
+                    color="white"
+                    userSelect="none"
+                    cursor="grab"
+                    transform={snapshot.isDragging ? "rotate(-2deg) scale(1.05)" : "none"}
+                    transition="all 0.2s ease-in-out"
+                    _hover={{
+                      transform: "scale(1.02)",
+                      boxShadow: "lg"
+                    }}
+                    _active={{ cursor: "grabbing" }}
+                  >
+                    <VStack align="start" spacing={0}>
+                      <Text fontWeight="bold" fontSize="sm">{employee.name}</Text>
+                      <Text fontSize="xs" color="gray.300">{employee.role}</Text>
+                    </VStack>
+                  </Box>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+
+            {filteredEmployees.length === 0 && (
+              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
+                {selectedProjectId ? "No employees assigned to this project" : "No employees available"}
+              </Text>
+            )}
+          </Box>
+        )}
+      </Droppable>
+    </Box>
+  );
+}
+
+/** ======= Equipment List (Right Panel) ======= **/
+function EquipmentList() {
+  const appContext = useApp();
+  const { selectedProjectId } = useProjectFilter();
+  
+  if (!appContext) return null;
+  const { equipment } = appContext;
+
+  // Apply project filtering if selected
+  const filteredEquipment = selectedProjectId && selectedProjectId !== 'all'
+    ? equipment.filter((eq: any) => eq.currentProjectId === selectedProjectId)
+    : equipment;
+
+  return (
+    <Box
+      width="250px"
+      borderLeft="1px solid"
+      borderColor="brand.700"
+      p={3}
+      overflowY="auto"
+      bg="#1E1E2F"
+    >
+      <HStack justify="space-between" mb={3}>
+        <Heading size="sm">
+          Equipment
+          {selectedProjectId && (
+            <Text as="span" fontSize="xs" color="gray.400" ml={2}>
+              (Filtered: {filteredEquipment.length})
+            </Text>
+          )}
+        </Heading>
+        {selectedProjectId && filteredEquipment.length === 0 && (
+          <Text fontSize="xs" color="yellow.400">
+            No equipment assigned
+          </Text>
+        )}
+      </HStack>
+
+      <Droppable droppableId="equipment-list">
+        {(provided, snapshot) => (
+          <Box
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            p={3}
+            bg={snapshot.isDraggingOver ? "purple.800" : "#2A2A3D"}
+            border="2px dashed"
+            borderColor={snapshot.isDraggingOver ? "purple.400" : "#4A4A5E"}
+            rounded="md"
+            minHeight="200px"
+            transition="all 0.2s"
+          >
+            {filteredEquipment.map((eq: any, index: number) => (
+              <Draggable
+                key={eq.id}
+                draggableId={`equipment-${eq.id}`}
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <Box
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    p={2}
+                    mb={2}
+                    bg={snapshot.isDragging ? "purple.500" : "#BB86FC"}
+                    rounded="md"
+                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
+                    color="white"
+                    userSelect="none"
+                    cursor="grab"
+                    transform={snapshot.isDragging ? "rotate(2deg) scale(1.05)" : "none"}
+                    transition="all 0.2s ease-in-out"
+                    _hover={{
+                      transform: "scale(1.02)",
+                      boxShadow: "lg"
+                    }}
+                    _active={{ cursor: "grabbing" }}
+                    position="relative"
+                  >
+                    <VStack align="start" spacing={0}>
+                      <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
+                      <Text fontSize="xs" color="gray.300">{eq.type}</Text>
+                    </VStack>
+                  </Box>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+
+            {filteredEquipment.length === 0 && (
+              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={8}>
+                {selectedProjectId ? "No equipment assigned to this project" : "No equipment available"}
+              </Text>
+            )}
+          </Box>
+        )}
+      </Droppable>
+    </Box>
+  );
+}
+
+export default function Dashboard() {
+  const appContext = useApp();
+  
+  // Add null check for context
+  if (!appContext) {
+    return (
+      <Box height="100%" display="flex" alignItems="center" justifyContent="center">
+        <Text color="white">Loading...</Text>
+      </Box>
+    );
+  }
+  
+  const { onDragEnd } = appContext;
+
+  return (
+    <ProjectFilterProvider>
+      <Box height="100%" overflow="hidden">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Flex height="calc(100vh - 120px)">
+            <ProjectList />
+            <EmployeeList />
+            <EquipmentList />
+          </Flex>
+        </DragDropContext>
+      </Box>
+    </ProjectFilterProvider>
   );
 }
