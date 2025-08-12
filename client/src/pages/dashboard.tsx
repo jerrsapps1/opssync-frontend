@@ -134,10 +134,15 @@ export default function Dashboard() {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex" style={{ height: "calc(100vh - 168px)" }}>
           <ProjectList projects={projects} />
-          <EmployeeList employees={employees} projects={projects} />
-          <EquipmentList equipment={equipment} projects={projects} />
+          <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
+          <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
         </div>
       </DragDropContext>
+      
+      {/* Debug Info - Remove Later */}
+      <div className="fixed bottom-4 right-4 bg-gray-800 p-2 rounded text-xs text-white">
+        Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
+      </div>
       
       {isAssigning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
