@@ -58,9 +58,36 @@ async function initData() {
       const mockEquipment = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data/mock-equipment.json'), 'utf-8'));
       const mockProjects = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data/mock-projects.json'), 'utf-8'));
       
+      // Ensure all projects have required fields for full functionality
+      const standardizedProjects = mockProjects.map((project: any) => ({
+        ...project,
+        percentComplete: project.percentComplete ?? (project.progress || 0),
+        percentMode: project.percentMode ?? "auto",
+        status: project.status || "Planned",
+        projectNumber: project.projectNumber || `GEN-${project.id}`,
+        gpsLatitude: project.gpsLatitude || null,
+        gpsLongitude: project.gpsLongitude || null,
+        description: project.description || null,
+        kmzFileUrl: project.kmzFileUrl || null,
+        startDate: project.startDate || new Date().toISOString(),
+        endDate: project.endDate || null,
+        progress: project.progress || project.percentComplete || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }));
+
+      console.log(`✓ Standardized ${standardizedProjects.length} projects with required fields`);
+
       await db.set(EMPLOYEES_KEY, mockEmployees);
       await db.set(EQUIPMENT_KEY, mockEquipment);
-      await db.set(PROJECTS_KEY, mockProjects);
+      await db.set(PROJECTS_KEY, standardizedProjects);
+      
+      // Verify all projects have required fields
+      console.log('✓ Sample project fields verification:');
+      const firstProject = standardizedProjects[0];
+      console.log(`  - percentComplete: ${firstProject.percentComplete !== undefined ? '✓' : '✗'}`);
+      console.log(`  - percentMode: ${firstProject.percentMode ? '✓' : '✗'}`);
+      console.log(`  - projectNumber: ${firstProject.projectNumber ? '✓' : '✗'}`);
       
       console.log('✓ Loaded realistic mock data from Excel import');
       console.log(`  - ${mockEmployees.length} employees`);
@@ -81,7 +108,25 @@ async function initData() {
       ]);
       
       await db.set(PROJECTS_KEY, [
-        { id: "proj-001", name: "Sample Project", status: "active", progress: 50, budget: 100000, location: "Seattle" }
+        { 
+          id: "proj-001", 
+          projectNumber: "SAMPLE-001",
+          name: "Sample Project", 
+          location: "Seattle",
+          status: "active", 
+          progress: 50, 
+          percentComplete: 50,
+          percentMode: "auto",
+          budget: 100000,
+          gpsLatitude: null,
+          gpsLongitude: null,
+          description: null,
+          kmzFileUrl: null,
+          startDate: new Date().toISOString(),
+          endDate: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
       ]);
     }
   }
@@ -131,8 +176,29 @@ app.get("/api/equipment", async (req, res) => {
 });
 
 app.get("/api/projects", async (req, res) => {
-  const projects = (await db.get(PROJECTS_KEY)) || [];
-  res.json(projects);
+  let projects = (await db.get(PROJECTS_KEY)) || [];
+  
+  // Ensure all projects have required fields for full functionality
+  const standardizedProjects = projects.map((project: any) => ({
+    ...project,
+    percentComplete: project.percentComplete ?? (project.progress || 0),
+    percentMode: project.percentMode ?? "auto",
+    projectNumber: project.projectNumber || `GEN-${project.id}`,
+    status: project.status || "Planned"
+  }));
+  
+  // Update database with standardized projects if changes were made
+  const hasChanges = standardizedProjects.some((project: any, index: number) => 
+    project.percentComplete !== projects[index]?.percentComplete ||
+    project.percentMode !== projects[index]?.percentMode
+  );
+  
+  if (hasChanges) {
+    await db.set(PROJECTS_KEY, standardizedProjects);
+    console.log(`✓ Migrated ${standardizedProjects.length} projects to include required fields`);
+  }
+  
+  res.json(standardizedProjects);
 });
 
 /** ====== PATCH endpoints ====== **/
