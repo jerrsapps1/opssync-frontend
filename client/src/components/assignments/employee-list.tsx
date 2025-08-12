@@ -70,14 +70,14 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
   return (
     <div className="flex-1 p-3 overflow-y-auto">
-      <h2 className="text-sm font-medium mb-3">
+      <h2 className="text-sm font-medium mb-3 text-white">
         Employees ({filteredEmployees.length})
       </h2>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search employees by name or role (this column only)…"
-        className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+        className="w-full mb-3 px-3 py-2 rounded bg-[color:var(--card)] text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-[var(--brand-primary)] border border-[color:var(--border)]"
       />
       
       {/* Single employee list - drag to projects */}
@@ -95,8 +95,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                     ref={dragProvided.innerRef}
                     {...dragProvided.draggableProps}
                     {...dragProvided.dragHandleProps}
-                    className={`p-3 transition-all select-none cursor-move border-gray-700 ${
-                      dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-gray-800 hover:bg-gray-700"
+                    className={`p-3 transition-all select-none cursor-move border-[color:var(--border)] ${
+                      dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--card)] hover:bg-[color:var(--card)]/80"
                     }`}
                     data-testid={`employee-${emp.id}`}
                     onDoubleClick={() => nav(`/employees/${emp.id}`)}
@@ -109,9 +109,9 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                       </Avatar>
                       <div className="flex-1">
                         <div className="text-white text-sm font-medium">{emp.name}</div>
-                        <div className="text-gray-400 text-xs">{(emp as any).role || "Employee"}</div>
+                        <div className="text-[color:var(--muted-foreground)] text-xs font-medium">{(emp as any).role || "Employee"}</div>
                         {emp.currentProjectId && (
-                          <div className="text-blue-400 text-xs mt-1">
+                          <div className="text-[color:var(--brand-primary)] text-xs mt-1 font-medium">
                             Assigned: {projects.find(p => p.id === emp.currentProjectId)?.name || "Unknown Project"}
                           </div>
                         )}

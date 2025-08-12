@@ -68,7 +68,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                     ? "blue.600" 
                     : snapshot.isDraggingOver 
                     ? "blue.700" 
-                    : "gray.700"
+                    : "#1E1E2F"
                 }
                 border="2px solid"
                 borderColor={
@@ -95,7 +95,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                 <Text fontWeight="bold" fontSize="sm" mb={2} color="white">
                   {project.name}
                 </Text>
-                <Text fontSize="xs" color="gray.400" mb={2}>
+                <Text fontSize="xs" color="#C0C0D8" mb={2}>
                   {project.location}
                 </Text>
                 <Box mb={2}>

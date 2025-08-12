@@ -31,7 +31,7 @@
   --secondary: #BB86FC; /* Soft purple for highlights */
   --secondary-foreground: #FFFFFF;
   --muted: #1E1E2F;
-  --muted-foreground: #A0A0B8; /* Muted grey/blue secondary */
+  --muted-foreground: #C0C0D8; /* Brighter muted grey/blue for better readability */
   --accent: #BB86FC;
   --accent-foreground: #FFFFFF;
   --destructive: #CF6679; /* Soft red/pink alert color */

@@ -64,15 +64,15 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   }
 
   return (
-    <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-gray-800">
-      <h2 className="text-sm font-medium mb-3">
+    <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
+      <h2 className="text-sm font-medium mb-3 text-white">
         Equipment ({visible.length})
       </h2>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search equipment by name or type (this column only)…"
-        className="w-full mb-3 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+        className="w-full mb-3 px-3 py-2 rounded bg-[color:var(--card)] text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-[var(--brand-primary)] border border-[color:var(--border)]"
       />
       <Droppable droppableId="equipment">
         {(provided, snapshot) => (
@@ -104,7 +104,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                         </div>
                         <div className="flex-1">
                           <div className="text-white text-sm font-medium">{eq.name}</div>
-                          <div className="text-xs text-gray-200/80">{eq.type}</div>
+                          <div className="text-xs text-[color:var(--muted-foreground)] font-medium">{eq.type}</div>
                         </div>
                       </div>
                     </Card>
