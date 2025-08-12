@@ -5,11 +5,15 @@ export function Sidebar() {
   const location = useLocation();
   
   const Item = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <Link to={to} className={`block px-3 py-2 rounded text-sm ${
-      location.pathname === to 
-        ? "bg-gray-800 text-white" 
-        : "text-gray-300 hover:bg-gray-800"
-    }`}>
+    <Link 
+      to={to} 
+      className={`block px-3 py-2 rounded text-sm transition-colors ${
+        location.pathname === to 
+          ? "text-white" 
+          : "text-gray-300 hover:bg-gray-800"
+      }`}
+      style={location.pathname === to ? { backgroundColor: 'var(--brand-primary)' } : {}}
+    >
       {children}
     </Link>
   );

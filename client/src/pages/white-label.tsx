@@ -330,7 +330,8 @@ export default function WhiteLabelPage() {
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-60"
+              className="px-4 py-2 rounded text-white disabled:opacity-60 hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: 'var(--brand-primary)', color: 'var(--brand-primary-foreground)' }}
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? "Saving…" : "Save Changes"}

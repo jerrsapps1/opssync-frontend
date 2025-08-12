@@ -55,6 +55,14 @@
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 0.5rem;
+  
+  /* Brand Variables for White Label */
+  --brand-primary: hsl(210, 50%, 50%);
+  --brand-secondary: hsl(160, 60%, 45%);
+  --brand-accent: hsl(30, 80%, 55%);
+  --brand-primary-foreground: white;
+  --brand-secondary-foreground: white;
+  --brand-accent-foreground: white;
 }
 
 .dark {

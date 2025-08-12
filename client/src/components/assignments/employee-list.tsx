@@ -88,9 +88,13 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        className={`p-2 mb-2 transition-all select-none cursor-move border-none ${
-                          dragSnapshot.isDragging ? "bg-blue-500 shadow-lg" : "bg-blue-600 hover:bg-blue-500"
-                        }`}
+                        className="p-2 mb-2 transition-all select-none cursor-move border-none shadow-lg"
+                        style={{
+                          backgroundColor: dragSnapshot.isDragging 
+                            ? 'var(--brand-secondary)' 
+                            : 'var(--brand-primary)',
+                          color: 'var(--brand-primary-foreground)'
+                        }}
                         data-testid={`employee-${emp.id}`}
                       >
                         <div className="flex items-center gap-2">
