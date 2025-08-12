@@ -54,15 +54,21 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
   }
 
   function handleExport(type: "employees" | "equipment" | "projects", format: "excel" | "pdf") {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to export data');
+      return;
+    }
+
     if (format === "excel") {
-      if (type === "employees") window.location.href = "/api/employees/export";
-      else if (type === "equipment") window.location.href = "/api/equipment/export";
-      else if (type === "projects") window.location.href = "/api/projects/export";
+      if (type === "employees") window.location.href = `/api/employees/export?token=${token}`;
+      else if (type === "equipment") window.location.href = `/api/equipment/export?token=${token}`;
+      else if (type === "projects") window.location.href = `/api/projects/export?token=${token}`;
     } else {
       // PDF export endpoints
-      if (type === "employees") window.location.href = "/api/employees/export-pdf";
-      else if (type === "equipment") window.location.href = "/api/equipment/export-pdf";
-      else if (type === "projects") window.location.href = "/api/projects/export-pdf";
+      if (type === "employees") window.location.href = `/api/employees/export-pdf?token=${token}`;
+      else if (type === "equipment") window.location.href = `/api/equipment/export-pdf?token=${token}`;
+      else if (type === "projects") window.location.href = `/api/projects/export-pdf?token=${token}`;
     }
     setExportDialog(null);
   }
