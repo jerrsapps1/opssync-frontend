@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import importExport from "./routes/importExport";
 import projectContacts from "./routes/projectContacts";
 import notes from "./routes/notes";
+import archive from "./routes/archive";
 
 const app = express();
 app.use(express.json());
@@ -13,6 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", importExport);
 app.use("/api", projectContacts);
 app.use("/api", notes);
+app.use("/api", archive);
 
 /** Mock Replit DB for development **/
 // For production deployment, replace this with:

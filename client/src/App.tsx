@@ -35,6 +35,9 @@ import SettingsEquipment from "./pages/settings/equipment";
 import SettingsEmployees from "./pages/settings/employees";
 import EquipmentDetail from "./pages/equipment-detail";
 import EmployeeDetail from "./pages/employee-detail";
+import DirectoryPage from "./pages/directory";
+import ProfileBuilder from "./pages/profile-builder";
+import HistoryPage from "./pages/history";
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -258,6 +261,9 @@ export default function App() {
                 </Route>
                 <Route path="/equipment/:id" element={<EquipmentDetail />} />
                 <Route path="/employees/:id" element={<EmployeeDetail />} />
+                <Route path="/directory" element={<DirectoryPage />} />
+                <Route path="/builder" element={<ProfileBuilder />} />
+                <Route path="/history" element={<HistoryPage />} />
                 <Route path="/assignments" element={<Dashboard />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />
               </Route>

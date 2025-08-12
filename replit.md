@@ -1,6 +1,6 @@
 # Overview
 
-Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. It provides drag-and-drop functionality for assigning employees and equipment to projects, real-time conflict detection, and comprehensive asset management. Built as a full-stack web application with a React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows. Key capabilities include enterprise-grade conflict management with real-time detection and professional alerts, a three-panel layout for streamlined project assignments, JWT authentication, an enhanced navigation header, an advanced white-label system with comprehensive page-level branding support, object storage integration for assets, and a comprehensive settings system. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard.
+Asset Tracker Pro is a professional employee and equipment management application designed for construction and demolition industries. It provides drag-and-drop functionality for assigning employees and equipment to projects, real-time conflict detection, and comprehensive asset management. Built as a full-stack web application with a React frontend and Express backend, it features a modern dark-themed UI optimized for operational workflows. Key capabilities include enterprise-grade conflict management with real-time detection and professional alerts, a three-panel layout for streamlined project assignments, JWT authentication, an enhanced navigation header, an advanced white-label system with comprehensive page-level branding support, object storage integration for assets, a comprehensive settings system, a professional directory system with profile management, a guided profile builder wizard, and complete archive/history tracking with audit trails. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard.
 
 # User Preferences
 
@@ -44,6 +44,30 @@ The useBrandTheme hook automatically applies brand configuration to CSS custom p
 - Statistics cards and UI elements using CSS brand color variables
 - Professional page layouts optimized for white-label client presentation
 - Consistent branding across Dashboard, Employees, Equipment, Analytics, and Settings pages
+
+## Professional Directory System
+The application includes a comprehensive directory system for managing employee, equipment, and project profiles with advanced features:
+
+**Directory Features:**
+- **Unified Directory View**: Single page with tabs for Employees, Equipment, and Projects
+- **Completeness Tracking**: Visual progress bars showing profile completion percentage
+- **Context Menu Integration**: Right-click menus with "Open Profile", "Assign...", and "Unassign" actions
+- **Dual Navigation**: Double-click to open detailed profiles, right-click for quick actions
+- **Real-time Assignment**: Integration with existing project assignment system
+
+**Profile Builder Wizard:**
+- **Guided Setup Process**: Step-by-step wizard for completing profile information
+- **Entity Selection**: Choose between Employees, Equipment, or Projects
+- **Progressive Form Fields**: Context-sensitive fields based on entity type
+- **Save & Next Workflow**: Efficient progression through all incomplete profiles
+- **Real-time Validation**: Immediate feedback on required fields and data integrity
+
+**Archive & History System:**
+- **Soft Delete Architecture**: Archive/restore functionality with data preservation
+- **Complete Audit Trail**: Full history tracking of all entity changes
+- **Action Logging**: Detailed logs for create, update, archive, restore, and delete operations
+- **Recovery Capabilities**: Ability to restore archived entities without data loss
+- **Timeline View**: Chronological display of all system activities
 
 ## Enhanced Settings Management System
 A comprehensive settings interface is provided with a structured sub-page system accessible via header navigation. The system includes:
