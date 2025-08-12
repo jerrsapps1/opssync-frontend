@@ -25,7 +25,12 @@ export default function SettingsEmployees() {
 
   return (
     <div className="p-4 space-y-4">
-      <ImportExportPanel onImport={importFile} onExport={exportAll} title="Employees" />
+      <ImportExportPanel 
+        onImport={importFile} 
+        onExport={exportAll} 
+        title="Employees" 
+        templateUrl="/templates/employees_template.csv"
+      />
       <div className="rounded border border-gray-800 overflow-hidden">
         <Table>
           <THead>

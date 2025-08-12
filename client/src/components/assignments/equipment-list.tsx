@@ -2,6 +2,10 @@ import { useMemo, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Wrench, Truck, Hammer } from "lucide-react";
+import ContextMenu from "@/components/common/ContextMenu";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
@@ -12,6 +16,28 @@ interface EquipmentListProps {
 
 export function EquipmentList({ equipment, projects: _projects, isLoading }: EquipmentListProps) {
   const [query, setQuery] = useState("");
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const unassignMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("PATCH", `/api/equipment/${id}/assignment`, { currentProjectId: null });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+    },
+  });
+
+  const openMenu = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({ id, x: e.clientX, y: e.clientY });
+  };
+
+  const handleDoubleClick = (id: string) => {
+    navigate(`/equipment/${id}`);
+  };
 
   if (isLoading) {
     return (
@@ -75,6 +101,8 @@ export function EquipmentList({ equipment, projects: _projects, isLoading }: Equ
                         dragSnapshot.isDragging ? "bg-purple-500 shadow-lg" : "bg-blue-600 hover:bg-purple-500"
                       }`}
                       data-testid={`equipment-${eq.id}`}
+                      onDoubleClick={() => handleDoubleClick(eq.id)}
+                      onContextMenu={(e) => openMenu(e, eq.id)}
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-orange-500/20 rounded flex items-center justify-center">
@@ -94,6 +122,30 @@ export function EquipmentList({ equipment, projects: _projects, isLoading }: Equ
           </div>
         )}
       </Droppable>
+
+      {/* Context Menu */}
+      {menu && (
+        <ContextMenu
+          pos={{ x: menu.x, y: menu.y }}
+          onClose={() => setMenu(null)}
+          items={[
+            { 
+              label: "🚜 Open Profile", 
+              onClick: () => { 
+                navigate(`/equipment/${menu.id}`); 
+                setMenu(null); 
+              } 
+            },
+            { 
+              label: "📋 Unassign from Project", 
+              onClick: () => { 
+                unassignMutation.mutate(menu.id); 
+                setMenu(null); 
+              } 
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

@@ -67,6 +67,19 @@ A comprehensive settings interface is provided with a structured sub-page system
 - Professional branded headers and navigation elements
 - Back navigation support on detail pages
 
+**Context Menu System:**
+- Right-click context menus on employee and equipment cards
+- Quick access to profile pages and unassign functionality
+- Double-click navigation to detail pages
+- Professional menu styling with icon indicators
+
+**Server Features:**
+- Complete import/export API routes with CSV/Excel support
+- Project contacts management with persistent storage
+- Notes system for entity annotations
+- Template file serving for proper data formatting
+- Real-time data validation during imports
+
 ## Navigation System
 The application features a global layout system with consistent sidebar navigation across all pages. Implemented using React Router DOM with nested routing architecture for clean page transitions. The AppLayout component provides a unified shell with sidebar and header that wraps all application pages. The sidebar includes navigation to Dashboard, Employees, Equipment, Analytics, Settings, and admin sections like White Label Config. The layout maintains the original gray-900 color scheme with proper active link highlighting and seamless navigation between all pages.
 

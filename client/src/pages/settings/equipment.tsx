@@ -25,7 +25,12 @@ export default function SettingsEquipment() {
 
   return (
     <div className="p-4 space-y-4">
-      <ImportExportPanel onImport={importFile} onExport={exportAll} title="Equipment" />
+      <ImportExportPanel 
+        onImport={importFile} 
+        onExport={exportAll} 
+        title="Equipment" 
+        templateUrl="/templates/equipment_template.csv"
+      />
       <div className="rounded border border-gray-800 overflow-hidden">
         <Table>
           <THead>

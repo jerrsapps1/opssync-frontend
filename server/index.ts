@@ -1,10 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { setupVite, serveStatic, log } from "./vite";
 import { registerRoutes } from "./routes";
+import importExport from "./routes/importExport";
+import projectContacts from "./routes/projectContacts";
+import notes from "./routes/notes";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Feature routes
+app.use("/api", importExport);
+app.use("/api", projectContacts);
+app.use("/api", notes);
 
 /** Mock Replit DB for development **/
 // For production deployment, replace this with:
@@ -400,6 +408,36 @@ app.get("/api/equipment", async (req, res) => {
 app.get("/api/projects", async (req, res) => {
   const projects = (await db.get(PROJECTS_KEY)) || [];
   res.json(projects);
+});
+
+// Individual entity endpoints for detail pages
+app.get("/api/employees/:id", async (req, res) => {
+  const employees = (await db.get(EMPLOYEES_KEY)) || [];
+  const employee = employees.find((emp: any) => emp.id === req.params.id);
+  if (!employee) return res.status(404).json({ error: "Employee not found" });
+  res.json(employee);
+});
+
+app.get("/api/equipment/:id", async (req, res) => {
+  const equipment = (await db.get(EQUIPMENT_KEY)) || [];
+  const item = equipment.find((eq: any) => eq.id === req.params.id);
+  if (!item) return res.status(404).json({ error: "Equipment not found" });
+  res.json(item);
+});
+
+// Template file serving
+app.get("/templates/:filename", (req, res) => {
+  const path = require("path");
+  const fs = require("fs");
+  const filePath = path.join(process.cwd(), "templates", req.params.filename);
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "Template not found" });
+  }
+  
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename=${req.params.filename}`);
+  res.sendFile(filePath);
 });
 
 /** ====== PATCH endpoints ====== **/

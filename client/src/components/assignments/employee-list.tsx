@@ -2,6 +2,10 @@ import { useMemo, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ContextMenu from "@/components/common/ContextMenu";
+import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { Employee, Project } from "@shared/schema";
 
 interface EmployeeListProps {
@@ -12,6 +16,28 @@ interface EmployeeListProps {
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
   const [query, setQuery] = useState("");
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const unassignMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("PATCH", `/api/employees/${id}/assignment`, { currentProjectId: null });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+    },
+  });
+
+  const openMenu = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({ id, x: e.clientX, y: e.clientY });
+  };
+
+  const handleDoubleClick = (id: string) => {
+    navigate(`/employees/${id}`);
+  };
 
   if (isLoading) {
     return (
@@ -96,6 +122,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                           color: 'var(--brand-primary-foreground)'
                         }}
                         data-testid={`employee-${emp.id}`}
+                        onDoubleClick={() => handleDoubleClick(emp.id)}
+                        onContextMenu={(e) => openMenu(e, emp.id)}
                       >
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
@@ -121,6 +149,30 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           </Droppable>
         );
       })}
+
+      {/* Context Menu */}
+      {menu && (
+        <ContextMenu
+          pos={{ x: menu.x, y: menu.y }}
+          onClose={() => setMenu(null)}
+          items={[
+            { 
+              label: "👤 Open Profile", 
+              onClick: () => { 
+                navigate(`/employees/${menu.id}`); 
+                setMenu(null); 
+              } 
+            },
+            { 
+              label: "📋 Unassign from Project", 
+              onClick: () => { 
+                unassignMutation.mutate(menu.id); 
+                setMenu(null); 
+              } 
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }
