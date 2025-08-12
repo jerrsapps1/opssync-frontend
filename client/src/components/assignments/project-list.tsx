@@ -28,31 +28,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
     >
       <Heading size="md" mb={4} color="white">Projects</Heading>
       
-      {/* Unassigned Area */}
-      <Droppable droppableId="unassigned">
-        {(provided, snapshot) => (
-          <Box
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            p={4}
-            bg={snapshot.isDraggingOver ? "red.700" : "gray.700"}
-            border="2px dashed"
-            borderColor={snapshot.isDraggingOver ? "red.400" : "gray.600"}
-            rounded="md"
-            mb={4}
-            minHeight="80px"
-            transition="all 0.2s"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text fontSize="sm" color="gray.400" textAlign="center">
-              Drop here to unassign
-            </Text>
-            {provided.placeholder}
-          </Box>
-        )}
-      </Droppable>
+
 
       {/* Project List */}
       <VStack spacing={3} align="stretch">

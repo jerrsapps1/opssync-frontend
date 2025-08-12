@@ -33,13 +33,7 @@ export function onDragEndFactory(fns: Fns) {
     }
 
     // Handle legacy project IDs directly (for project cards that accept both)
-    let projectId: string | null = null;
-    if (destination.droppableId === "unassigned") {
-      projectId = null;
-    } else {
-      // Assume it's a direct project ID
-      projectId = destination.droppableId;
-    }
+    const projectId: string | null = destination.droppableId;
 
     console.log("Drag and Drop Debug:", {
       draggableId,
