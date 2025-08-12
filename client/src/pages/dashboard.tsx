@@ -46,15 +46,10 @@ export default function Dashboard() {
   const appContext = useApp();
   const queryClient = useQueryClient();
 
-  if (!appContext) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
-        Loading application context...
-      </div>
-    );
-  }
-
-  const { conflicts, alertDismissed, setAlertDismissed } = appContext;
+  // Provide default conflicts state if context is not available
+  const conflicts = appContext?.conflicts || { employeeConflicts: [], equipmentConflicts: [] };
+  const alertDismissed = appContext?.alertDismissed || false;
+  const setAlertDismissed = appContext?.setAlertDismissed || (() => {});
 
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
