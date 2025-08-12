@@ -1383,7 +1383,7 @@ function EmployeeList() {
 }
 
 /** ======= Equipment List (Right Panel) ======= **/
-function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, name: string) => void }) {
+function EquipmentList() {
   const { equipment, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
@@ -1417,7 +1417,7 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
         )}
       </HStack>
 
-      <Droppable droppableId="equipment-all">
+      <Droppable droppableId="equipment-list">
         {(provided, snapshot) => (
           <Box
             ref={provided.innerRef}
@@ -1458,23 +1458,10 @@ function EquipmentList({ onEndorse }: { onEndorse: (type: string, id: string, na
                     _active={{ cursor: "grabbing" }}
                     position="relative"
                   >
-                    <HStack justify="space-between">
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
-                        <Text fontSize="xs" color="gray.300">{eq.type}</Text>
-                        {/* Assignment status badge - only show when assigned */}
-                        {eq.currentProjectId && (
-                          <Badge 
-                            size="sm" 
-                            colorScheme="green" 
-                            fontSize="xs"
-                          >
-                            {projects.find((p: any) => p.id === eq.currentProjectId)?.name || "Assigned"}
-                          </Badge>
-                        )}
-                      </VStack>
-
-                    </HStack>
+                    <VStack align="start" spacing={0}>
+                      <Text fontWeight="bold" fontSize="sm">{eq.name}</Text>
+                      <Text fontSize="xs" color="gray.300">{eq.type}</Text>
+                    </VStack>
                   </Box>
                 )}
               </Draggable>
@@ -1638,7 +1625,7 @@ function MainApp() {
         <Flex height="calc(100vh - 120px)">
           <ProjectList />
           <EmployeeList />
-          <EquipmentList onEndorse={handleSkillEndorsement} />
+          <EquipmentList />
         </Flex>
       </DragDropContext>
     </Box>
