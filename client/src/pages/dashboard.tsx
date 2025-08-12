@@ -53,15 +53,15 @@ export default function Dashboard() {
   const setAlertDismissed = appContext?.setAlertDismissed || (() => {});
 
   const { data: projects = [], isLoading: projectsLoading, error: projectsError } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
+    queryKey: ["/api", "projects"],
   });
 
   const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
-    queryKey: ["/api/employees"],
+    queryKey: ["/api", "employees"],
   });
 
   const { data: equipment = [], isLoading: equipmentLoading, error: equipmentError } = useQuery<Equipment[]>({
-    queryKey: ["/api/equipment"],
+    queryKey: ["/api", "equipment"],
   });
 
   const isLoading = projectsLoading || employeesLoading || equipmentLoading;

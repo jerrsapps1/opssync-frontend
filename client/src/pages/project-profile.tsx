@@ -48,12 +48,12 @@ export default function ProjectProfile() {
     enabled: !!id 
   });
   const { data: employees = [] } = useQuery({ 
-    queryKey: ["employees"], 
+    queryKey: ["/api", "employees"], 
     queryFn: getEmployees,
     refetchInterval: 5000 // Refetch every 5 seconds to keep data fresh
   });
   const { data: equipment = [] } = useQuery({ 
-    queryKey: ["equipment"], 
+    queryKey: ["/api", "equipment"], 
     queryFn: getEquipment,
     refetchInterval: 5000 // Refetch every 5 seconds to keep data fresh
   });

@@ -29,10 +29,10 @@ export function useDragDrop() {
     onSuccess: (data) => {
       console.log("Employee assignment success:", data);
       // Force immediate invalidation and refetch using consistent query keys
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      queryClient.refetchQueries({ queryKey: ["employees"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+      queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
     },
     onError: (error) => {
       toast({
@@ -54,10 +54,10 @@ export function useDragDrop() {
     onSuccess: (data) => {
       console.log("Equipment assignment success:", data);
       // Force immediate invalidation and refetch using consistent query keys
-      queryClient.invalidateQueries({ queryKey: ["equipment"] });
-      queryClient.refetchQueries({ queryKey: ["equipment"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
     },
     onError: (error) => {
       toast({
