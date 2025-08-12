@@ -156,31 +156,8 @@ app.get("/api/equipment", async (req, res) => {
   res.json(equipment);
 });
 
-app.get("/api/projects", async (req, res) => {
-  let projects = (await db.get(PROJECTS_KEY)) || [];
-  
-  // Ensure all projects have required fields for full functionality
-  const standardizedProjects = projects.map((project: any) => ({
-    ...project,
-    percentComplete: project.percentComplete ?? (project.progress || 0),
-    percentMode: project.percentMode ?? "auto",
-    projectNumber: project.projectNumber || `GEN-${project.id}`,
-    status: project.status || "Planned"
-  }));
-  
-  // Update database with standardized projects if changes were made
-  const hasChanges = standardizedProjects.some((project: any, index: number) => 
-    project.percentComplete !== projects[index]?.percentComplete ||
-    project.percentMode !== projects[index]?.percentMode
-  );
-  
-  if (hasChanges) {
-    await db.set(PROJECTS_KEY, standardizedProjects);
-    console.log(`✓ Migrated ${standardizedProjects.length} projects to include required fields`);
-  }
-  
-  res.json(standardizedProjects);
-});
+// Projects route moved to routes.ts to use PostgreSQL storage
+// app.get("/api/projects", async (req, res) => { ... });
 
 /** ====== PATCH endpoints ====== **/
 
@@ -294,7 +271,7 @@ app.get("/api/analytics", async (req, res) => {
   // Initialize realistic mock data
   await initData();
   
-  // Register all routes (including auth)
+  // Register all routes (including auth) - this includes the PostgreSQL projects route
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
