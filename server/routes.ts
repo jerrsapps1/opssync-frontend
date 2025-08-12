@@ -264,6 +264,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Projects PDF export route - MUST come before :id route  
+  app.get("/api/projects/export-pdf", async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Project Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      projects.forEach((proj, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${proj.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        if (proj.projectNumber) {
+          doc.fontSize(10).font('Helvetica').text(`Project Number: ${proj.projectNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.location) {
+          doc.text(`Location: ${proj.location}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.status) {
+          doc.text(`Status: ${proj.status}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (proj.progress !== undefined) {
+          doc.text(`Progress: ${proj.progress}%`, 70, yPosition);
+          yPosition += 15;
+        }
+
+        if (proj.description) {
+          doc.text(`Description: ${proj.description}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting projects PDF:", error);
+      res.status(500).json({ message: "Failed to export projects PDF" });
+    }
+  });
+
   app.get("/api/projects", async (req, res) => {
     try {
       const projects = await storage.getProjects();
@@ -381,6 +444,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Employee PDF export route - MUST come before :id route
+  app.get("/api/employees/export-pdf", async (req, res) => {
+    try {
+      const employees = await storage.getEmployees();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="employees-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Employee Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      employees.forEach((emp, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${emp.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        if (emp.role) {
+          doc.fontSize(10).font('Helvetica').text(`Role: ${emp.role}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.email) {
+          doc.text(`Email: ${emp.email}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.phone) {
+          doc.text(`Phone: ${emp.phone}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (emp.employmentStatus) {
+          doc.text(`Employment Status: ${emp.employmentStatus}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting employees PDF:", error);
+      res.status(500).json({ message: "Failed to export employees PDF" });
+    }
+  });
+
   app.get("/api/employees/:id", async (req, res) => {
     try {
       const employee = await storage.getEmployee(req.params.id);
@@ -447,6 +568,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching equipment:", error);
       res.status(500).json({ message: "Failed to fetch equipment" });
+    }
+  });
+
+  // Equipment Excel export route - MUST come before :id route
+  app.get("/api/equipment/export", async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      
+      // Transform equipment data for Excel export
+      const exportData = equipment.map(eq => ({
+        'Name': eq.name,
+        'Type': eq.type,
+        'Make': eq.make || '',
+        'Model': eq.model || '',
+        'Asset Number': eq.assetNumber || '',
+        'Serial Number': eq.serialNumber || '',
+        'Status': eq.status,
+        'Current Project': eq.currentProjectId || '',
+        'Created Date': eq.createdAt ? new Date(eq.createdAt).toLocaleDateString() : '',
+        'Updated Date': eq.updatedAt ? new Date(eq.updatedAt).toLocaleDateString() : ''
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 25 }, // Name
+        { wch: 15 }, // Type
+        { wch: 15 }, // Make
+        { wch: 15 }, // Model
+        { wch: 15 }, // Asset Number
+        { wch: 15 }, // Serial Number
+        { wch: 12 }, // Status
+        { wch: 20 }, // Current Project
+        { wch: 12 }, // Created Date
+        { wch: 12 }, // Updated Date
+      ];
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipment');
+
+      // Generate Excel file buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Set headers for file download
+      const timestamp = new Date().toISOString().split('T')[0];
+      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.xlsx"`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error exporting equipment:", error);
+      res.status(500).json({ message: "Failed to export equipment" });
+    }
+  });
+
+  // Equipment PDF export route - MUST come before :id route
+  app.get("/api/equipment/export-pdf", async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      
+      const doc = new PDFDocument({ margin: 50 });
+      const timestamp = new Date().toISOString().split('T')[0];
+      
+      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.pdf"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      
+      doc.pipe(res);
+      
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Equipment Directory', 50, 50);
+      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
+      
+      let yPosition = 110;
+      
+      equipment.forEach((eq, index) => {
+        if (yPosition > 700) {
+          doc.addPage();
+          yPosition = 50;
+        }
+        
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${eq.name}`, 50, yPosition);
+        yPosition += 20;
+        
+        if (eq.type) {
+          doc.fontSize(10).font('Helvetica').text(`Type: ${eq.type}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.make) {
+          doc.text(`Make: ${eq.make}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.model) {
+          doc.text(`Model: ${eq.model}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.assetNumber) {
+          doc.text(`Asset Number: ${eq.assetNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.serialNumber) {
+          doc.text(`Serial Number: ${eq.serialNumber}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        if (eq.status) {
+          doc.text(`Status: ${eq.status}`, 70, yPosition);
+          yPosition += 15;
+        }
+        
+        yPosition += 10;
+      });
+      
+      doc.end();
+    } catch (error) {
+      console.error("Error exporting equipment PDF:", error);
+      res.status(500).json({ message: "Failed to export equipment PDF" });
     }
   });
 
@@ -560,442 +804,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/equipment/export", async (req, res) => {
+  // Activities routes
+  app.get("/api/activities", async (req, res) => {
     try {
-      const equipment = await storage.getEquipment();
-      
-      // Transform equipment data for Excel export
-      const exportData = equipment.map(eq => ({
-        'Name': eq.name,
-        'Type': eq.type,
-        'Make': eq.make || '',
-        'Model': eq.model || '',
-        'Asset Number': eq.assetNumber || '',
-        'Serial Number': eq.serialNumber || '',
-        'Status': eq.status,
-        'Current Project': eq.currentProjectId || '',
-        'Created Date': eq.createdAt ? new Date(eq.createdAt).toLocaleDateString() : '',
-        'Updated Date': eq.updatedAt ? new Date(eq.updatedAt).toLocaleDateString() : ''
-      }));
-
-      // Create workbook and worksheet
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-      // Set column widths
-      const colWidths = [
-        { wch: 25 }, // Name
-        { wch: 15 }, // Type
-        { wch: 15 }, // Make
-        { wch: 15 }, // Model
-        { wch: 15 }, // Asset Number
-        { wch: 15 }, // Serial Number
-        { wch: 12 }, // Status
-        { wch: 20 }, // Current Project
-        { wch: 12 }, // Created Date
-        { wch: 12 }, // Updated Date
-      ];
-      worksheet['!cols'] = colWidths;
-
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipment');
-
-      // Generate Excel file buffer
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
-      // Set headers for file download
-      const timestamp = new Date().toISOString().split('T')[0];
-      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.xlsx"`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-      res.send(buffer);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const activities = await storage.getRecentActivities(limit);
+      res.json(activities);
     } catch (error) {
-      console.error("Error exporting equipment:", error);
-      res.status(500).json({ message: "Failed to export equipment" });
-    }
-  });
-
-  app.get("/api/projects/export", authenticateToken, async (req, res) => {
-    try {
-      const projects = await storage.getProjects();
-      
-      // Transform project data for Excel export
-      const exportData = projects.map(proj => ({
-        'Project Number': proj.projectNumber || '',
-        'Name': proj.name,
-        'Location': proj.location || '',
-        'Status': proj.status || '',
-        'Progress %': proj.progress || 0,
-        'GPS Latitude': proj.gpsLatitude || '',
-        'GPS Longitude': proj.gpsLongitude || '',
-        'Description': proj.description || '',
-        'Start Date': proj.startDate ? new Date(proj.startDate).toLocaleDateString() : '',
-        'End Date': proj.endDate ? new Date(proj.endDate).toLocaleDateString() : '',
-        'Created Date': proj.createdAt ? new Date(proj.createdAt).toLocaleDateString() : '',
-        'Updated Date': proj.updatedAt ? new Date(proj.updatedAt).toLocaleDateString() : ''
-      }));
-
-      // Create workbook and worksheet
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-      // Set column widths
-      const colWidths = [
-        { wch: 15 }, // Project Number
-        { wch: 25 }, // Name
-        { wch: 20 }, // Location
-        { wch: 12 }, // Status
-        { wch: 10 }, // Progress %
-        { wch: 12 }, // GPS Latitude
-        { wch: 12 }, // GPS Longitude
-        { wch: 30 }, // Description
-        { wch: 12 }, // Start Date
-        { wch: 12 }, // End Date
-        { wch: 12 }, // Created Date
-        { wch: 12 }, // Updated Date
-      ];
-      worksheet['!cols'] = colWidths;
-
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Projects');
-
-      // Generate Excel file buffer
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
-      // Set headers for file download
-      const timestamp = new Date().toISOString().split('T')[0];
-      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.xlsx"`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-      res.send(buffer);
-    } catch (error) {
-      console.error("Error exporting projects:", error);
-      res.status(500).json({ message: "Failed to export projects" });
-    }
-  });
-
-  // PDF Export endpoints
-  // Employee PDF export route - MUST come before :id route
-  app.get("/api/employees/export-pdf", async (req, res) => {
-    try {
-      const employees = await storage.getEmployees();
-      
-      const doc = new PDFDocument({ margin: 50 });
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      res.setHeader('Content-Disposition', `attachment; filename="employees-export-${timestamp}.pdf"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      
-      doc.pipe(res);
-      
-      // Title
-      doc.fontSize(18).font('Helvetica-Bold').text('Employee Directory', 50, 50);
-      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
-      
-      let yPosition = 110;
-      
-      employees.forEach((emp, index) => {
-        if (yPosition > 700) {
-          doc.addPage();
-          yPosition = 50;
-        }
-        
-        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${emp.name}`, 50, yPosition);
-        yPosition += 20;
-        
-        if (emp.role) {
-          doc.fontSize(10).font('Helvetica').text(`Role: ${emp.role}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (emp.email) {
-          doc.text(`Email: ${emp.email}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (emp.phone) {
-          doc.text(`Phone: ${emp.phone}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (emp.employmentStatus) {
-          doc.text(`Employment Status: ${emp.employmentStatus}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        yPosition += 10;
-      });
-      
-      doc.end();
-    } catch (error) {
-      console.error("Error exporting employees PDF:", error);
-      res.status(500).json({ message: "Failed to export employees PDF" });
-    }
-  });
-
-  // Projects PDF export route - MUST come before :id route  
-  app.get("/api/projects/export-pdf", async (req, res) => {
-    try {
-      const projects = await storage.getProjects();
-      
-      const doc = new PDFDocument({ margin: 50 });
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.pdf"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      
-      doc.pipe(res);
-      
-      // Title
-      doc.fontSize(18).font('Helvetica-Bold').text('Project Directory', 50, 50);
-      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
-      
-      let yPosition = 110;
-      
-      projects.forEach((proj, index) => {
-        if (yPosition > 700) {
-          doc.addPage();
-          yPosition = 50;
-        }
-        
-        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${proj.name}`, 50, yPosition);
-        yPosition += 20;
-        
-        if (proj.projectNumber) {
-          doc.fontSize(10).font('Helvetica').text(`Project Number: ${proj.projectNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.location) {
-          doc.text(`Location: ${proj.location}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.status) {
-          doc.text(`Status: ${proj.status}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.progress !== undefined) {
-          doc.text(`Progress: ${proj.progress}%`, 70, yPosition);
-          yPosition += 15;
-        }
-
-        if (proj.description) {
-          doc.text(`Description: ${proj.description}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        yPosition += 10;
-      });
-      
-      doc.end();
-    } catch (error) {
-      console.error("Error exporting projects PDF:", error);
-      res.status(500).json({ message: "Failed to export projects PDF" });
-    }
-  });
-
-  // Equipment PDF export route - MUST come before :id route
-  app.get("/api/equipment/export-pdf", async (req, res) => {
-    try {
-      const equipment = await storage.getEquipment();
-      
-      const doc = new PDFDocument({ margin: 50 });
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.pdf"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      
-      doc.pipe(res);
-      
-      // Title
-      doc.fontSize(18).font('Helvetica-Bold').text('Equipment Directory', 50, 50);
-      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
-      
-      let yPosition = 110;
-      
-      equipment.forEach((eq, index) => {
-        if (yPosition > 700) {
-          doc.addPage();
-          yPosition = 50;
-        }
-        
-        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${eq.name}`, 50, yPosition);
-        yPosition += 20;
-        
-        if (eq.type) {
-          doc.fontSize(10).font('Helvetica').text(`Type: ${eq.type}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.make) {
-          doc.text(`Make: ${eq.make}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.model) {
-          doc.text(`Model: ${eq.model}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.assetNumber) {
-          doc.text(`Asset Number: ${eq.assetNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-
-        if (eq.serialNumber) {
-          doc.text(`Serial Number: ${eq.serialNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-
-        if (eq.status) {
-          doc.text(`Status: ${eq.status}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        yPosition += 10;
-      });
-      
-      doc.end();
-    } catch (error) {
-      console.error("Error exporting equipment PDF:", error);
-      res.status(500).json({ message: "Failed to export equipment PDF" });
-    }
-  });
-
-  app.get("/api/equipment/export-pdf", authenticateToken, async (req, res) => {
-    try {
-      const equipment = await storage.getEquipment();
-      
-      const doc = new PDFDocument({ margin: 50 });
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      res.setHeader('Content-Disposition', `attachment; filename="equipment-export-${timestamp}.pdf"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      
-      doc.pipe(res);
-      
-      // Title
-      doc.fontSize(18).font('Helvetica-Bold').text('Equipment Directory', 50, 50);
-      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
-      
-      let yPosition = 110;
-      
-      equipment.forEach((eq, index) => {
-        if (yPosition > 700) {
-          doc.addPage();
-          yPosition = 50;
-        }
-        
-        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${eq.name}`, 50, yPosition);
-        yPosition += 20;
-        
-        doc.fontSize(10).font('Helvetica').text(`Type: ${eq.type}`, 70, yPosition);
-        yPosition += 15;
-        
-        if (eq.make) {
-          doc.text(`Make: ${eq.make}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.model) {
-          doc.text(`Model: ${eq.model}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.assetNumber) {
-          doc.text(`Asset Number: ${eq.assetNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.serialNumber) {
-          doc.text(`Serial Number: ${eq.serialNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (eq.status) {
-          doc.text(`Status: ${eq.status}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        yPosition += 10;
-      });
-      
-      doc.end();
-    } catch (error) {
-      console.error("Error exporting equipment PDF:", error);
-      res.status(500).json({ message: "Failed to export equipment PDF" });
-    }
-  });
-
-  app.get("/api/projects/export-pdf", authenticateToken, async (req, res) => {
-    try {
-      const projects = await storage.getProjects();
-      
-      const doc = new PDFDocument({ margin: 50 });
-      const timestamp = new Date().toISOString().split('T')[0];
-      
-      res.setHeader('Content-Disposition', `attachment; filename="projects-export-${timestamp}.pdf"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      
-      doc.pipe(res);
-      
-      // Title
-      doc.fontSize(18).font('Helvetica-Bold').text('Project Directory', 50, 50);
-      doc.fontSize(10).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, 50, 75);
-      
-      let yPosition = 110;
-      
-      projects.forEach((proj, index) => {
-        if (yPosition > 700) {
-          doc.addPage();
-          yPosition = 50;
-        }
-        
-        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${proj.name}`, 50, yPosition);
-        yPosition += 20;
-        
-        if (proj.projectNumber) {
-          doc.fontSize(10).font('Helvetica').text(`Project Number: ${proj.projectNumber}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.location) {
-          doc.text(`Location: ${proj.location}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.status) {
-          doc.text(`Status: ${proj.status}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.progress !== undefined) {
-          doc.text(`Progress: ${proj.progress}%`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.description) {
-          doc.text(`Description: ${proj.description}`, 70, yPosition, { width: 400 });
-          yPosition += 30;
-        }
-        
-        if (proj.startDate) {
-          doc.text(`Start Date: ${new Date(proj.startDate).toLocaleDateString()}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        if (proj.endDate) {
-          doc.text(`End Date: ${new Date(proj.endDate).toLocaleDateString()}`, 70, yPosition);
-          yPosition += 15;
-        }
-        
-        yPosition += 10;
-      });
-      
-      doc.end();
-    } catch (error) {
-      console.error("Error exporting projects PDF:", error);
-      res.status(500).json({ message: "Failed to export projects PDF" });
+      console.error("Error fetching activities:", error);
+      res.status(500).json({ message: "Failed to fetch activities" });
     }
   });
 
