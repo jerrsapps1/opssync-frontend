@@ -99,7 +99,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                       dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--card)] hover:bg-[color:var(--card)]/80"
                     }`}
                     data-testid={`employee-${emp.id}`}
-                    onDoubleClick={() => nav(`/employees/${emp.id}`)}
+                    onDoubleClick={() => nav(`/directory`)}
                     onContextMenu={(e) => openContext(e, emp.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { label: "Open profile", onClick: () => { nav(`/employees/${menu.id}`); setMenu(null); } },
+            { label: "View in Directory", onClick: () => { nav(`/directory`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
             { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}

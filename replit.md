@@ -11,6 +11,7 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Professional Directory**: Directory functionality confirmed working perfectly with comprehensive asset management
 - **Employee Creation Enhancement**: Added emergency contact phone and company fields to 3-step employee wizard
 - **Navigation Streamlining**: Removed redundant Profile Builder tab, updated navigation to use consistent "Profiles" naming (Employee Profiles, Equipment Profiles, Project Profiles)
+- **Directory-First Navigation**: Streamlined employee and equipment profile access to use the comprehensive Directory system instead of individual profile pages, reducing redundancy
 - **Project Management Enhancement**: Fixed critical project creation issues with date validation and form submission flow
 - **Alphabetical Sorting**: Projects now display in alphabetical order by name for consistent organization
 

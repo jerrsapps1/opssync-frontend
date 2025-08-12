@@ -95,7 +95,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                         dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
                       }`}
                       data-testid={`equipment-${eq.id}`}
-                      onDoubleClick={() => nav(`/equipment/${eq.id}`)}
+                      onDoubleClick={() => nav(`/directory`)}
                       onContextMenu={(e) => openContext(e, eq.id)}
                     >
                       <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { label: "Open profile", onClick: () => { nav(`/equipment/${menu.id}`); setMenu(null); } },
+            { label: "View in Directory", onClick: () => { nav(`/directory`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
             { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}
