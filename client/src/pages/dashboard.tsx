@@ -9,8 +9,8 @@ import {
   useToast
 } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "../lib/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "../lib/queryClient";
 import { useApp } from "../App";
 import { EmployeeList } from "../components/assignments/employee-list";
 import { EquipmentList } from "../components/assignments/equipment-list";
@@ -178,152 +178,102 @@ export default function Dashboard() {
   }
   
   const { onDragEnd, employees, equipment, projects } = appContext;
+  const qc = useQueryClient();
 
-  // API mutation for employee assignments
-  const assignEmployeeMutation = useMutation({
-    mutationFn: async ({ employeeId, projectId }: { employeeId: string; projectId: string | null }) => {
-      return await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
-        currentProjectId: projectId,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Assignment Failed",
-        description: error.message || "Failed to assign employee",
-        status: "error",
-        duration: 3000,
-      });
-    },
-  });
-
-  // API mutation for equipment assignments
-  const assignEquipmentMutation = useMutation({
-    mutationFn: async ({ equipmentId, projectId }: { equipmentId: string; projectId: string | null }) => {
-      return await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
-        currentProjectId: projectId,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Assignment Failed",
-        description: error.message || "Failed to assign equipment",
-        status: "error",
-        duration: 3000,
-      });
-    },
-  });
-
-  // Helper functions for command bar actions
-  const findEmployeeByQuery = (query: string) => {
-    const q = query.toLowerCase();
-    return employees.find((emp: any) => 
-      emp.name.toLowerCase().includes(q) || 
-      emp.role.toLowerCase().includes(q)
-    );
-  };
-
-  const findEquipmentByQuery = (query: string) => {
-    const q = query.toLowerCase();
-    return equipment.find((eq: any) => 
-      eq.name.toLowerCase().includes(q) || 
-      eq.type.toLowerCase().includes(q)
-    );
-  };
-
-  const findProjectByName = (projectName: string) => {
-    const q = projectName.toLowerCase();
-    return projects.find((proj: any) => 
-      proj.name.toLowerCase().includes(q)
-    );
-  };
-
-  // API-based assignment functions that match the provided pattern
-  const handleMoveEmployee = async (employeeId: string, destProjectId: string) => {
-    await assignEmployeeMutation.mutateAsync({ employeeId, projectId: destProjectId });
-  };
-
-  const handleMoveEquipment = async (equipmentId: string, destProjectId: string) => {
-    await assignEquipmentMutation.mutateAsync({ equipmentId, projectId: destProjectId });
-  };
-
-  const moveEmployee = async (employeeId: string, projectName: string) => {
-    const dest = projects.find((p: any) => p.name.toLowerCase() === projectName.toLowerCase());
-    if (!dest) {
-      toast({
-        title: "Project Not Found",
-        description: `Could not find project "${projectName}"`,
-        status: "warning",
-        duration: 3000,
-      });
-      return;
-    }
-    await handleMoveEmployee(employeeId, dest.id);
-    
-    const employee = employees.find((emp: any) => emp.id === employeeId);
-    toast({
-      title: "Employee Assigned",
-      description: `${employee?.name} moved to ${dest.name}`,
-      status: 'success',
-      duration: 3000,
+  // helpers that hit the SAME endpoints as DnD:
+  async function handleMoveEmployee(employeeId: string, destProjectId: string | null) {
+    await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
+      currentProjectId: destProjectId,
     });
-  };
+    // keep UI fresh
+    await Promise.allSettled([
+      qc.invalidateQueries(),
+    ]);
+  }
 
-  const assignEquipment = async (equipmentId: string, projectName: string) => {
-    const dest = projects.find((p: any) => p.name.toLowerCase() === projectName.toLowerCase());
-    if (!dest) {
-      toast({
-        title: "Project Not Found",
-        description: `Could not find project "${projectName}"`,
-        status: "warning",
-        duration: 3000,
-      });
-      return;
-    }
-    await handleMoveEquipment(equipmentId, dest.id);
-    
-    const eq = equipment.find((eq: any) => eq.id === equipmentId);
-    toast({
-      title: "Equipment Assigned",
-      description: `${eq?.name} assigned to ${dest.name}`,
-      status: 'success',
-      duration: 3000,
+  async function handleMoveEquipment(equipmentId: string, destProjectId: string | null) {
+    await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
+      currentProjectId: destProjectId,
     });
-  };
-
-  const showUnassigned = (date?: string) => {
-    const unassignedEmployees = employees.filter((emp: any) => !emp.currentProjectId);
-    const unassignedEquipment = equipment.filter((eq: any) => !eq.currentProjectId);
-    
-    console.log("Unassigned requested for", date);
-    console.log("Unassigned employees:", unassignedEmployees.map((emp: any) => emp.name));
-    console.log("Unassigned equipment:", unassignedEquipment.map((eq: any) => eq.name));
-    
-    toast({
-      title: 'Unassigned Assets',
-      description: `${unassignedEmployees.length} employees, ${unassignedEquipment.length} equipment items unassigned`,
-      status: 'info',
-      duration: 5000,
-    });
-  };
+    await Promise.allSettled([qc.invalidateQueries()]);
+  }
 
   const handleCommandActions = (actions: any[]) => {
     applyActions({
       actions,
-      findEmployeeByQuery,
-      findEquipmentByQuery,
-      moveEmployee,
-      assignEquipment,
-      showUnassigned,
+      // fuzzy resolvers: tweak as needed
+      findEmployeeByQuery: (q) => {
+        const qq = q.toLowerCase();
+        return employees.find((e: any) => e.name.toLowerCase().includes(qq));
+      },
+      findEquipmentByQuery: (q) => {
+        const qq = q.toLowerCase();
+        return equipment.find(
+          (x: any) =>
+            x.name.toLowerCase().includes(qq) ||
+            x.type.toLowerCase().includes(qq)
+        );
+      },
+      // use project NAME in command → map to ID here
+      moveEmployee: async (employeeId, projectName) => {
+        const dest = projects.find(
+          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
+        );
+        if (!dest) {
+          toast({
+            title: "Project Not Found",
+            description: `Could not find project "${projectName}"`,
+            status: "warning",
+            duration: 3000,
+          });
+          return;
+        }
+        await handleMoveEmployee(employeeId, dest.id);
+        
+        const employee = employees.find((emp: any) => emp.id === employeeId);
+        toast({
+          title: "Employee Assigned",
+          description: `${employee?.name} moved to ${dest.name}`,
+          status: 'success',
+          duration: 3000,
+        });
+      },
+      assignEquipment: async (equipmentId, projectName) => {
+        const dest = projects.find(
+          (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
+        );
+        if (!dest) {
+          toast({
+            title: "Project Not Found",
+            description: `Could not find project "${projectName}"`,
+            status: "warning",
+            duration: 3000,
+          });
+          return;
+        }
+        await handleMoveEquipment(equipmentId, dest.id);
+        
+        const eq = equipment.find((eq: any) => eq.id === equipmentId);
+        toast({
+          title: "Equipment Assigned",
+          description: `${eq?.name} assigned to ${dest.name}`,
+          status: 'success',
+          duration: 3000,
+        });
+      },
+      showUnassigned: (date) => {
+        // optional: scroll to Unassigned group or open a modal
+        const unassignedEmployees = employees.filter((emp: any) => !emp.currentProjectId);
+        const unassignedEquipment = equipment.filter((eq: any) => !eq.currentProjectId);
+        
+        console.log("Unassigned requested for", date);
+        toast({
+          title: 'Unassigned Assets',
+          description: `${unassignedEmployees.length} employees, ${unassignedEquipment.length} equipment items unassigned`,
+          status: 'info',
+          duration: 5000,
+        });
+      },
     });
   };
 

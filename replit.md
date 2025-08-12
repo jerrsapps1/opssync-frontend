@@ -29,6 +29,22 @@ The application includes a comprehensive white-label system configurable during 
 ## Enhanced Settings Management System
 A comprehensive settings interface is provided with a 5-tab system accessible via header navigation: Project Details, Team Management, Equipment Settings, Company Contacts, and Project Contacts. The refined drag & drop system features consistent ID architecture, direct project assignment, a dedicated unassigned zone, enhanced visual feedback, and robust error handling.
 
+## Natural Language Command Bar System
+The application features an advanced natural language interface that allows users to interact with StaffTrak using plain English commands. The command bar is positioned above the main dashboard and integrates seamlessly with the existing drag-and-drop functionality.
+
+**Key Features:**
+- **OpenAI Integration**: Advanced natural language processing with fallback to simple pattern matching
+- **API Consistency**: Uses identical PATCH endpoints as drag-and-drop functionality (`/api/employees/:id/assignment` and `/api/equipment/:id/assignment`)
+- **Intelligent Matching**: Fuzzy search for employees (by name/role) and equipment (by name/type)
+- **Project Resolution**: Converts natural language project names to database IDs
+- **Real-time Updates**: Automatic query invalidation keeps UI synchronized
+- **Comprehensive Error Handling**: User-friendly validation and toast notifications
+
+**Supported Commands:**
+- Employee assignments: "move John Smith to Downtown Mall"
+- Equipment assignments: "assign excavator to highway project"  
+- Asset queries: "list unassigned" or "show unassigned"
+
 # External Dependencies
 
 ## Database Integration
