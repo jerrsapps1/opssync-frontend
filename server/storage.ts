@@ -12,6 +12,8 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -585,7 +587,16 @@ export class MemStorage implements IStorage {
 
   // Projects
   async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    // Load from database and update in-memory cache
+    const dbProjects = await db.select().from(projects);
+    
+    // Update in-memory cache
+    this.projects.clear();
+    for (const project of dbProjects) {
+      this.projects.set(project.id, project);
+    }
+    
+    return dbProjects;
   }
 
   async getProject(id: string): Promise<Project | undefined> {
@@ -593,10 +604,9 @@ export class MemStorage implements IStorage {
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const id = randomUUID();
-    const newProject: Project = {
+    // Use database instead of in-memory storage
+    const [newProject] = await db.insert(projects).values({
       ...project,
-      id,
       gpsLatitude: project.gpsLatitude || null,
       gpsLongitude: project.gpsLongitude || null,
       kmzFileUrl: project.kmzFileUrl || null,
@@ -605,43 +615,33 @@ export class MemStorage implements IStorage {
       progress: project.progress || 0,
       percentComplete: project.percentComplete || 0,
       percentMode: project.percentMode || "auto",
-      startDate: project.startDate || new Date(),
-      endDate: project.endDate || null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.projects.set(id, newProject);
+      startDate: project.startDate ? new Date(project.startDate) : new Date(),
+      endDate: project.endDate ? new Date(project.endDate) : null,
+    }).returning();
     
-    // Also persist to shared database
-    const { db, PROJECTS_KEY } = await import('./sharedDb');
-    const existingProjects = (await db.get(PROJECTS_KEY)) || [];
-    existingProjects.push(newProject);
-    await db.set(PROJECTS_KEY, existingProjects);
+    // Also update in-memory cache
+    this.projects.set(newProject.id, newProject);
     
     return newProject;
   }
 
   async updateProject(id: string, updates: UpdateProject): Promise<Project> {
-    const project = this.projects.get(id);
-    if (!project) {
+    // Update in database
+    const [updatedProject] = await db
+      .update(projects)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(projects.id, id))
+      .returning();
+    
+    if (!updatedProject) {
       throw new Error(`Project with id ${id} not found`);
     }
-
-    const updatedProject: Project = {
-      ...project,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    this.projects.set(id, updatedProject);
     
-    // Also update in shared database
-    const { db, PROJECTS_KEY } = await import('./sharedDb');
-    const existingProjects = (await db.get(PROJECTS_KEY)) || [];
-    const projectIndex = existingProjects.findIndex((p: Project) => p.id === id);
-    if (projectIndex !== -1) {
-      existingProjects[projectIndex] = updatedProject;
-      await db.set(PROJECTS_KEY, existingProjects);
-    }
+    // Update in-memory cache
+    this.projects.set(id, updatedProject);
     
     return updatedProject;
   }
