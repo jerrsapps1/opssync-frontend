@@ -1,9 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PrivacySettings() {
+  const { toast } = useToast();
+  const [retentionSettings, setRetentionSettings] = useState({
+    activityLogs: "2years",
+    archivedData: "5years", 
+    sessionData: "30days",
+    autoDelete: true,
+    complianceMode: false
+  });
+
+  const handleRetentionChange = (key: string, value: string) => {
+    setRetentionSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSwitchChange = (key: string, checked: boolean) => {
+    setRetentionSettings(prev => ({ ...prev, [key]: checked }));
+  };
+
+  const saveRetentionSettings = () => {
+    // Here you would typically save to backend
+    toast({
+      title: "Settings Saved",
+      description: "Data retention preferences have been updated.",
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -123,38 +153,169 @@ export default function PrivacySettings() {
         </CardContent>
       </Card>
 
-      {/* Data Retention */}
+      {/* Data Retention Settings */}
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            🕒 Data Retention Policy
+            🕒 Data Retention Settings
           </CardTitle>
           <CardDescription className="text-gray-400">
-            How long different types of data are kept in the system
+            Configure how long different types of data are kept in your system
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-900 p-4 rounded-lg">
-              <h4 className="text-white font-medium mb-2">Active Records</h4>
-              <p className="text-gray-300 text-sm mb-1">Employee, Equipment, Project data</p>
-              <p className="text-blue-400 text-sm font-medium">Retained indefinitely while active</p>
+        <CardContent className="space-y-6">
+          
+          {/* Active Records - Always Retained */}
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-white font-medium mb-1">Active Records</h4>
+                <p className="text-gray-400 text-sm">Employee, Equipment, Project data</p>
+              </div>
+              <Badge variant="outline" className="text-blue-400 border-blue-400">
+                Always Retained
+              </Badge>
             </div>
-            <div className="bg-gray-900 p-4 rounded-lg">
-              <h4 className="text-white font-medium mb-2">Activity Logs</h4>
-              <p className="text-gray-300 text-sm mb-1">Assignment changes, system activities</p>
-              <p className="text-green-400 text-sm font-medium">Retained for audit compliance</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Active operational data is retained indefinitely while entities remain in the system
+            </p>
+          </div>
+
+          {/* Activity Logs */}
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-white font-medium mb-1">Activity Logs</h4>
+                <p className="text-gray-400 text-sm">Assignment changes, system activities, audit trail</p>
+              </div>
             </div>
-            <div className="bg-gray-900 p-4 rounded-lg">
-              <h4 className="text-white font-medium mb-2">Archived Data</h4>
-              <p className="text-gray-300 text-sm mb-1">Deleted/completed records</p>
-              <p className="text-yellow-400 text-sm font-medium">Soft-deleted, recoverable</p>
+            <div className="flex items-center gap-4">
+              <Label htmlFor="activity-retention" className="text-gray-300 text-sm">
+                Retain for:
+              </Label>
+              <Select 
+                value={retentionSettings.activityLogs} 
+                onValueChange={(value) => handleRetentionChange('activityLogs', value)}
+              >
+                <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1year">1 Year</SelectItem>
+                  <SelectItem value="2years">2 Years</SelectItem>
+                  <SelectItem value="3years">3 Years</SelectItem>
+                  <SelectItem value="5years">5 Years</SelectItem>
+                  <SelectItem value="7years">7 Years</SelectItem>
+                  <SelectItem value="indefinite">Indefinite</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="bg-gray-900 p-4 rounded-lg">
-              <h4 className="text-white font-medium mb-2">Session Data</h4>
-              <p className="text-gray-300 text-sm mb-1">Login sessions, temporary data</p>
-              <p className="text-purple-400 text-sm font-medium">Cleared on logout/expiry</p>
+          </div>
+
+          {/* Archived Data */}
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-white font-medium mb-1">Archived Data</h4>
+                <p className="text-gray-400 text-sm">Deleted/completed records, soft-deleted items</p>
+              </div>
             </div>
+            <div className="flex items-center gap-4">
+              <Label htmlFor="archive-retention" className="text-gray-300 text-sm">
+                Retain for:
+              </Label>
+              <Select 
+                value={retentionSettings.archivedData} 
+                onValueChange={(value) => handleRetentionChange('archivedData', value)}
+              >
+                <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="6months">6 Months</SelectItem>
+                  <SelectItem value="1year">1 Year</SelectItem>
+                  <SelectItem value="2years">2 Years</SelectItem>
+                  <SelectItem value="5years">5 Years</SelectItem>
+                  <SelectItem value="indefinite">Indefinite</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Session Data */}
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-white font-medium mb-1">Session Data</h4>
+                <p className="text-gray-400 text-sm">Login sessions, temporary cache, user preferences</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Label htmlFor="session-retention" className="text-gray-300 text-sm">
+                Auto-clear after:
+              </Label>
+              <Select 
+                value={retentionSettings.sessionData} 
+                onValueChange={(value) => handleRetentionChange('sessionData', value)}
+              >
+                <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1day">1 Day</SelectItem>
+                  <SelectItem value="7days">7 Days</SelectItem>
+                  <SelectItem value="30days">30 Days</SelectItem>
+                  <SelectItem value="90days">90 Days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Separator className="bg-gray-700" />
+
+          {/* Additional Options */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="auto-delete" className="text-white font-medium">
+                  Automatic Data Cleanup
+                </Label>
+                <p className="text-gray-400 text-sm">
+                  Automatically delete data when retention periods expire
+                </p>
+              </div>
+              <Switch
+                id="auto-delete"
+                checked={retentionSettings.autoDelete}
+                onCheckedChange={(checked) => handleSwitchChange('autoDelete', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="compliance-mode" className="text-white font-medium">
+                  Compliance Mode
+                </Label>
+                <p className="text-gray-400 text-sm">
+                  Enable extended retention for regulatory compliance
+                </p>
+              </div>
+              <Switch
+                id="compliance-mode"
+                checked={retentionSettings.complianceMode}
+                onCheckedChange={(checked) => handleSwitchChange('complianceMode', checked)}
+              />
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="pt-4">
+            <Button 
+              onClick={saveRetentionSettings}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Save Retention Settings
+            </Button>
           </div>
         </CardContent>
       </Card>
