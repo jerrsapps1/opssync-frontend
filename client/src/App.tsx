@@ -265,6 +265,7 @@ export default function App() {
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/billing" element={<BillingHome />} />
                 <Route path="/assignments" element={<Dashboard />} />
+                <Route path="/builder" element={<Navigate to="/employees" replace />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />
               </Route>
             </Routes>
