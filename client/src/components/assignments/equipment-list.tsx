@@ -84,13 +84,9 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                         <div className="flex-1">
                           <div className="text-white text-sm font-medium">{eq.name}</div>
                           <div className="text-xs text-gray-400">{eq.type}</div>
-                          {projectName ? (
+                          {projectName && (
                             <Badge variant="outline" className="text-xs mt-1 bg-green-500/10 text-green-400 border-green-500/30">
                               {projectName}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="text-xs mt-1 bg-gray-500/10 text-gray-400 border-gray-500/30">
-                              Unassigned
                             </Badge>
                           )}
                         </div>
