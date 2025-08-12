@@ -1,5 +1,33 @@
 [
   {
+    "id": "warehouse",
+    "projectNumber": "STORE-WH-001",
+    "name": "Demo Warehouse",
+    "location": "Main Storage Facility",
+    "gpsLatitude": null,
+    "gpsLongitude": null,
+    "description": "Equipment storage facility - awaiting project assignment",
+    "status": "active",
+    "progress": 100,
+    "budget": 0,
+    "startDate": "2020-01-01",
+    "endDate": "2030-12-31"
+  },
+  {
+    "id": "maintenance",
+    "projectNumber": "STORE-MAINT-001", 
+    "name": "Maintenance Shop",
+    "location": "Service Center",
+    "gpsLatitude": null,
+    "gpsLongitude": null,
+    "description": "Equipment maintenance, repairs, and retired assets storage",
+    "status": "active",
+    "progress": 100,
+    "budget": 0,
+    "startDate": "2020-01-01",
+    "endDate": "2030-12-31"
+  },
+  {
     "id": "proj-001",
     "name": "Downtown Mall Renovation",
     "location": "123 Main St, Downtown",
