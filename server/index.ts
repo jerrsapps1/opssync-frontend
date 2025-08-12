@@ -183,67 +183,9 @@ app.use((req, res, next) => {
 
 /** ====== PATCH endpoints ====== **/
 
-app.patch("/api/employees/:id/assignment", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { projectId } = req.body;
-
-    console.log(`\n=== EMPLOYEE ASSIGNMENT DEBUG ===`);
-    console.log(`Employee ID: ${id}`);
-    console.log(`Project ID: ${projectId}`);
-    console.log(`Request body:`, JSON.stringify(req.body));
-
-    const employees = (await db.get(EMPLOYEES_KEY)) || [];
-    console.log(`Found ${employees.length} employees in database`);
-    
-    let found = false;
-    const updatedEmployees = employees.map((emp: any) => {
-      if (emp.id === id) {
-        found = true;
-        console.log(`Found employee: ${emp.name}, updating currentProjectId from ${emp.currentProjectId} to ${projectId}`);
-        return { ...emp, currentProjectId: projectId, updatedAt: new Date().toISOString() };
-      }
-      return emp;
-    });
-    
-    if (!found) {
-      console.log(`Employee ${id} not found`);
-      return res.status(404).json({ error: "Employee not found" });
-    }
-
-    await db.set(EMPLOYEES_KEY, updatedEmployees);
-    const updatedEmployee = updatedEmployees.find((e: any) => e.id === id);
-    console.log(`Assignment complete:`, updatedEmployee);
-    console.log(`=================================\n`);
-    
-    res.json(updatedEmployee);
-  } catch (error) {
-    console.error("Error in employee assignment:", error);
-    res.status(500).json({ error: "Failed to update employee assignment", message: error.message });
-  }
-});
-
-app.patch("/api/equipment/:id/assignment", async (req, res) => {
-  const { id } = req.params;
-  const { projectId } = req.body;
-
-  const equipment = (await db.get(EQUIPMENT_KEY)) || [];
-  
-  let found = false;
-  const updatedEquipment = equipment.map((eq: any) => {
-    if (eq.id === id) {
-      found = true;
-      return { ...eq, currentProjectId: projectId };
-    }
-    return eq;
-  });
-  
-  if (!found) return res.status(404).json({ error: "Equipment not found" });
-
-  await db.set(EQUIPMENT_KEY, updatedEquipment);
-  const updatedItem = updatedEquipment.find((e: any) => e.id === id);
-  res.json(updatedItem);
-});
+// Assignment routes moved to routes.ts to use PostgreSQL storage
+// app.patch("/api/employees/:id/assignment", ...) - now in routes.ts
+// app.patch("/api/equipment/:id/assignment", ...) - now in routes.ts
 
 app.patch("/api/projects/:id/supervisor", async (req, res) => {
   const { id: projectId } = req.params;
