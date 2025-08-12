@@ -587,8 +587,9 @@ export class MemStorage implements IStorage {
 
   // Projects
   async getProjects(): Promise<Project[]> {
-    // Load from database and update in-memory cache
+    // Always load from PostgreSQL database, not in-memory cache
     const dbProjects = await db.select().from(projects);
+    console.log(`💾 getProjects: Found ${dbProjects.length} projects in PostgreSQL database`);
     
     // Update in-memory cache
     this.projects.clear();
@@ -600,7 +601,12 @@ export class MemStorage implements IStorage {
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    return this.projects.get(id);
+    // Always load from PostgreSQL database first
+    const [dbProject] = await db.select().from(projects).where(eq(projects.id, id));
+    if (dbProject) {
+      this.projects.set(id, dbProject);
+    }
+    return dbProject;
   }
 
   async createProject(project: InsertProject): Promise<Project> {
