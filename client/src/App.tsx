@@ -1296,24 +1296,10 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
   const { employees, projects } = useApp();
   const { selectedProjectId } = useProjectFilter();
 
-  // Group employees by project or unassigned
-  const grouped: any = {};
-  projects.forEach((p: any) => (grouped[p.id] = []));
-  grouped["unassigned"] = [];
-  employees.forEach((emp: any) => {
-    (emp.currentProjectId && grouped[emp.currentProjectId]
-      ? grouped[emp.currentProjectId]
-      : grouped["unassigned"]
-    ).push(emp);
-  });
-
-  // Filter groups based on selected project
-  const filteredGroups = selectedProjectId 
-    ? { [selectedProjectId]: grouped[selectedProjectId] || [] }
-    : grouped;
-
-  // Count filtered employees
-  const filteredCount = Object.values(filteredGroups).reduce((total: number, emps: any) => total + emps.length, 0);
+  // Filter employees based on selected project if any
+  const filteredEmployees = selectedProjectId 
+    ? employees.filter((emp: any) => emp.currentProjectId === selectedProjectId)
+    : employees;
 
   return (
     <Box flex="1" p={3} overflowY="auto">
@@ -1322,131 +1308,96 @@ function EmployeeList({ onEndorse }: { onEndorse: (type: string, id: string, nam
           Employees
           {selectedProjectId && (
             <Text as="span" fontSize="xs" color="gray.400" ml={2}>
-              (Filtered: {filteredCount})
+              (Filtered: {filteredEmployees.length})
             </Text>
           )}
         </Heading>
-        {selectedProjectId && filteredCount === 0 && (
+        {selectedProjectId && filteredEmployees.length === 0 && (
           <Text fontSize="xs" color="yellow.400">
             No employees assigned
           </Text>
         )}
       </HStack>
 
-      {Object.entries(filteredGroups).map(([projId, emps]: [string, any]) => (
-        <Droppable key={projId} droppableId={`employee-${projId}`}>
-          {(provided, snapshot) => (
-            <Box
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              mb={6}
-              p={3}
-              bg={snapshot.isDraggingOver ? "brand.800" : "#1E1E2F"}
-              border="2px dashed"
-              borderColor={snapshot.isDraggingOver ? "brand.400" : "#4A4A5E"}
-              rounded="md"
-              minHeight="80px"
-              transition="all 0.2s"
-            >
-              <HStack justify="space-between" mb={2}>
-                <Text fontWeight="bold" color="white">
-                  {projId === "unassigned"
-                    ? "Unassigned"
-                    : projects.find((p: any) => p.id === projId)?.name}
-                </Text>
-                <Text fontSize="xs" color="brand.200" fontWeight="bold">
-                  ({emps.length} {emps.length === 1 ? 'employee' : 'employees'})
-                </Text>
-              </HStack>
-
-              {emps.map((emp: any, index: number) => (
-                <Draggable
-                  key={emp.id}
-                  draggableId={`employee-${emp.id}`}
-                  index={index}
-                >
-                  {(provided, snapshot) => (
-                    <Box
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      p={2}
-                      mb={2}
-                      bg={snapshot.isDragging ? "brand.500" : "brand.600"}
-                      rounded="md"
-                      boxShadow={snapshot.isDragging ? "2xl" : "sm"}
-                      transform={snapshot.isDragging ? "rotate(-2deg) scale(1.05)" : "none"}
-                      transition="all 0.2s ease-in-out"
-                      _hover={{
-                        transform: "scale(1.02)",
-                        boxShadow: "lg"
-                      }}
-                      color="white"
-                      userSelect="none"
-                      cursor="grab"
-                      _active={{ cursor: "grabbing" }}
-                      position="relative"
-                    >
-                      <HStack justify="space-between">
-                        <VStack align="start" spacing={0}>
-                          <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
-                          <Text fontSize="xs" color="gray.300">{emp.role}</Text>
-                        </VStack>
-                        <IconButton
-                          size="xs"
-                          variant="ghost"
-                          color="brand.200"
-                          _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
-                          transition="all 0.2s"
-                          icon={<StarIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEndorse('employee', emp.id, emp.name);
-                          }}
-                          aria-label="Endorse employee performance"
-                        />
-                        {selectedProjectId && emp.currentProjectId === selectedProjectId && (
-                          <Box
-                            bg="green.400"
-                            color="white"
-                            borderRadius="full"
-                            w={4}
-                            h={4}
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            fontSize="xs"
-                          >
-                            ✓
-                          </Box>
+      <Droppable droppableId="employee-list">
+        {(provided, snapshot) => (
+          <Box
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            p={3}
+            bg={snapshot.isDraggingOver ? "brand.800" : "#1E1E2F"}
+            border="2px dashed"
+            borderColor={snapshot.isDraggingOver ? "brand.400" : "#4A4A5E"}
+            rounded="md"
+            minHeight="200px"
+            transition="all 0.2s"
+          >
+            {filteredEmployees.map((emp: any, index: number) => (
+              <Draggable
+                key={emp.id}
+                draggableId={`employee-${emp.id}`}
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <Box
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    p={3}
+                    mb={2}
+                    bg={snapshot.isDragging ? "brand.500" : "brand.600"}
+                    rounded="md"
+                    boxShadow={snapshot.isDragging ? "2xl" : "sm"}
+                    transform={snapshot.isDragging ? "rotate(-2deg) scale(1.05)" : "none"}
+                    transition="all 0.2s ease-in-out"
+                    _hover={{
+                      transform: "scale(1.02)",
+                      boxShadow: "lg"
+                    }}
+                    color="white"
+                    userSelect="none"
+                    cursor="grab"
+                    _active={{ cursor: "grabbing" }}
+                    position="relative"
+                  >
+                    <HStack justify="space-between">
+                      <VStack align="start" spacing={1}>
+                        <Text fontWeight="bold" fontSize="sm">{emp.name}</Text>
+                        <Text fontSize="xs" color="gray.300">{emp.role}</Text>
+                        {emp.currentProjectId && (
+                          <Text fontSize="xs" color="brand.200">
+                            Assigned to: {projects.find((p: any) => p.id === emp.currentProjectId)?.name || 'Unknown Project'}
+                          </Text>
                         )}
-                      </HStack>
-                    </Box>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-
-              {emps.length === 0 && (
-                <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={2}>
-                  No employees {projId === "unassigned" ? "unassigned" : "assigned to this project"}
-                </Text>
-              )}
-            </Box>
-          )}
-        </Droppable>
-      ))}
-
-      {selectedProjectId && filteredCount === 0 && (
-        <Box textAlign="center" py={8} bg="#1E1E2F" rounded="md">
-          <Text color="gray.400" fontSize="sm">
-            No employees assigned to this project
-          </Text>
-          <Text color="gray.500" fontSize="xs" mt={1}>
-            Drag employees here to assign them
-          </Text>
-        </Box>
-      )}
+                      </VStack>
+                      <IconButton
+                        size="xs"
+                        variant="ghost"
+                        color="brand.200"
+                        _hover={{ color: "yellow.300", transform: "scale(1.2)" }}
+                        transition="all 0.2s"
+                        icon={<StarIcon />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEndorse('employee', emp.id, emp.name);
+                        }}
+                        aria-label="Endorse employee performance"
+                      />
+                    </HStack>
+                  </Box>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+            
+            {filteredEmployees.length === 0 && (
+              <Text color="gray.500" fontSize="sm" fontStyle="italic" textAlign="center" py={4}>
+                {selectedProjectId ? "No employees assigned to this project" : "No employees available"}
+              </Text>
+            )}
+          </Box>
+        )}
+      </Droppable>
     </Box>
   );
 }

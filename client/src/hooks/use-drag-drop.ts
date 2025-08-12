@@ -67,7 +67,7 @@ export function useDragDrop() {
     
     // Extract project ID from destination droppableId
     let projectId = null;
-    if (destination.droppableId === "project-unassigned") {
+    if (destination.droppableId === "project-unassigned" || destination.droppableId === "employee-list" || destination.droppableId === "equipment-list") {
       projectId = null;
     } else if (destination.droppableId.startsWith("project-")) {
       projectId = destination.droppableId.replace("project-", "");
