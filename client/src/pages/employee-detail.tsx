@@ -39,11 +39,11 @@ export default function EmployeeDetail() {
   if (isLoading || !form) return <div className="p-6 text-gray-400">Loading…</div>;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-[color:var(--background)] min-h-screen">
       {/* Page Header with Brand Logo Placeholder */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-[color:var(--card)]">
             ← Back
           </Button>
           {brandConfig?.logoUrl && (
@@ -55,47 +55,51 @@ export default function EmployeeDetail() {
           )}
           <div>
             <h1 className="text-2xl font-semibold text-white">Employee Profile</h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[color:var(--muted-foreground)]">
               Managing employee for {brandConfig?.companyName || 'your organization'}
             </p>
           </div>
         </div>
-        <Button onClick={()=>save.mutate(form)} disabled={save.isPending}>
+        <Button 
+          onClick={()=>save.mutate(form)} 
+          disabled={save.isPending}
+          className="bg-[color:var(--brand-primary)] hover:bg-[color:var(--brand-primary)]/80 text-white"
+        >
           {save.isPending ? "Saving..." : "💾 Save Changes"}
         </Button>
       </div>
 
       {/* Employee Details Card */}
-      <Card className="p-6">
+      <Card className="p-6 bg-[color:var(--card)] border-[color:var(--border)]">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           <span>👤</span> Personal Information
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+            <label className="block text-sm font-medium text-white mb-2">Full Name</label>
             <Input value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})} placeholder="Employee full name" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Job Role</label>
+            <label className="block text-sm font-medium text-white mb-2">Job Role</label>
             <Input value={form.role || ""} onChange={(e)=>setForm({...form, role:e.target.value})} placeholder="Job title or role" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <label className="block text-sm font-medium text-white mb-2">Email Address</label>
             <Input value={form.email || ""} onChange={(e)=>setForm({...form, email:e.target.value})} placeholder="employee@company.com" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+            <label className="block text-sm font-medium text-white mb-2">Phone Number</label>
             <Input value={form.phone || ""} onChange={(e)=>setForm({...form, phone:e.target.value})} placeholder="(555) 123-4567" />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Certifications</label>
+            <label className="block text-sm font-medium text-white mb-2">Certifications</label>
             <Input value={form.certs || ""} onChange={(e)=>setForm({...form, certs:e.target.value})} placeholder="Professional certifications or licenses" />
           </div>
         </div>
       </Card>
 
       {/* Company Footer */}
-      <div className="text-center text-xs text-gray-500 pt-6">
+      <div className="text-center text-xs text-[color:var(--muted-foreground)] pt-6">
         Employee management for {brandConfig?.companyName || 'StaffTrak'} System
       </div>
     </div>

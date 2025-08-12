@@ -39,11 +39,11 @@ export default function EquipmentDetail() {
   if (isLoading || !form) return <div className="p-6 text-gray-400">Loading…</div>;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-[color:var(--background)] min-h-screen">
       {/* Page Header with Brand Logo Placeholder */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-[color:var(--card)]">
             ← Back
           </Button>
           {brandConfig?.logoUrl && (
@@ -55,49 +55,53 @@ export default function EquipmentDetail() {
           )}
           <div>
             <h1 className="text-2xl font-semibold text-white">Equipment Profile</h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[color:var(--muted-foreground)]">
               Managing equipment for {brandConfig?.companyName || 'your organization'}
             </p>
           </div>
         </div>
-        <Button onClick={()=>save.mutate(form)} disabled={save.isPending}>
+        <Button 
+          onClick={()=>save.mutate(form)} 
+          disabled={save.isPending}
+          className="bg-[color:var(--brand-primary)] hover:bg-[color:var(--brand-primary)]/80 text-white"
+        >
           {save.isPending ? "Saving..." : "💾 Save Changes"}
         </Button>
       </div>
 
       {/* Equipment Details Card */}
-      <Card className="p-6">
+      <Card className="p-6 bg-[color:var(--card)] border-[color:var(--border)]">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           <span>🚜</span> Equipment Information
         </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Equipment Name</label>
+            <label className="block text-sm font-medium text-white mb-2">Equipment Name</label>
             <Input value={form.name} onChange={(e)=>setForm({...form, name:e.target.value})} placeholder="Equipment name or identifier" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Equipment Type</label>
+            <label className="block text-sm font-medium text-white mb-2">Equipment Type</label>
             <Input value={form.type} onChange={(e)=>setForm({...form, type:e.target.value})} placeholder="Excavator, Crane, etc." />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Manufacturer</label>
+            <label className="block text-sm font-medium text-white mb-2">Manufacturer</label>
             <Input value={form.make || ""} onChange={(e)=>setForm({...form, make:e.target.value})} placeholder="Caterpillar, John Deere, etc." />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
+            <label className="block text-sm font-medium text-white mb-2">Model</label>
             <Input value={form.model || ""} onChange={(e)=>setForm({...form, model:e.target.value})} placeholder="Model number or name" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Year</label>
+            <label className="block text-sm font-medium text-white mb-2">Year</label>
             <Input value={String(form.year||"")} onChange={(e)=>setForm({...form, year:Number(e.target.value)||undefined})} placeholder="Manufacturing year" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Serial Number</label>
+            <label className="block text-sm font-medium text-white mb-2">Serial Number</label>
             <Input value={form.serialNumber || ""} onChange={(e)=>setForm({...form, serialNumber:e.target.value})} placeholder="Serial number" />
           </div>
           {form.notes !== undefined && (
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+              <label className="block text-sm font-medium text-white mb-2">Notes</label>
               <Input value={form.notes || ""} onChange={(e)=>setForm({...form, notes:e.target.value})} placeholder="Additional notes or specifications" />
             </div>
           )}
@@ -105,7 +109,7 @@ export default function EquipmentDetail() {
       </Card>
 
       {/* Company Footer */}
-      <div className="text-center text-xs text-gray-500 pt-6">
+      <div className="text-center text-xs text-[color:var(--muted-foreground)] pt-6">
         Equipment management for {brandConfig?.companyName || 'StaffTrak'} System
       </div>
     </div>
