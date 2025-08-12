@@ -418,10 +418,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Employee template download route - MUST come before :id route
+  app.get("/api/employees/template", async (req, res) => {
+    try {
+      // Create template data with sample row and headers
+      const templateData = [
+        {
+          'Name': 'John Smith',
+          'Role': 'Equipment Operator',
+          'Email': 'john.smith@company.com',
+          'Phone': '(555) 123-4567',
+          'Employment Status': 'active',
+          'Years Experience': '5',
+          'Equipment Operated': 'Excavator, Bulldozer'
+        }
+      ];
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      
+      // Create the worksheet data with instructions
+      const worksheetData = [
+        ['EMPLOYEE IMPORT TEMPLATE'], // Row 1
+        ['Instructions: Fill in employee data below. Delete the sample row before importing.'], // Row 2
+        ['Required fields: Name, Role. Optional: Email, Phone, Employment Status, Years Experience, Equipment Operated'], // Row 3
+        [], // Row 4 (empty)
+        // Row 5 - Headers
+        Object.keys(templateData[0]),
+        // Row 6 - Sample data
+        Object.values(templateData[0])
+      ];
+      
+      // Create worksheet from the 2D array
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 25 }, // Name
+        { wch: 20 }, // Role
+        { wch: 25 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 15 }, // Employment Status
+        { wch: 15 }, // Years Experience
+        { wch: 30 }, // Equipment Operated
+      ];
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employee Template');
+
+      // Generate Excel file buffer
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Set headers for file download
+      res.setHeader('Content-Disposition', 'attachment; filename="employee-import-template.xlsx"');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+      console.log(`📋 Employee Template: Generated template file`);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error generating employee template:", error);
+      res.status(500).json({ message: "Failed to generate template" });
+    }
+  });
+
+  // Employee import route - MUST come before :id route
+  app.post("/api/employees/import", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      console.log(`📊 Employee Import: Processing ${jsonData.length} rows`);
+
+      let importedCount = 0;
+      let errors: string[] = [];
+
+      for (const [index, row] of jsonData.entries()) {
+        try {
+          // Skip header rows or instruction rows
+          if (!row['Name'] || row['Name'].toString().toLowerCase().includes('template') || 
+              row['Name'].toString().toLowerCase().includes('instruction')) {
+            continue;
+          }
+
+          const employeeData = {
+            name: row['Name']?.toString().trim(),
+            role: row['Role']?.toString().trim(),
+            email: row['Email']?.toString().trim() || undefined,
+            phone: row['Phone']?.toString().trim() || undefined,
+            employmentStatus: row['Employment Status']?.toString().trim() || 'active',
+            yearsExperience: parseInt(row['Years Experience']?.toString()) || 0,
+            operates: row['Equipment Operated'] ? 
+              row['Equipment Operated'].toString().split(',').map(s => s.trim()).filter(s => s) : []
+          };
+
+          // Validate required fields
+          if (!employeeData.name || !employeeData.role) {
+            errors.push(`Row ${index + 1}: Name and Role are required`);
+            continue;
+          }
+
+          // Create employee through storage
+          await storage.createEmployee(employeeData);
+          importedCount++;
+        } catch (error) {
+          console.error(`Error importing row ${index + 1}:`, error);
+          errors.push(`Row ${index + 1}: ${error.message || 'Failed to import'}`);
+        }
+      }
+
+      console.log(`📊 Employee Import: Successfully imported ${importedCount} employees`);
+      
+      if (errors.length > 0) {
+        console.log(`📊 Employee Import: ${errors.length} errors occurred`);
+      }
+
+      res.json({
+        message: `Successfully imported ${importedCount} employees`,
+        imported: importedCount,
+        errors: errors
+      });
+    } catch (error) {
+      console.error("Error importing employees:", error);
+      res.status(500).json({ message: "Failed to import employees" });
+    }
+  });
+
   // Employee Excel export route - MUST come before :id route
   app.get("/api/employees/export", async (req, res) => {
     try {
-      const employees = (await db.get(EMPLOYEES_KEY)) || [];
+      const employees = await storage.getEmployees();
       console.log(`📊 Employee Excel Export: Found ${employees.length} employees`);
       
       // Transform employee data for Excel export
@@ -431,7 +563,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Role': emp.role || '',
         'Email': emp.email || '',
         'Phone': emp.phone || '',
-        'Employment Status': emp.employmentStatus || emp.status || 'active',
+        'Employment Status': emp.employmentStatus || 'active',
         'Years Experience': emp.yearsExperience || '',
         'Equipment Operated': Array.isArray(emp.operates) ? emp.operates.join(', ') : '',
         'Current Project': emp.currentProjectId || 'Unassigned',
@@ -498,7 +630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employee PDF export route - MUST come before :id route
   app.get("/api/employees/export-pdf", async (req, res) => {
     try {
-      const employees = (await db.get(EMPLOYEES_KEY)) || [];
+      const employees = await storage.getEmployees();
       
       const doc = new PDFDocument({ margin: 50 });
       const timestamp = new Date().toISOString().split('T')[0];

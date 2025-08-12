@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-import { Plus, Edit3, Trash2, User, MapPin, Phone, Mail, Calendar, Wrench } from "lucide-react";
+import { Plus, Edit3, Trash2, User, MapPin, Phone, Mail, Calendar, Wrench, Upload, Download } from "lucide-react";
 
 type Employee = { 
   id: string; 
@@ -49,6 +49,9 @@ export default function EmployeeManagementPage() {
     queryFn: fetchEmployees, 
     refetchOnWindowFocus: true 
   });
+  
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
   const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -175,6 +178,32 @@ export default function EmployeeManagementPage() {
     }));
   }
 
+  function downloadTemplate() {
+    window.location.href = "/api/employees/template";
+  }
+
+  function handleImport() {
+    if (!importFile) return;
+    const body = new FormData();
+    body.append("file", importFile);
+    fetch("/api/employees/import", { method: "POST", body })
+      .then(() => {
+        refetch();
+        setShowImportDialog(false);
+        setImportFile(null);
+        toast({
+          title: "Import Successful",
+          description: "Employees have been imported successfully.",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Import Failed",
+          description: "Failed to import employees.",
+          variant: "destructive",
+        });
+      });
+  }
 
 
   const isStepValid = () => {
@@ -194,14 +223,34 @@ export default function EmployeeManagementPage() {
           <h1 className="text-2xl font-bold text-white">Employee Management</h1>
           <p className="text-gray-400 text-sm">Create, edit, and manage your workforce</p>
         </div>
-        <Button
-          data-testid="button-create-employee"
-          onClick={openCreateDialog}
-          className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
-        >
-          <Plus size={16} />
-          Add Employee
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            data-testid="button-download-template"
+            onClick={downloadTemplate}
+            variant="outline"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Download Template
+          </Button>
+          <Button
+            data-testid="button-import-employees"
+            onClick={() => setShowImportDialog(true)}
+            variant="outline"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 flex items-center gap-2"
+          >
+            <Upload size={16} />
+            Import
+          </Button>
+          <Button
+            data-testid="button-create-employee"
+            onClick={openCreateDialog}
+            className="bg-[#4A90E2] hover:bg-[#357ABD] text-white flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Add Employee
+          </Button>
+        </div>
       </div>
 
 
@@ -503,6 +552,76 @@ export default function EmployeeManagementPage() {
                     ? (editingEmployee ? "Update Employee" : "Create Employee")
                     : "Next"
                   }
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Dialog */}
+      {showImportDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#1E1E2F] rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Import Employees</h2>
+                <Button
+                  onClick={() => {
+                    setShowImportDialog(false);
+                    setImportFile(null);
+                  }}
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white"
+                >
+                  ✕
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Select Excel File
+                  </label>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#4A90E2] file:text-white hover:file:bg-[#357ABD]"
+                  />
+                </div>
+                
+                <div className="text-sm text-gray-400">
+                  <p>Upload an Excel file with employee data. Make sure to use the correct template format.</p>
+                  <p className="mt-2">
+                    Don't have a template? 
+                    <button 
+                      onClick={downloadTemplate}
+                      className="text-[#4A90E2] hover:underline ml-1"
+                    >
+                      Download it here
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  onClick={() => {
+                    setShowImportDialog(false);
+                    setImportFile(null);
+                  }}
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleImport}
+                  disabled={!importFile}
+                  className="bg-[#4A90E2] hover:bg-[#357ABD] text-white disabled:opacity-50"
+                >
+                  Import
                 </Button>
               </div>
             </div>
