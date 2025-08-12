@@ -49,11 +49,13 @@ export default function ProjectProfile() {
   });
   const { data: employees = [] } = useQuery({ 
     queryKey: ["employees"], 
-    queryFn: getEmployees 
+    queryFn: getEmployees,
+    refetchInterval: 5000 // Refetch every 5 seconds to keep data fresh
   });
   const { data: equipment = [] } = useQuery({ 
     queryKey: ["equipment"], 
-    queryFn: getEquipment 
+    queryFn: getEquipment,
+    refetchInterval: 5000 // Refetch every 5 seconds to keep data fresh
   });
 
   const mutate = useMutation({

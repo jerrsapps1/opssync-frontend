@@ -28,9 +28,9 @@ export function useDragDrop() {
     },
     onSuccess: (data) => {
       console.log("Employee assignment success:", data);
-      // Force immediate refetch with cache removal
-      queryClient.removeQueries({ queryKey: ["/api/employees"] });
-      queryClient.refetchQueries({ queryKey: ["/api/employees"] });
+      // Force immediate invalidation and refetch using consistent query keys
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.refetchQueries({ queryKey: ["employees"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
     },
@@ -53,9 +53,9 @@ export function useDragDrop() {
     },
     onSuccess: (data) => {
       console.log("Equipment assignment success:", data);
-      // Force immediate refetch with cache removal
-      queryClient.removeQueries({ queryKey: ["/api/equipment"] });
-      queryClient.refetchQueries({ queryKey: ["/api/equipment"] });
+      // Force immediate invalidation and refetch using consistent query keys
+      queryClient.invalidateQueries({ queryKey: ["equipment"] });
+      queryClient.refetchQueries({ queryKey: ["equipment"] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
     },
