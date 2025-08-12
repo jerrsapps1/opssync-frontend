@@ -100,13 +100,19 @@ export default function ProjectSetUpPage() {
 
   const filteredProjects = React.useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return projects;
-    return projects.filter(proj =>
-      proj.name.toLowerCase().includes(query) ||
-      (proj.projectNumber || "").toLowerCase().includes(query) ||
-      (proj.location || "").toLowerCase().includes(query) ||
-      (proj.status || "").toLowerCase().includes(query)
-    );
+    let filtered = projects;
+    
+    if (query) {
+      filtered = projects.filter(proj =>
+        proj.name.toLowerCase().includes(query) ||
+        (proj.projectNumber || "").toLowerCase().includes(query) ||
+        (proj.location || "").toLowerCase().includes(query) ||
+        (proj.status || "").toLowerCase().includes(query)
+      );
+    }
+    
+    // Sort alphabetically by name
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
   }, [projects, searchQuery]);
 
   const createProjectMutation = useMutation({
