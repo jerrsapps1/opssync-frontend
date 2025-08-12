@@ -7,6 +7,8 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Data Architecture**: Implemented shared database module ensuring consistent data across all API routes and exports
 - **Export Quality**: All Excel exports now provide complete authentic datasets (46 employees, 25 equipment, 15 projects) with clean formatting
 - **Professional Directory**: Directory functionality confirmed working perfectly with comprehensive asset management
+- **Employee Creation Enhancement**: Added emergency contact phone and company fields to 3-step employee wizard
+- **Navigation Streamlining**: Removed redundant Profile Builder tab, updated navigation to use consistent "Profiles" naming (Employee Profiles, Equipment Profiles, Project Profiles)
 
 # User Preferences
 
