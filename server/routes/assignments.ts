@@ -94,7 +94,7 @@ router.patch("/employees/:id/assignment", async (req, res) => {
     const previousProjectId = currentEmployee?.currentProjectId;
     
     // Update employee assignment directly via storage
-    const updatedEmployee = await storage.updateEmployeeAssignment(id, { projectId });
+    const updatedEmployee = await storage.updateEmployeeAssignment(id, { currentProjectId: projectId });
     
     // Status-based conditional logging
     await logProjectActivity({
@@ -132,7 +132,7 @@ router.patch("/equipment/:id/assignment", async (req, res) => {
     const previousProjectId = currentEquipment?.currentProjectId;
     
     // Update equipment assignment directly via storage
-    const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+    const updatedEquipment = await storage.updateEquipmentAssignment(id, { currentProjectId: projectId });
     
     // Status-based conditional logging
     await logProjectActivity({
