@@ -209,13 +209,6 @@ export default function ProjectSettings() {
                 Select All
               </Button>
               <Button
-                onClick={() => setSelectedDates([])}
-                variant="outline"
-                size="sm"
-              >
-                Clear All
-              </Button>
-              <Button
                 onClick={handleExport}
                 disabled={Object.keys(logsByDate).length === 0}
                 className="bg-blue-600 hover:bg-blue-700"
