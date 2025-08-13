@@ -30,7 +30,7 @@ import EquipmentPage from "./pages/equipment";
 import ProjectsPage from "./pages/projects";
 import AnalyticsPage from "./pages/analytics";
 import AppLayout from "./components/layout/AppLayout";
-import SettingsIndex from "./pages/settings";
+import SettingsIndex from "./pages/settings/index";
 import ProjectSettings from "./pages/settings/projects";
 import SettingsEquipment from "./pages/settings/equipment";
 import SettingsEmployees from "./pages/settings/employees";
