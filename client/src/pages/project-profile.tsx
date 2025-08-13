@@ -119,6 +119,71 @@ export default function ProjectProfile() {
     }
   };
 
+  // Export project data to Excel
+  const exportToExcel = () => {
+    if (!project) return;
+    
+    const exportData = {
+      projectInfo: {
+        name: project.name,
+        location: project.location || '',
+        startDate: project.startDate ? new Date(project.startDate).toLocaleDateString() : '',
+        endDate: project.endDate ? new Date(project.endDate).toLocaleDateString() : '',
+        duration: durationDays ? `${durationDays} days` : '',
+        status: project.status || 'Active',
+        percentComplete: `${pct}%`,
+        percentMode: mode
+      },
+      employees: assignedEmp.map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        role: emp.role || '',
+        phone: emp.phone || '',
+        email: emp.email || ''
+      })),
+      equipment: assignedEq.map(eq => ({
+        id: eq.id,
+        name: eq.name,
+        type: eq.type || '',
+        model: eq.model || '',
+        serialNumber: eq.serialNumber || ''
+      }))
+    };
+
+    // Create CSV content
+    let csvContent = "PROJECT SUMMARY\n";
+    csvContent += `Project Name,${project.name}\n`;
+    csvContent += `Location,${project.location || ''}\n`;
+    csvContent += `Start Date,${project.startDate ? new Date(project.startDate).toLocaleDateString() : ''}\n`;
+    csvContent += `End Date,${project.endDate ? new Date(project.endDate).toLocaleDateString() : ''}\n`;
+    csvContent += `Duration,${durationDays ? `${durationDays} days` : ''}\n`;
+    csvContent += `Status,${project.status || 'Active'}\n`;
+    csvContent += `Progress,${pct}%\n\n`;
+
+    csvContent += "ASSIGNED EMPLOYEES\n";
+    csvContent += "ID,Name,Role,Phone,Email\n";
+    assignedEmp.forEach(emp => {
+      csvContent += `${emp.id},"${emp.name}","${emp.role || ''}","${emp.phone || ''}","${emp.email || ''}"\n`;
+    });
+
+    csvContent += "\nASSIGNED EQUIPMENT\n";
+    csvContent += "ID,Name,Type,Model,Serial Number\n";
+    assignedEq.forEach(eq => {
+      csvContent += `${eq.id},"${eq.name}","${eq.type || ''}","${eq.model || ''}","${eq.serialNumber || ''}"\n`;
+    });
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${project.name}_Project_Export_${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="p-4 space-y-4 bg-gray-900 min-h-screen text-white">
@@ -132,6 +197,13 @@ export default function ProjectProfile() {
               <div className="text-sm text-blue-400">Moving asset...</div>
             )}
             <button 
+              onClick={exportToExcel}
+              className="px-3 py-2 rounded bg-green-600 hover:bg-green-700 text-white text-sm flex items-center gap-1"
+              data-testid="button-export-project"
+            >
+              📊 Export Excel
+            </button>
+            <button 
               onClick={() => navigate('/dashboard')} 
               className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm"
             >
@@ -142,24 +214,36 @@ export default function ProjectProfile() {
 
       <div className="grid md:grid-cols-3 gap-3">
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
-          <div className="text-xs text-gray-400 mb-1">Duration</div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-400">Start</label>
-            <input 
-              type="date" 
-              value={formatDateForInput(project.startDate)} 
-              onChange={e => setDates("startDate", e.target.value)} 
-              className="px-2 py-1 rounded bg-gray-800 text-white" 
-            />
-            <label className="text-xs text-gray-400 ml-2">End</label>
-            <input 
-              type="date" 
-              value={formatDateForInput(project.endDate)} 
-              onChange={e => setDates("endDate", e.target.value)} 
-              className="px-2 py-1 rounded bg-gray-800 text-white" 
-            />
+          <div className="text-xs text-gray-400 mb-2">Duration</div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-400 w-12">Start</label>
+              <input 
+                type="date" 
+                value={formatDateForInput(project.startDate)} 
+                onChange={e => setDates("startDate", e.target.value)} 
+                className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
+                data-testid="input-start-date"
+              />
+              <span className="text-xs text-gray-500">
+                {project.startDate ? new Date(project.startDate).toLocaleDateString() : ''}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-400 w-12">End</label>
+              <input 
+                type="date" 
+                value={formatDateForInput(project.endDate)} 
+                onChange={e => setDates("endDate", e.target.value)} 
+                className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
+                data-testid="input-end-date"
+              />
+              <span className="text-xs text-gray-500">
+                {project.endDate ? new Date(project.endDate).toLocaleDateString() : ''}
+              </span>
+            </div>
           </div>
-          <div className="text-xs text-gray-400 mt-2">
+          <div className="text-xs text-gray-400 mt-2 font-medium">
             {durationDays !== null ? `${durationDays} days` : "Set both dates to compute duration"}
           </div>
         </div>
