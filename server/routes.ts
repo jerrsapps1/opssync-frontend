@@ -472,7 +472,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      res.json(project);
+      // Get project contacts
+      const contacts = await storage.getProjectContacts(req.params.id);
+      res.json({ ...project, contacts });
     } catch (error) {
       console.error("Error fetching project:", error);
       res.status(500).json({ message: "Failed to fetch project" });
@@ -481,8 +483,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", async (req, res) => {
     try {
-      const projectData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject(projectData);
+      const { contacts, ...projectData } = req.body;
+      const parsedProjectData = insertProjectSchema.parse(projectData);
+      const project = await storage.createProject(parsedProjectData);
+      
+      // Save contacts if provided
+      if (contacts && Array.isArray(contacts) && contacts.length > 0) {
+        for (const contact of contacts) {
+          if (contact.name && contact.position) { // Only save contacts with required fields
+            await storage.createProjectContact({
+              projectId: project.id,
+              name: contact.name,
+              position: contact.position,
+              email: contact.email || '',
+              mobile: contact.mobile || '',
+              company: contact.company || '',
+              isPrimary: contact.isPrimary || false
+            });
+          }
+        }
+      }
+      
       res.status(201).json(project);
     } catch (error) {
       console.error("Error creating project:", error);

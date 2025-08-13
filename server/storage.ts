@@ -1264,6 +1264,45 @@ export class PostgreSQLStorage extends MemStorage {
     
     return updatedEquipment;
   }
+
+  // Project Contacts PostgreSQL implementation
+  async getProjectContacts(projectId: string): Promise<ProjectContact[]> {
+    const dbContacts = await db.select().from(projectContacts).where(eq(projectContacts.projectId, projectId));
+    return dbContacts;
+  }
+
+  async createProjectContact(contact: InsertProjectContact): Promise<ProjectContact> {
+    const [newContact] = await db.insert(projectContacts).values({
+      ...contact,
+      email: contact.email || '',
+      mobile: contact.mobile || '',
+      company: contact.company || '',
+      isPrimary: contact.isPrimary || false,
+    }).returning();
+    
+    return newContact;
+  }
+
+  async updateProjectContact(id: string, updates: Partial<ProjectContact>): Promise<ProjectContact> {
+    const [updatedContact] = await db
+      .update(projectContacts)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectContacts.id, id))
+      .returning();
+    
+    if (!updatedContact) {
+      throw new Error(`Project contact with id ${id} not found`);
+    }
+    
+    return updatedContact;
+  }
+
+  async deleteProjectContact(id: string): Promise<void> {
+    await db.delete(projectContacts).where(eq(projectContacts.id, id));
+  }
 }
 
 export const storage = new PostgreSQLStorage();

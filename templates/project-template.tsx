@@ -297,6 +297,39 @@ export const ProjectTemplate: React.FC<ProjectTemplateProps> = ({
         </div>
       </div>
 
+      {/* Project Contacts Section - Multiple contacts from wizard */}
+      {(project as any).contacts && (project as any).contacts.length > 0 && (
+        <div className="rounded border border-gray-800 p-4 bg-[#0b1220] mt-4">
+          <div className="text-xs text-gray-400 mb-3">Project Contacts ({(project as any).contacts.length})</div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(project as any).contacts.map((contact: any, index: number) => (
+              <div key={contact.id || index} className="border border-gray-700 rounded p-3 bg-[#121212]">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-white font-medium text-sm">{contact.name}</div>
+                  {contact.isPrimary && (
+                    <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">
+                      Primary
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="text-gray-300">{contact.position}</div>
+                  {contact.company && (
+                    <div className="text-gray-400">@ {contact.company}</div>
+                  )}
+                  {contact.email && (
+                    <div className="text-blue-400">{contact.email}</div>
+                  )}
+                  {contact.mobile && (
+                    <div className="text-green-400">{contact.mobile}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Progress and Duration Controls */}
       <div className="grid md:grid-cols-3 gap-3">
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
