@@ -21,7 +21,7 @@ import * as XLSX from 'xlsx';
 import PDFDocument from 'pdfkit';
 import "./types"; // Import type declarations
 
-// Helper function for status-based conditional logging
+// Helper function for status-based conditional logging with enhanced tracking
 async function logProjectActivity({
   employeeId,
   employeeName,
@@ -29,7 +29,9 @@ async function logProjectActivity({
   equipmentName,
   previousProjectId,
   newProjectId,
-  entityType
+  entityType,
+  performedBy,
+  performedByEmail
 }: {
   employeeId?: string;
   employeeName?: string;
@@ -38,6 +40,8 @@ async function logProjectActivity({
   previousProjectId?: string | null;
   newProjectId?: string | null;
   entityType: "employee" | "equipment";
+  performedBy?: string;
+  performedByEmail?: string;
 }) {
   try {
     const entityId = employeeId || equipmentId;
@@ -49,46 +53,71 @@ async function logProjectActivity({
     const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const time = now.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
 
+    // Get project details for both source and destination
+    const [previousProject, newProject] = await Promise.all([
+      previousProjectId ? storage.getProject(previousProjectId) : null,
+      newProjectId ? storage.getProject(newProjectId) : null
+    ]);
+
+    // If both projects exist and this is a direct move between active projects, log as "moved"
+    if (previousProject && newProject && 
+        previousProject.status === "Active" && newProject.status === "Active") {
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "moved",
+        entityType,
+        entityName,
+        entityId,
+        projectId: newProjectId,
+        projectName: newProject.name,
+        fromProjectId: previousProjectId,
+        fromProjectName: previousProject.name,
+        performedBy: performedBy || "Admin User",
+        performedByEmail: performedByEmail || undefined
+      });
+      console.log(`📝 Logged move: ${entityName} moved from ${previousProject.name} to ${newProject.name} (Both Active projects)`);
+      return;
+    }
+
     // Log removal from previous project (if it was active)
-    if (previousProjectId) {
-      const previousProject = await storage.getProject(previousProjectId);
-      if (previousProject && previousProject.status === "Active") {
-        await storage.createProjectActivityLog({
-          date,
-          time,
-          action: "removed",
-          entityType,
-          entityName,
-          entityId,
-          projectId: previousProjectId,
-          projectName: previousProject.name,
-          performedBy: "Admin User"
-        });
-        console.log(`📝 Logged removal: ${entityName} removed from ${previousProject.name} (Active project)`);
-      } else if (previousProject) {
-        console.log(`⏸️ Skipped logging removal: ${previousProject.name} is ${previousProject.status} (logging disabled)`);
-      }
+    if (previousProject && previousProject.status === "Active") {
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "removed",
+        entityType,
+        entityName,
+        entityId,
+        projectId: previousProjectId!,
+        projectName: previousProject.name,
+        performedBy: performedBy || "Admin User",
+        performedByEmail: performedByEmail || undefined
+      });
+      console.log(`📝 Logged removal: ${entityName} removed from ${previousProject.name} (Active project)`);
+    } else if (previousProject) {
+      console.log(`⏸️ Skipped logging removal: ${previousProject.name} is ${previousProject.status} (logging disabled)`);
     }
 
     // Log assignment to new project (if it's active)
-    if (newProjectId) {
-      const newProject = await storage.getProject(newProjectId);
-      if (newProject && newProject.status === "Active") {
-        await storage.createProjectActivityLog({
-          date,
-          time,
-          action: "assigned",
-          entityType,
-          entityName,
-          entityId,
-          projectId: newProjectId,
-          projectName: newProject.name,
-          performedBy: "Admin User"
-        });
-        console.log(`📝 Logged assignment: ${entityName} assigned to ${newProject.name} (Active project)`);
-      } else if (newProject) {
-        console.log(`⏸️ Skipped logging assignment: ${newProject.name} is ${newProject.status} (logging disabled)`);
-      }
+    if (newProject && newProject.status === "Active") {
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "assigned",
+        entityType,
+        entityName,
+        entityId,
+        projectId: newProjectId!,
+        projectName: newProject.name,
+        fromProjectId: previousProject && previousProject.status !== "Active" ? previousProjectId || undefined : undefined,
+        fromProjectName: previousProject && previousProject.status !== "Active" ? previousProject.name : undefined,
+        performedBy: performedBy || "Admin User",
+        performedByEmail: performedByEmail || undefined
+      });
+      console.log(`📝 Logged assignment: ${entityName} assigned to ${newProject.name} (Active project)`);
+    } else if (newProject) {
+      console.log(`⏸️ Skipped logging assignment: ${newProject.name} is ${newProject.status} (logging disabled)`);
     }
   } catch (error) {
     console.error("Error logging project activity:", error);
@@ -805,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Employee assignment route with conditional logging - MUST be defined before general PATCH route  
-  app.patch("/api/employees/:id/assignment", async (req, res) => {
+  app.patch("/api/employees/:id/assignment", authenticateToken, async (req, res) => {
     try {
       const { id } = req.params as { id: string };
       const { projectId } = req.body || {};
@@ -822,13 +851,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update employee assignment directly via storage
       const updatedEmployee = await storage.updateEmployeeAssignment(id, { currentProjectId: projectId });
       
+      // Get user information for logging
+      const currentUser = await storage.getUser(req.user!.id);
+      
       // Status-based conditional logging
       await logProjectActivity({
         employeeId: id,
         employeeName: updatedEmployee.name,
         previousProjectId,
         newProjectId: projectId,
-        entityType: "employee"
+        entityType: "employee",
+        performedBy: currentUser?.username || "Unknown User",
+        performedByEmail: currentUser?.email
       });
       
       console.log("Assignment complete:", updatedEmployee);
@@ -1036,7 +1070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Equipment assignment route - MUST come before general PATCH route
-  app.patch("/api/equipment/:id/assignment", async (req, res) => {
+  app.patch("/api/equipment/:id/assignment", authenticateToken, async (req, res) => {
     try {
       const { id } = req.params as { id: string };
       const { projectId } = req.body || {};
@@ -1053,13 +1087,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update equipment assignment directly via storage
       const updatedEquipment = await storage.updateEquipmentAssignment(id, { currentProjectId: projectId });
       
+      // Get user information for logging
+      const currentUser = await storage.getUser(req.user!.id);
+      
       // Status-based conditional logging
       await logProjectActivity({
         equipmentId: id,
         equipmentName: updatedEquipment.name,
         previousProjectId,
         newProjectId: projectId,
-        entityType: "equipment"
+        entityType: "equipment",
+        performedBy: currentUser?.username || "Unknown User",
+        performedByEmail: currentUser?.email
       });
       
       console.log("Equipment assignment complete:", updatedEquipment);

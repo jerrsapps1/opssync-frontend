@@ -10,12 +10,14 @@ interface ProjectActivityLog {
   id: string;
   date: string;
   time: string;
-  action: "assigned" | "removed";
+  action: "assigned" | "removed" | "moved";
   entityType: "employee" | "equipment";
   entityName: string;
   entityId: string;
   projectName: string;
+  fromProjectName?: string;
   performedBy: string;
+  performedByEmail?: string;
 }
 
 export default function ProjectSettings() {
@@ -29,74 +31,14 @@ export default function ProjectSettings() {
     queryKey: ["/api/projects"],
   });
 
-  // Mock activity data - in real implementation, this would come from backend
-  const mockActivityLogs: ProjectActivityLog[] = [
-    {
-      id: "log1",
-      date: "2024-08-13",
-      time: "09:15",
-      action: "assigned",
-      entityType: "employee",
-      entityName: "John Martinez",
-      entityId: "emp-001",
-      projectName: "Highway Bridge Construction",
-      performedBy: "Admin User"
-    },
-    {
-      id: "log2", 
-      date: "2024-08-13",
-      time: "09:30",
-      action: "assigned",
-      entityType: "equipment",
-      entityName: "Caterpillar 320D Excavator",
-      entityId: "eq-001",
-      projectName: "Highway Bridge Construction",
-      performedBy: "Admin User"
-    },
-    {
-      id: "log3",
-      date: "2024-08-13",
-      time: "14:45",
-      action: "removed",
-      entityType: "employee",
-      entityName: "Sarah Johnson",
-      entityId: "emp-003",
-      projectName: "Highway Bridge Construction",
-      performedBy: "Project Manager"
-    },
-    {
-      id: "log4",
-      date: "2024-08-12",
-      time: "08:00",
-      action: "assigned",
-      entityType: "employee",
-      entityName: "Mike Wilson",
-      entityId: "emp-005",
-      projectName: "Highway Bridge Construction",
-      performedBy: "Admin User"
-    },
-    {
-      id: "log5",
-      date: "2024-08-12",
-      time: "11:20",
-      action: "assigned",
-      entityType: "equipment",
-      entityName: "Volvo A40G Dump Truck",
-      entityId: "eq-003",
-      projectName: "Highway Bridge Construction",
-      performedBy: "Equipment Manager"
-    }
-  ];
-
-  // Filter logs by selected project and date range
-  const filteredLogs = mockActivityLogs.filter(log => {
-    if (selectedProject && !projects?.find(p => p.name === log.projectName && p.id === selectedProject)) {
-      return false;
-    }
-    if (startDate && log.date < startDate) return false;
-    if (endDate && log.date > endDate) return false;
-    return true;
+  // Get real activity logs from API
+  const { data: activityLogs = [], isLoading: logsLoading } = useQuery<ProjectActivityLog[]>({
+    queryKey: ["/api", "project-activity-logs", selectedProject?.id, startDate, endDate],
+    enabled: !!selectedProject,
   });
+
+  // Logs are already filtered by project and date range on the server
+  const filteredLogs = activityLogs;
 
   // Group logs by date
   const logsByDate = filteredLogs.reduce((acc, log) => {
@@ -307,26 +249,53 @@ export default function ProjectSettings() {
                     {logs
                       .sort((a, b) => a.time.localeCompare(b.time))
                       .map((log) => (
-                        <div key={log.id} className="flex items-center justify-between bg-gray-800 p-3 rounded">
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-400 text-sm font-mono">{log.time}</span>
-                            <span className={`text-sm px-2 py-1 rounded ${
-                              log.action === 'assigned' 
-                                ? 'bg-green-900 text-green-300' 
-                                : 'bg-red-900 text-red-300'
-                            }`}>
-                              {log.action}
+                        <div key={log.id} className="bg-gray-800 p-3 rounded space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="text-gray-400 text-sm font-mono">{log.time}</span>
+                              <span className={`text-sm px-2 py-1 rounded ${
+                                log.action === 'assigned' 
+                                  ? 'bg-green-900 text-green-300' 
+                                  : log.action === 'removed'
+                                  ? 'bg-red-900 text-red-300'
+                                  : 'bg-blue-900 text-blue-300'
+                              }`}>
+                                {log.action}
+                              </span>
+                              <span className={`text-sm px-2 py-1 rounded ${
+                                log.entityType === 'employee'
+                                  ? 'bg-blue-900 text-blue-300'
+                                  : 'bg-orange-900 text-orange-300'
+                              }`}>
+                                {log.entityType}
+                              </span>
+                              <span className="text-white font-medium">{log.entityName}</span>
+                            </div>
+                            <span className="text-gray-400 text-sm">
+                              by {log.performedBy}
+                              {log.performedByEmail && (
+                                <span className="ml-1 text-gray-500">({log.performedByEmail})</span>
+                              )}
                             </span>
-                            <span className={`text-sm px-2 py-1 rounded ${
-                              log.entityType === 'employee'
-                                ? 'bg-blue-900 text-blue-300'
-                                : 'bg-orange-900 text-orange-300'
-                            }`}>
-                              {log.entityType}
-                            </span>
-                            <span className="text-white">{log.entityName}</span>
                           </div>
-                          <span className="text-gray-400 text-sm">by {log.performedBy}</span>
+                          
+                          {/* Enhanced project tracking information */}
+                          <div className="text-sm text-gray-300">
+                            {log.action === 'moved' && log.fromProjectName ? (
+                              <span>
+                                Moved from <span className="text-red-400 font-medium">{log.fromProjectName}</span> to <span className="text-green-400 font-medium">{log.projectName}</span>
+                              </span>
+                            ) : log.action === 'assigned' ? (
+                              <span>
+                                Assigned to <span className="text-green-400 font-medium">{log.projectName}</span>
+                                {log.fromProjectName && <span className="text-gray-500"> (from {log.fromProjectName})</span>}
+                              </span>
+                            ) : (
+                              <span>
+                                Removed from <span className="text-red-400 font-medium">{log.projectName}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                   </div>

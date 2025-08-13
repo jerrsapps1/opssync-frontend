@@ -7,6 +7,7 @@ import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
@@ -91,7 +92,9 @@ export default function Dashboard() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-[#121212] text-white">
+      <DashboardHeader />
+      
       {/* Conflict Alerts */}
       {!alertDismissed && (
         <Box p={4}>
@@ -112,12 +115,12 @@ export default function Dashboard() {
       </div>
       
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="flex" style={{ height: "calc(100vh - 180px)" }}>
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
         </div>
       </DragDropContext>
-    </>
+    </div>
   );
 }
