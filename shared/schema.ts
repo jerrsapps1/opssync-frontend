@@ -26,6 +26,15 @@ export const projects = pgTable("projects", {
   profitMargin: integer("profit_margin"), // Profit margin percentage
   riskLevel: text("risk_level").default("medium"), // low, medium, high, critical
   priority: text("priority").default("medium"), // low, medium, high, urgent
+  // Company/Client Information
+  clientName: text("client_name"), // Name of the client/customer
+  clientContact: text("client_contact"), // Primary client contact person
+  clientEmail: text("client_email"), // Client email
+  clientPhone: text("client_phone"), // Client phone number
+  generalContractor: text("general_contractor"), // General contractor company name
+  contractorContact: text("contractor_contact"), // GC contact person
+  contractorEmail: text("contractor_email"), // GC email
+  contractorPhone: text("contractor_phone"), // GC phone number
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

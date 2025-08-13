@@ -82,7 +82,16 @@ export default function ProjectSetUpPage() {
     contractValue: "",
     profitMargin: "",
     riskLevel: "medium" as "low" | "medium" | "high" | "critical",
-    priority: "medium" as "low" | "medium" | "high" | "urgent"
+    priority: "medium" as "low" | "medium" | "high" | "urgent",
+    // Company/Client Information
+    clientName: "",
+    clientContact: "",
+    clientEmail: "",
+    clientPhone: "",
+    generalContractor: "",
+    contractorContact: "",
+    contractorEmail: "",
+    contractorPhone: ""
   });
 
   // Contact persons state
@@ -167,7 +176,16 @@ export default function ProjectSetUpPage() {
       contractValue: "",
       profitMargin: "",
       riskLevel: "medium",
-      priority: "medium"
+      priority: "medium",
+      // Company/Client Information
+      clientName: "",
+      clientContact: "",
+      clientEmail: "",
+      clientPhone: "",
+      generalContractor: "",
+      contractorContact: "",
+      contractorEmail: "",
+      contractorPhone: ""
     });
     setContacts([
       {
@@ -430,9 +448,10 @@ export default function ProjectSetUpPage() {
                     {editingProject ? "Edit Project" : "Create New Project"}
                   </h2>
                   <p className="text-gray-400 text-sm">
-                    Step {currentStep} of 3 - {
+                    Step {currentStep} of 4 - {
                       currentStep === 1 ? "Project Details" :
                       currentStep === 2 ? "Analytics & Financial" :
+                      currentStep === 3 ? "Company & Client" :
                       "Contact Persons"
                     }
                   </p>
@@ -667,13 +686,119 @@ export default function ProjectSetUpPage() {
                   </>
                 )}
 
-                {/* STEP 3: Contact Persons */}
+                {/* STEP 3: Company & Client Details */}
                 {currentStep === 3 && (
+                  <>
+                    <div className="mb-6">
+                      <Label className="text-gray-300 text-base">Company & Client Information</Label>
+                      <p className="text-sm text-gray-400">Client and general contractor details</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {/* Client Information Section */}
+                      <div className="border border-gray-700 rounded-lg p-4 bg-[#0F0F0F]">
+                        <h4 className="text-white font-medium mb-4">Client Information</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-gray-300">Client/Company Name</Label>
+                            <Input
+                              value={formData.clientName}
+                              onChange={e => setFormData({...formData, clientName: e.target.value})}
+                              placeholder="ABC Construction Corp"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-300">Primary Contact</Label>
+                            <Input
+                              value={formData.clientContact}
+                              onChange={e => setFormData({...formData, clientContact: e.target.value})}
+                              placeholder="John Smith"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label className="text-gray-300">Email</Label>
+                            <Input
+                              type="email"
+                              value={formData.clientEmail}
+                              onChange={e => setFormData({...formData, clientEmail: e.target.value})}
+                              placeholder="john@abcconstruction.com"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-300">Phone</Label>
+                            <Input
+                              type="tel"
+                              value={formData.clientPhone}
+                              onChange={e => setFormData({...formData, clientPhone: e.target.value})}
+                              placeholder="(555) 123-4567"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* General Contractor Information Section */}
+                      <div className="border border-gray-700 rounded-lg p-4 bg-[#0F0F0F]">
+                        <h4 className="text-white font-medium mb-4">General Contractor (if applicable)</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-gray-300">Contractor Company</Label>
+                            <Input
+                              value={formData.generalContractor}
+                              onChange={e => setFormData({...formData, generalContractor: e.target.value})}
+                              placeholder="XYZ General Contracting"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-300">Contact Person</Label>
+                            <Input
+                              value={formData.contractorContact}
+                              onChange={e => setFormData({...formData, contractorContact: e.target.value})}
+                              placeholder="Jane Doe"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label className="text-gray-300">Email</Label>
+                            <Input
+                              type="email"
+                              value={formData.contractorEmail}
+                              onChange={e => setFormData({...formData, contractorEmail: e.target.value})}
+                              placeholder="jane@xyzcontracting.com"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-300">Phone</Label>
+                            <Input
+                              type="tel"
+                              value={formData.contractorPhone}
+                              onChange={e => setFormData({...formData, contractorPhone: e.target.value})}
+                              placeholder="(555) 987-6543"
+                              className="bg-[#121212] border-gray-700 text-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* STEP 4: Contact Persons */}
+                {currentStep === 4 && (
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <Label className="text-gray-300 text-base">Contact Persons</Label>
-                        <p className="text-sm text-gray-400">General contractors and project contacts</p>
+                        <p className="text-sm text-gray-400">Additional project contacts and team members</p>
                       </div>
                       <Button
                         type="button"
@@ -802,7 +927,7 @@ export default function ProjectSetUpPage() {
                 >
                   {createProjectMutation.isPending || updateProjectMutation.isPending
                     ? "Saving..."
-                    : currentStep === 3
+                    : currentStep === 4
                     ? (editingProject ? "Update Project" : "Create Project")
                     : "Next"
                   }

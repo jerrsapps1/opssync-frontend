@@ -221,7 +221,7 @@ export default function ProjectProfile() {
         </div>
 
         {/* Project Details Section */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
           {/* Project Information */}
           <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
             <div className="text-xs text-gray-400 mb-2">Project Details</div>
@@ -358,6 +358,64 @@ export default function ProjectProfile() {
                   <div className="text-blue-400 text-xs mt-1">
                     {durationDays ? `${durationDays} days` : 'Calculating...'}
                   </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Company/Client Information */}
+          <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
+            <div className="text-xs text-gray-400 mb-2">Company Details</div>
+            <div className="space-y-2 text-sm">
+              {project.clientName && (
+                <div>
+                  <span className="text-gray-500">Client:</span>
+                  <div className="text-gray-200 text-xs mt-1 font-medium">
+                    {project.clientName}
+                  </div>
+                  {project.clientContact && (
+                    <div className="text-gray-300 text-xs">
+                      Contact: {project.clientContact}
+                    </div>
+                  )}
+                  {project.clientEmail && (
+                    <div className="text-blue-400 text-xs">
+                      {project.clientEmail}
+                    </div>
+                  )}
+                  {project.clientPhone && (
+                    <div className="text-green-400 text-xs">
+                      {project.clientPhone}
+                    </div>
+                  )}
+                </div>
+              )}
+              {project.generalContractor && (
+                <div className="pt-2 border-t border-gray-700">
+                  <span className="text-gray-500">General Contractor:</span>
+                  <div className="text-gray-200 text-xs mt-1 font-medium">
+                    {project.generalContractor}
+                  </div>
+                  {project.contractorContact && (
+                    <div className="text-gray-300 text-xs">
+                      Contact: {project.contractorContact}
+                    </div>
+                  )}
+                  {project.contractorEmail && (
+                    <div className="text-blue-400 text-xs">
+                      {project.contractorEmail}
+                    </div>
+                  )}
+                  {project.contractorPhone && (
+                    <div className="text-green-400 text-xs">
+                      {project.contractorPhone}
+                    </div>
+                  )}
+                </div>
+              )}
+              {!project.clientName && !project.generalContractor && (
+                <div className="text-xs text-gray-500 italic">
+                  No company details specified
                 </div>
               )}
             </div>
