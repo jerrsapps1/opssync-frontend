@@ -23,6 +23,8 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Dashboard Authentication Header**: Added professional header displaying logged-in user information with real-time clock and brand theming
 - **Advanced Activity Analytics**: Created detailed activity summary with statistics breakdown, visual indicators, and comprehensive CSV export functionality
 - **Enhanced Logging Schema**: Added fromProjectId, fromProjectName, performedByEmail fields to track complete movement paths and user authentication details
+- **Complete Project Movement Tracking**: Enhanced assignment routes with comprehensive from/to project information, supporting "moved" action type for direct project-to-project transfers with full audit trail
+- **Comprehensive Test Activity Logs**: Created detailed test logs demonstrating enhanced tracking functionality including employee and equipment movements between active projects with complete source/destination information and user authentication details
 
 # User Preferences
 
