@@ -70,6 +70,21 @@ export const activities = pgTable("activities", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Project activity logs for settings/projects tracking
+export const projectActivityLogs = pgTable("project_activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  time: text("time").notNull(), // HH:MM format
+  action: text("action").notNull(), // assigned, removed
+  entityType: text("entity_type").notNull(), // employee, equipment
+  entityName: text("entity_name").notNull(),
+  entityId: varchar("entity_id").notNull(),
+  projectId: varchar("project_id").references(() => projects.id).notNull(),
+  projectName: text("project_name").notNull(),
+  performedBy: text("performed_by").notNull().default("System"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const alerts = pgTable("alerts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
@@ -258,3 +273,19 @@ export type UpdateEquipmentAssignment = z.infer<typeof updateEquipmentAssignment
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 export type UpdateEmployee = z.infer<typeof updateEmployeeSchema>;
 export type UpdateEquipment = z.infer<typeof updateEquipmentSchema>;
+
+// Project Activity Log schema
+export const insertProjectActivityLogSchema = z.object({
+  date: z.string(),
+  time: z.string(),
+  action: z.enum(["assigned", "removed"]),
+  entityType: z.enum(["employee", "equipment"]),
+  entityName: z.string(),
+  entityId: z.string(),
+  projectId: z.string(),
+  projectName: z.string(),
+  performedBy: z.string().default("System"),
+});
+
+export type ProjectActivityLog = typeof projectActivityLogs.$inferSelect;
+export type InsertProjectActivityLog = z.infer<typeof insertProjectActivityLogSchema>;

@@ -1,5 +1,5 @@
 import { 
-  projects, employees, equipment, activities, alerts, users, projectContacts,
+  projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
   type Equipment, type InsertEquipment, type UpdateEquipment,
@@ -8,12 +8,14 @@ import {
   type User, type InsertUser,
   type ProjectContact, type InsertProjectContact,
   type UpdateEmployeeAssignment,
-  type UpdateEquipmentAssignment
+  type UpdateEquipmentAssignment,
+  type ProjectActivityLog,
+  type InsertProjectActivityLog
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, gte, lte, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -57,6 +59,10 @@ export interface IStorage {
   createProjectContact(contact: InsertProjectContact): Promise<ProjectContact>;
   updateProjectContact(id: string, updates: Partial<ProjectContact>): Promise<ProjectContact>;
   deleteProjectContact(id: string): Promise<void>;
+  
+  // Project Activity Logs
+  getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]>;
+  createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog>;
 }
 
 export class MemStorage implements IStorage {
@@ -928,6 +934,17 @@ export class MemStorage implements IStorage {
   async deleteProjectContact(id: string): Promise<void> {
     this.projectContacts.delete(id);
   }
+
+  // Project Activity Logs (default implementation - can be overridden)
+  async getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]> {
+    // Base class returns empty array - should be implemented in subclasses
+    return [];
+  }
+
+  async createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog> {
+    // Base class throws error - should be implemented in subclasses
+    throw new Error("Project activity logging not implemented in base storage class");
+  }
 }
 
 // Create a PostgreSQL storage class that extends MemStorage but uses database for projects
@@ -1027,6 +1044,33 @@ export class PostgreSQLStorage extends MemStorage {
     this.projects.delete(id);
     
     console.log(`💾 PostgreSQLStorage.deleteProject: Deleted project ${id} successfully`);
+  }
+
+  // Override project activity logging methods to use PostgreSQL
+  async getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]> {
+    console.log(`💾 PostgreSQLStorage.getProjectActivityLogs: Loading logs from PostgreSQL database`);
+    let query = db.select().from(projectActivityLogs);
+    
+    if (projectId) {
+      query = query.where(eq(projectActivityLogs.projectId, projectId));
+    }
+    if (startDate) {
+      query = query.where(gte(projectActivityLogs.date, startDate));
+    }
+    if (endDate) {
+      query = query.where(lte(projectActivityLogs.date, endDate));
+    }
+    
+    const logs = await query.orderBy(desc(projectActivityLogs.date), desc(projectActivityLogs.time));
+    console.log(`💾 PostgreSQLStorage.getProjectActivityLogs: Found ${logs.length} logs`);
+    return logs;
+  }
+
+  async createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog> {
+    console.log(`💾 PostgreSQLStorage.createProjectActivityLog: Creating log for project ${log.projectId}`);
+    const [newLog] = await db.insert(projectActivityLogs).values(log).returning();
+    console.log(`💾 PostgreSQLStorage.createProjectActivityLog: Created log ${newLog.id} successfully`);
+    return newLog;
   }
 
   // Override employee methods to use PostgreSQL instead of in-memory storage

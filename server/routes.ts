@@ -1188,6 +1188,31 @@ Rules:
     }
   });
 
+  // Project activity logs API
+  app.get("/api/project-activity-logs", async (req, res) => {
+    try {
+      const { projectId, startDate, endDate } = req.query;
+      
+      console.log(`📊 Project Activity Logs API called:`, {
+        projectId: projectId as string,
+        startDate: startDate as string,
+        endDate: endDate as string
+      });
+      
+      const logs = await storage.getProjectActivityLogs(
+        projectId as string,
+        startDate as string, 
+        endDate as string
+      );
+      
+      console.log(`📊 Returning ${logs.length} activity logs`);
+      res.json(logs);
+    } catch (error) {
+      console.error("Project activity logs error:", error);
+      res.status(500).json({ error: "Failed to get project activity logs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
