@@ -190,7 +190,15 @@ export default function ProjectProfile() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">{project.name}</h1>
-            <div className="text-sm text-gray-400">{project.location || ""}</div>
+            <div className="text-sm text-gray-400 space-y-1">
+              <div>{project.location || ""}</div>
+              {project.projectNumber && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Project #:</span>
+                  <span className="text-blue-400 font-mono">{project.projectNumber}</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {isAssigning && (
@@ -209,6 +217,150 @@ export default function ProjectProfile() {
             >
               ← Back to Dashboard
             </button>
+          </div>
+        </div>
+
+        {/* Project Details Section */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          {/* Project Information */}
+          <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
+            <div className="text-xs text-gray-400 mb-2">Project Details</div>
+            <div className="space-y-2 text-sm">
+              {project.projectType && (
+                <div>
+                  <span className="text-gray-500">Type:</span>
+                  <span className="text-gray-200 ml-2">{project.projectType}</span>
+                </div>
+              )}
+              {project.description && (
+                <div>
+                  <span className="text-gray-500">Description:</span>
+                  <div className="text-gray-200 text-xs mt-1 max-h-16 overflow-y-auto">
+                    {project.description}
+                  </div>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-500">Priority:</span>
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                  project.priority === 'urgent' ? 'bg-red-900 text-red-300' :
+                  project.priority === 'high' ? 'bg-orange-900 text-orange-300' :
+                  project.priority === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                  'bg-green-900 text-green-300'
+                }`}>
+                  {project.priority || 'medium'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">Risk Level:</span>
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                  project.riskLevel === 'critical' ? 'bg-red-900 text-red-300' :
+                  project.riskLevel === 'high' ? 'bg-orange-900 text-orange-300' :
+                  project.riskLevel === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                  'bg-green-900 text-green-300'
+                }`}>
+                  {project.riskLevel || 'medium'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information */}
+          <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
+            <div className="text-xs text-gray-400 mb-2">Financial Details</div>
+            <div className="space-y-2 text-sm">
+              {project.estimatedBudget && (
+                <div>
+                  <span className="text-gray-500">Budget:</span>
+                  <span className="text-green-400 ml-2 font-mono">
+                    ${(project.estimatedBudget / 100).toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {project.contractValue && (
+                <div>
+                  <span className="text-gray-500">Contract:</span>
+                  <span className="text-blue-400 ml-2 font-mono">
+                    ${(project.contractValue / 100).toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {project.actualCost && (
+                <div>
+                  <span className="text-gray-500">Actual Cost:</span>
+                  <span className="text-red-400 ml-2 font-mono">
+                    ${(project.actualCost / 100).toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {project.profitMargin && (
+                <div>
+                  <span className="text-gray-500">Profit Margin:</span>
+                  <span className="text-purple-400 ml-2">{project.profitMargin}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Location Information */}
+          <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
+            <div className="text-xs text-gray-400 mb-2">Location Details</div>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-500">Address:</span>
+                <div className="text-gray-200 text-xs mt-1">
+                  {project.location || 'Not specified'}
+                </div>
+              </div>
+              {(project.gpsLatitude && project.gpsLongitude) && (
+                <div>
+                  <span className="text-gray-500">GPS:</span>
+                  <div className="text-gray-200 text-xs mt-1 font-mono">
+                    {project.gpsLatitude}, {project.gpsLongitude}
+                  </div>
+                </div>
+              )}
+              {project.kmzFileUrl && (
+                <div>
+                  <span className="text-gray-500">Map File:</span>
+                  <a 
+                    href={project.kmzFileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 text-xs ml-2 underline"
+                  >
+                    View KMZ
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Timeline Information */}
+          <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
+            <div className="text-xs text-gray-400 mb-2">Timeline</div>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-500">Created:</span>
+                <div className="text-gray-200 text-xs mt-1">
+                  {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'Unknown'}
+                </div>
+              </div>
+              <div>
+                <span className="text-gray-500">Last Updated:</span>
+                <div className="text-gray-200 text-xs mt-1">
+                  {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : 'Unknown'}
+                </div>
+              </div>
+              {project.startDate && project.endDate && (
+                <div>
+                  <span className="text-gray-500">Duration:</span>
+                  <div className="text-blue-400 text-xs mt-1">
+                    {durationDays ? `${durationDays} days` : 'Calculating...'}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
