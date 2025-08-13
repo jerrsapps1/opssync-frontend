@@ -2,7 +2,7 @@ import express from "express";
 import { broadcast } from "../realtime/stream";
 import { storage } from "../storage";
 
-// Helper function for status-based conditional logging
+// Helper function for enhanced project activity logging with from/to tracking
 async function logProjectActivity({
   employeeId,
   employeeName,
@@ -10,7 +10,9 @@ async function logProjectActivity({
   equipmentName,
   previousProjectId,
   newProjectId,
-  entityType
+  entityType,
+  performedBy = "Admin User",
+  performedByEmail
 }: {
   employeeId?: string;
   employeeName?: string;
@@ -19,6 +21,8 @@ async function logProjectActivity({
   previousProjectId?: string | null;
   newProjectId?: string | null;
   entityType: "employee" | "equipment";
+  performedBy?: string;
+  performedByEmail?: string;
 }) {
   try {
     const entityId = employeeId || equipmentId;
@@ -30,46 +34,66 @@ async function logProjectActivity({
     const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const time = now.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
 
+    // Get project information for enhanced logging
+    const previousProject = previousProjectId ? await storage.getProject(previousProjectId) : null;
+    const newProject = newProjectId ? await storage.getProject(newProjectId) : null;
+
+    // If both projects exist and are active, log as a "moved" action
+    if (previousProjectId && newProjectId && 
+        previousProject?.status === "Active" && newProject?.status === "Active") {
+      
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "moved",
+        entityType,
+        entityName,
+        entityId,
+        projectId: newProjectId,
+        projectName: newProject.name,
+        fromProjectId: previousProjectId,
+        fromProjectName: previousProject.name,
+        performedBy,
+        performedByEmail
+      });
+      console.log(`📝 Logged movement: ${entityName} moved from ${previousProject.name} to ${newProject.name}`);
+      return;
+    }
+
     // Log removal from previous project (if it was active)
-    if (previousProjectId) {
-      const previousProject = await storage.getProject(previousProjectId);
-      if (previousProject && previousProject.status === "Active") {
-        await storage.createProjectActivityLog({
-          date,
-          time,
-          action: "removed",
-          entityType,
-          entityName,
-          entityId,
-          projectId: previousProjectId,
-          projectName: previousProject.name,
-          performedBy: "Admin User"
-        });
-        console.log(`📝 Logged removal: ${entityName} removed from ${previousProject.name} (Active project)`);
-      } else if (previousProject) {
-        console.log(`⏸️ Skipped logging removal: ${previousProject.name} is ${previousProject.status} (logging disabled)`);
-      }
+    if (previousProjectId && previousProject?.status === "Active") {
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "removed",
+        entityType,
+        entityName,
+        entityId,
+        projectId: previousProjectId,
+        projectName: previousProject.name,
+        performedBy,
+        performedByEmail
+      });
+      console.log(`📝 Logged removal: ${entityName} removed from ${previousProject.name}`);
     }
 
     // Log assignment to new project (if it's active)
-    if (newProjectId) {
-      const newProject = await storage.getProject(newProjectId);
-      if (newProject && newProject.status === "Active") {
-        await storage.createProjectActivityLog({
-          date,
-          time,
-          action: "assigned",
-          entityType,
-          entityName,
-          entityId,
-          projectId: newProjectId,
-          projectName: newProject.name,
-          performedBy: "Admin User"
-        });
-        console.log(`📝 Logged assignment: ${entityName} assigned to ${newProject.name} (Active project)`);
-      } else if (newProject) {
-        console.log(`⏸️ Skipped logging assignment: ${newProject.name} is ${newProject.status} (logging disabled)`);
-      }
+    if (newProjectId && newProject?.status === "Active") {
+      await storage.createProjectActivityLog({
+        date,
+        time,
+        action: "assigned",
+        entityType,
+        entityName,
+        entityId,
+        projectId: newProjectId,
+        projectName: newProject.name,
+        fromProjectId: previousProjectId,
+        fromProjectName: previousProject?.name,
+        performedBy,
+        performedByEmail
+      });
+      console.log(`📝 Logged assignment: ${entityName} assigned to ${newProject.name}${previousProject ? ` (from ${previousProject.name})` : ''}`);
     }
   } catch (error) {
     console.error("Error logging project activity:", error);
