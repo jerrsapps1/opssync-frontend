@@ -33,7 +33,17 @@ export default function ProjectSettings() {
 
   // Get real activity logs from API
   const { data: activityLogs = [], isLoading: logsLoading } = useQuery<ProjectActivityLog[]>({
-    queryKey: ["/api", "project-activity-logs", selectedProject, startDate, endDate],
+    queryKey: ["/api/project-activity-logs", selectedProject, startDate, endDate],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedProject) params.append('projectId', selectedProject);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      
+      const response = await fetch(`/api/project-activity-logs?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch activity logs');
+      return response.json();
+    },
     enabled: !!selectedProject,
   });
 
