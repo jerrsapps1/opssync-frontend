@@ -123,7 +123,7 @@ export default function ProjectSetUpPage() {
       setCurrentStep(1); // Reset step counter
       toast({
         title: "Project Created",
-        description: "New project has been successfully added.",
+        description: "Project template filled with wizard data and ready for use.",
       });
     },
     onError: (error: any) => {
