@@ -257,7 +257,7 @@ export default function App() {
                   <Route path="projects" element={<ProjectSettings />} />
                   <Route path="equipment" element={<SettingsEquipment />} />
                   <Route path="employees" element={<SettingsEmployees />} />
-                  <Route path="privacy" element={<PrivacyTestSettings />} />
+                  <Route path="privacy" element={<PrivacySettings />} />
                 </Route>
                 <Route path="/equipment/:id" element={<EquipmentDetail />} />
                 <Route path="/employees/:id" element={<EmployeeDetail />} />
