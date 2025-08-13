@@ -25,6 +25,7 @@ export default function ProjectSettings() {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isCompactView, setIsCompactView] = useState(false);
 
   // Fetch projects data
   const { data: projects } = useQuery<any[]>({
@@ -200,7 +201,15 @@ export default function ProjectSettings() {
                 Daily records of employee and equipment movements (midnight to midnight)
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => setIsCompactView(!isCompactView)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                {isCompactView ? '📱' : '💻'} {isCompactView ? 'Compact View' : 'Full View'}
+              </Button>
               <Button
                 onClick={() => setSelectedDates(Object.keys(logsByDate))}
                 variant="outline"
@@ -313,86 +322,144 @@ export default function ProjectSettings() {
                     {logs
                       .sort((a, b) => a.time.localeCompare(b.time))
                       .map((log) => (
-                        <div key={log.id} className="bg-gray-800 p-3 rounded space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="flex flex-col items-center">
-                                <span className="text-gray-400 text-xs">TIME</span>
-                                <span className="text-white text-sm font-mono font-bold">{log.time}</span>
+                        <div key={log.id} className={`bg-gray-800 rounded ${isCompactView ? 'p-2' : 'p-3'} ${isCompactView ? 'space-y-1' : 'space-y-2'}`}>
+                          {isCompactView ? (
+                            // Compact mobile-friendly view
+                            <div className="space-y-1">
+                              {/* Top row: Time, Action, Entity */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white text-sm font-mono font-bold bg-gray-700 px-2 py-1 rounded">
+                                    {log.time}
+                                  </span>
+                                  <span className={`text-xs px-2 py-1 rounded font-medium ${
+                                    log.action === 'assigned' 
+                                      ? 'bg-green-900 text-green-300' 
+                                      : log.action === 'removed'
+                                      ? 'bg-red-900 text-red-300'
+                                      : 'bg-blue-900 text-blue-300'
+                                  }`}>
+                                    {log.action}
+                                  </span>
+                                </div>
+                                <span className="text-gray-400 text-xs">{log.performedBy}</span>
                               </div>
-                              <div className="h-8 w-px bg-gray-600"></div>
-                              <span className={`text-sm px-3 py-1 rounded-full font-medium ${
-                                log.action === 'assigned' 
-                                  ? 'bg-green-900 text-green-300 border border-green-700' 
-                                  : log.action === 'removed'
-                                  ? 'bg-red-900 text-red-300 border border-red-700'
-                                  : 'bg-blue-900 text-blue-300 border border-blue-700'
-                              }`}>
-                                {log.action.toUpperCase()}
-                              </span>
-                              <span className={`text-sm px-2 py-1 rounded ${
-                                log.entityType === 'employee'
-                                  ? 'bg-blue-900 text-blue-300'
-                                  : 'bg-orange-900 text-orange-300'
-                              }`}>
-                                {log.entityType === 'employee' ? '👤 Employee' : '🚛 Equipment'}
-                              </span>
-                              <span className="text-white font-semibold">{log.entityName}</span>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-gray-300 text-sm font-medium">
-                                {log.performedBy}
-                              </div>
-                              {log.performedByEmail && (
-                                <div className="text-gray-500 text-xs">
-                                  {log.performedByEmail}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Enhanced project tracking information */}
-                          <div className="text-sm space-y-1">
-                            <div className="text-gray-300">
-                              {log.action === 'moved' && log.fromProjectName ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-yellow-400">🔄</span>
-                                  <span>
-                                    Moved from <span className="text-red-400 font-medium">{log.fromProjectName}</span> 
-                                    <span className="text-gray-400 mx-2">→</span>
-                                    <span className="text-green-400 font-medium">{log.projectName}</span>
-                                  </span>
-                                </div>
-                              ) : log.action === 'assigned' ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-green-400">✓</span>
-                                  <span>
-                                    Assigned to <span className="text-green-400 font-medium">{log.projectName}</span>
-                                    {log.fromProjectName && <span className="text-gray-500"> (previously on {log.fromProjectName})</span>}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-red-400">✗</span>
-                                  <span>
-                                    Removed from <span className="text-red-400 font-medium">{log.projectName}</span>
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Additional details line */}
-                            <div className="flex justify-between items-center text-xs text-gray-400">
-                              <span>
-                                {log.entityType === 'employee' ? '👤' : '🚛'} {log.entityType} • ID: {log.entityId}
-                              </span>
-                              {log.performedByEmail && (
-                                <span className="italic">
-                                  Contact: {log.performedByEmail}
+                              
+                              {/* Second row: Entity name and type */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">
+                                  {log.entityType === 'employee' ? '👤' : '🚛'}
                                 </span>
-                              )}
+                                <span className="text-white font-medium text-sm">{log.entityName}</span>
+                                <span className="text-gray-400 text-xs">({log.entityId})</span>
+                              </div>
+                              
+                              {/* Third row: Project movement */}
+                              <div className="text-xs">
+                                {log.action === 'moved' && log.fromProjectName ? (
+                                  <div className="flex items-center gap-1 text-yellow-300">
+                                    <span>🔄</span>
+                                    <span className="text-red-300">{log.fromProjectName}</span>
+                                    <span className="text-gray-400">→</span>
+                                    <span className="text-green-300">{log.projectName}</span>
+                                  </div>
+                                ) : log.action === 'assigned' ? (
+                                  <div className="flex items-center gap-1 text-green-300">
+                                    <span>✓</span>
+                                    <span>→ {log.projectName}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1 text-red-300">
+                                    <span>✗</span>
+                                    <span>← {log.projectName}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            // Full desktop view
+                            <>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-gray-400 text-xs">TIME</span>
+                                    <span className="text-white text-sm font-mono font-bold">{log.time}</span>
+                                  </div>
+                                  <div className="h-8 w-px bg-gray-600"></div>
+                                  <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                                    log.action === 'assigned' 
+                                      ? 'bg-green-900 text-green-300 border border-green-700' 
+                                      : log.action === 'removed'
+                                      ? 'bg-red-900 text-red-300 border border-red-700'
+                                      : 'bg-blue-900 text-blue-300 border border-blue-700'
+                                  }`}>
+                                    {log.action.toUpperCase()}
+                                  </span>
+                                  <span className={`text-sm px-2 py-1 rounded ${
+                                    log.entityType === 'employee'
+                                      ? 'bg-blue-900 text-blue-300'
+                                      : 'bg-orange-900 text-orange-300'
+                                  }`}>
+                                    {log.entityType === 'employee' ? '👤 Employee' : '🚛 Equipment'}
+                                  </span>
+                                  <span className="text-white font-semibold">{log.entityName}</span>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-gray-300 text-sm font-medium">
+                                    {log.performedBy}
+                                  </div>
+                                  {log.performedByEmail && (
+                                    <div className="text-gray-500 text-xs">
+                                      {log.performedByEmail}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Enhanced project tracking information */}
+                              <div className="text-sm space-y-1">
+                                <div className="text-gray-300">
+                                  {log.action === 'moved' && log.fromProjectName ? (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-yellow-400">🔄</span>
+                                      <span>
+                                        Moved from <span className="text-red-400 font-medium">{log.fromProjectName}</span> 
+                                        <span className="text-gray-400 mx-2">→</span>
+                                        <span className="text-green-400 font-medium">{log.projectName}</span>
+                                      </span>
+                                    </div>
+                                  ) : log.action === 'assigned' ? (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-green-400">✓</span>
+                                      <span>
+                                        Assigned to <span className="text-green-400 font-medium">{log.projectName}</span>
+                                        {log.fromProjectName && <span className="text-gray-500"> (previously on {log.fromProjectName})</span>}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-red-400">✗</span>
+                                      <span>
+                                        Removed from <span className="text-red-400 font-medium">{log.projectName}</span>
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Additional details line */}
+                                <div className="flex justify-between items-center text-xs text-gray-400">
+                                  <span>
+                                    {log.entityType === 'employee' ? '👤' : '🚛'} {log.entityType} • ID: {log.entityId}
+                                  </span>
+                                  {log.performedByEmail && (
+                                    <span className="italic">
+                                      Contact: {log.performedByEmail}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                   </div>
