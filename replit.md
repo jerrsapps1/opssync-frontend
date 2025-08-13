@@ -25,6 +25,7 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Enhanced Logging Schema**: Added fromProjectId, fromProjectName, performedByEmail fields to track complete movement paths and user authentication details
 - **Complete Project Movement Tracking**: Enhanced assignment routes with comprehensive from/to project information, supporting "moved" action type for direct project-to-project transfers with full audit trail
 - **Comprehensive Test Activity Logs**: Created detailed test logs demonstrating enhanced tracking functionality including employee and equipment movements between active projects with complete source/destination information and user authentication details
+- **Mobile-Friendly Activity Logs**: Implemented compact mobile view with toggle button for responsive activity log display, featuring condensed 3-row layout optimized for touch interfaces while preserving all tracking information
 
 # User Preferences
 
