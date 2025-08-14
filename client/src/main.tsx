@@ -5,6 +5,7 @@ import { ToastProvider } from "./ui/toast";
 import RealtimeBridge from "./realtime/RealtimeBridge";
 import "./index.css";
 import "./styles/dnd.css";
+import "./styles/mobile.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

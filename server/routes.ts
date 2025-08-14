@@ -27,6 +27,9 @@ import managerRouter from "./routes/manager";
 import managerFriendlyRouter from "./routes/manager_friendly";
 import orgAdminRouter from "./routes/org_admin";
 import ownerAdminRouter from "./routes/owner_admin";
+import analyticsRouter from "./routes/analytics";
+import brandingRouter from "./routes/branding";
+import billingRouter from "./routes/billing";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import "./types"; // Import type declarations
@@ -1484,6 +1487,11 @@ Rules:
   
   // Owner admin routes (platform-level controls)
   app.use("/api/owner-admin", ownerAdminRouter);
+
+  // MVP Optional Addon Routes
+  app.use("/api/analytics", analyticsRouter);
+  app.use("/api/branding", brandingRouter);
+  app.use("/api/billing", billingRouter);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -23,12 +23,14 @@ export function Sidebar() {
         <Item to="/dashboard">Dashboard</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>
-        <Item to="/analytics">Analytics</Item>
+        <Item to="/analytics">Advanced Analytics</Item>
         <Item to="/settings">Settings</Item>
         <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">
           Admin
         </div>
         <Item to="/white-label">White Label Config</Item>
+        <Item to="/org/branding">Branding Settings</Item>
+        <Item to="/billing">Billing Management</Item>
       </nav>
 
       <div className="mt-auto p-3 text-xs text-gray-500">

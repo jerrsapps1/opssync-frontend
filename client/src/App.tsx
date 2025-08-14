@@ -47,6 +47,9 @@ import ProjectProfile from "./pages/project-profile";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import OrgSettings from "./pages/OrgSettings";
 import OwnerSettings from "./pages/OwnerSettings";
+import BrandingSettings from "./pages/BrandingSettings";
+import BillingSettings from "./pages/BillingSettings";
+import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 
 // Import the properly configured QueryClient
 import { queryClient } from "./lib/queryClient";
@@ -273,8 +276,10 @@ export default function App() {
                 <Route path="/manager" element={<ManagerDashboard />} />
                 <Route path="/org/settings" element={<OrgSettings />} />
                 <Route path="/owner/settings" element={<OwnerSettings />} />
+                <Route path="/org/branding" element={<BrandingSettings />} />
+                <Route path="/billing" element={<BillingSettings />} />
+                <Route path="/analytics" element={<AdvancedAnalytics />} />
                 <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/billing" element={<BillingHome />} />
                 <Route path="/assignments" element={<Dashboard />} />
                 <Route path="/builder" element={<Navigate to="/employees" replace />} />
                 <Route path="/white-label" element={<WhiteLabelPage />} />
