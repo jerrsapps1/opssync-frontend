@@ -6,16 +6,17 @@ create table if not exists tenants (
   created_at timestamptz not null default now()
 );
 
--- Users in tenants and their roles
+-- Users within tenants and their roles
 create table if not exists org_users (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references tenants(id) on delete cascade,
-  user_id uuid not null, -- reference your users table if you have one
-  role text not null check (role in ('OWNER','ADMIN','SUPERVISOR','MANAGER','VIEWER')),
-  created_at timestamptz not null default now()
+  user_id uuid not null, -- reference to your users table id
+  email text,            -- optional convenience field for listing
+  role text not null check (role in ('OWNER','ADMIN','MANAGER','SUPERVISOR','VIEWER')),
+  invited_at timestamptz default now(),
+  accepted_at timestamptz,
+  unique (tenant_id, user_id)
 );
-
-create index if not exists idx_org_users_tenant on org_users(tenant_id);
 
 -- Feature overrides per tenant
 create table if not exists feature_overrides (

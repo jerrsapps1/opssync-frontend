@@ -25,6 +25,7 @@ import slaRouter from "./routes/sla";
 import devRouter from "./routes/dev";
 import managerRouter from "./routes/manager";
 import orgAdminRouter from "./routes/org_admin";
+import ownerAdminRouter from "./routes/owner_admin";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import "./types"; // Import type declarations
@@ -1478,6 +1479,9 @@ Rules:
   
   // Organization admin routes (always available for tenant controls)
   app.use("/api/org-admin", orgAdminRouter);
+  
+  // Owner admin routes (platform-level controls)
+  app.use("/api/owner-admin", ownerAdminRouter);
 
   const httpServer = createServer(app);
   return httpServer;

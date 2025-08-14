@@ -1,5 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
+// Set owner email environment variable for development
+process.env.OWNER_EMAIL = process.env.OWNER_EMAIL || "admin@demo.com";
+
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import stream from "./realtime/stream";

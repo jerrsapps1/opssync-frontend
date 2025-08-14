@@ -1,13 +1,5 @@
-// server/config/features.ts
-// Centralized feature flags. Toggle via environment variables.
-// Examples (in .env / Replit Secrets / Render):
-//   FEATURE_SUPERVISOR=1
-//   FEATURE_MANAGER=0
-//   FEATURE_SLA=1
-//   FEATURE_REMINDERS=1
-//   FEATURE_ESCALATIONS=0
-//   FEATURE_WEEKLY_DIGEST=0
-
+// Global feature flags (defaults).
+// You can control via env and owner overrides.
 export const features = {
   SUPERVISOR: process.env.FEATURE_SUPERVISOR === "1",
   MANAGER: process.env.FEATURE_MANAGER === "1",

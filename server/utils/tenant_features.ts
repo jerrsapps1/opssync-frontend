@@ -1,5 +1,5 @@
 import pg from "pg";
-import { features as globalFeatures } from "../config/features";
+import { resolveGlobalFeatures } from "./global_features";
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -14,6 +14,8 @@ export type TenantFeatures = {
 };
 
 export async function resolveTenantFeatures(tenantId?: string): Promise<TenantFeatures> {
+  // Start with global features (env → global_features table)
+  const globalFeatures = await resolveGlobalFeatures();
   const f = {
     SUPERVISOR: globalFeatures.SUPERVISOR,
     MANAGER: globalFeatures.MANAGER,

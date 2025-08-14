@@ -50,6 +50,7 @@ export function Sidebar() {
           Admin
         </div>
         <Item to="/org/settings">Organization Settings</Item>
+        <Item to="/owner/settings">Platform Settings</Item>
         <Item to="/white-label">White Label Config</Item>
       </nav>
 

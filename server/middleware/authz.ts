@@ -9,8 +9,33 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     role: string;
     tenantId: string;
+    email?: string;
     [key: string]: any;
   };
+}
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const user = (req as any).user;
+  if (!user) return res.status(401).send("Unauthorized");
+  next();
+}
+
+export function requirePlatformOwner(req: Request, res: Response, next: NextFunction) {
+  const user = (req as any).user;
+  const ownerEmail = process.env.OWNER_EMAIL?.toLowerCase();
+  
+  if (!user || !user.email || user.email.toLowerCase() !== ownerEmail) {
+    return res.status(403).send("Forbidden - Not platform owner");
+  }
+  next();
+}
+
+export function requireOrgAdmin(req: Request, res: Response, next: NextFunction) {
+  const user = (req as any).user;
+  if (!user || !["OWNER","ADMIN"].includes(user.role)) {
+    return res.status(403).send("Forbidden");
+  }
+  next();
 }
 
 export function requireRole(roles: string | string[]) {
@@ -33,7 +58,6 @@ export function requireTenant() {
     if (!req.user?.tenantId) {
       return res.status(400).json({ error: 'Tenant context required' });
     }
-    
     next();
   };
 }
@@ -46,7 +70,7 @@ export function getTenantId(req: AuthenticatedRequest): string | undefined {
 export function requireTenantFeature(featureName: string) {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const tenantId = getTenantId(req);
+      const tenantId = getTenantId(req as AuthenticatedRequest);
       if (!tenantId) {
         return res.status(400).json({ error: 'Tenant context required' });
       }
@@ -69,13 +93,13 @@ export function requireTenantFeature(featureName: string) {
 // Mock authentication middleware for development
 export function mockAuth() {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    // For development, simulate a logged-in admin user
+    // For development, simulate a logged-in admin user with owner email
     if (!req.user) {
       req.user = {
         id: '550e8400-e29b-41d4-a716-446655440001',
         role: 'OWNER', 
         tenantId: '550e8400-e29b-41d4-a716-446655440000',
-        email: 'admin@demo.com'
+        email: process.env.OWNER_EMAIL || 'admin@demo.com'
       };
     }
     next();
