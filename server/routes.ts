@@ -21,6 +21,8 @@ import * as XLSX from 'xlsx';
 import PDFDocument from 'pdfkit';
 import { computeStatus } from "./utils/timeliness";
 import supervisorRouter from "./routes/supervisor";
+import slaRouter from "./routes/sla";
+import devRouter from "./routes/dev";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1456,6 +1458,10 @@ Rules:
 
   // Supervisor Portal & Timeliness
   app.use("/api/supervisor", supervisorRouter);
+  
+  // Mount SLA and dev routes
+  app.use("/api/sla", slaRouter);
+  app.use("/api/dev", devRouter);
 
   const httpServer = createServer(app);
   return httpServer;
