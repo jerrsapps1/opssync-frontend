@@ -20,6 +20,7 @@ import multer from 'multer';
 import * as XLSX from 'xlsx';
 import PDFDocument from 'pdfkit';
 import { computeStatus } from "./utils/timeliness";
+// import supervisorRouter from "./routes/supervisor";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1452,6 +1453,9 @@ Rules:
       res.status(500).json({ message: "Failed to create update requirement" });
     }
   });
+
+  // Supervisor Portal & Timeliness
+  // app.use("/api/supervisor", supervisorRouter);
 
   const httpServer = createServer(app);
   return httpServer;
