@@ -4,6 +4,7 @@ import { createServer } from "http";
 process.env.OWNER_EMAIL = process.env.OWNER_EMAIL || "admin@demo.com";
 
 import { registerRoutes } from "./routes";
+import stripeWebhookRouter from "./routes/stripe_webhooks";
 import { setupVite, serveStatic, log } from "./vite";
 import stream from "./realtime/stream";
 import assignments from "./routes/assignments";
@@ -16,6 +17,9 @@ const app = express();
 
 // Stripe webhook needs raw body parser before JSON parser
 app.use("/api", stripeWebhook);  // NOTE: uses express.raw for signature verification
+
+// Stripe webhook requires raw body, must come before express.json()
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhookRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

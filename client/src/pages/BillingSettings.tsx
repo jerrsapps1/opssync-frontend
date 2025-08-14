@@ -7,67 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign, Calendar, Users, Building, Wrench } from "lucide-react";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
+import { billingUtils } from "@/lib/billing";
 
 const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
-  const stripe = useStripe();
-  const elements = useElements();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
 
-  const createSubscriptionMutation = useMutation({
-    mutationFn: (data: { email: string; name: string }) =>
-      fetch("/api/billing/create-subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      }).then(res => res.json()),
-    onSuccess: async (data) => {
-      if (data.client_secret && stripe && elements) {
-        setProcessing(true);
-        const { error } = await stripe.confirmCardPayment(data.client_secret, {
-          payment_method: {
-            card: elements.getElement(CardElement)!,
-          }
-        });
-
-        if (error) {
-          toast({
-            title: "Payment Failed",
-            description: error.message,
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Subscription created successfully!"
-          });
-          onSuccess();
-        }
-        setProcessing(false);
-      }
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create subscription",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setProcessing(true);
     
     const formData = new FormData(e.target as HTMLFormElement);
-    createSubscriptionMutation.mutate({
-      email: formData.get('email') as string,
-      name: formData.get('name') as string
-    });
+    const email = formData.get('email') as string;
+    const name = formData.get('name') as string;
+    
+    try {
+      await billingUtils.createCheckout(email, name);
+      onSuccess();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive"
+      });
+      setProcessing(false);
+    }
   };
 
   return (
@@ -95,32 +60,13 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
         />
       </div>
 
-      <div>
-        <Label>Payment Method</Label>
-        <div className="p-3 border rounded-md">
-          <CardElement
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#424770',
-                  '::placeholder': {
-                    color: '#aab7c4',
-                  },
-                },
-              },
-            }}
-          />
-        </div>
-      </div>
-
       <Button 
         type="submit" 
-        disabled={!stripe || processing || createSubscriptionMutation.isPending}
+        disabled={processing}
         className="w-full"
         data-testid="button-create-subscription"
       >
-        {processing || createSubscriptionMutation.isPending ? "Processing..." : "Subscribe Now"}
+        {processing ? "Creating..." : "Subscribe with Stripe Checkout"}
       </Button>
     </form>
   );
@@ -217,6 +163,15 @@ export default function BillingSettings() {
                       <span>Auto-renew:</span>
                       <span>{billingStatus.subscription.cancel_at_period_end ? 'No' : 'Yes'}</span>
                     </div>
+                    
+                    <Button 
+                      onClick={() => billingUtils.openPortal()}
+                      variant="outline"
+                      className="w-full mt-4"
+                      data-testid="button-manage-billing"
+                    >
+                      Manage Billing
+                    </Button>
                   </>
                 )}
               </div>
@@ -227,9 +182,7 @@ export default function BillingSettings() {
                 </p>
                 
                 {billingStatus?.stripe_configured && (
-                  <Elements stripe={stripePromise}>
-                    <CheckoutForm onSuccess={handleSubscriptionSuccess} />
-                  </Elements>
+                  <CheckoutForm onSuccess={handleSubscriptionSuccess} />
                 )}
               </div>
             )}

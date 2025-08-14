@@ -46,6 +46,9 @@ An advanced natural language interface allows for plain English commands. It int
 ## Enterprise Features
 The system includes an enhanced tenant-aware cron system for per-tenant background jobs, field-friendly interface terminology replacing jargon, and a customizable terminology framework (`client/src/lib/copy.ts`). It supports enterprise job scheduling, a comprehensive supervisor portal with timeliness management and project blocking, enterprise SLA management with RAG scoring, and an automated escalation system for overdue items. Weekly digest automation sends project status reports. A customer controls MVP enables per-tenant feature management (e.g., Supervisor Portal, Manager Dashboard, SLA management), supported by a comprehensive feature flag architecture and a tenant management database schema (`tenants`, `org_users`, `feature_overrides`, `notification_prefs`).
 
+## MVP Optional Addons System
+A comprehensive addon architecture provides enterprise-grade modular functionality with three core addons: Advanced Analytics with project metrics and utilization tracking (`/api/analytics/*`), Branding Settings with real-time theme customization and logo upload (`/api/branding/*`), and Billing Management with full Stripe integration for subscription handling (`/api/billing/*`). The system includes complete Stripe webhook processing (`server/routes/stripe_webhooks.ts`), billing portal integration (`server/routes/billing_portal.ts`), and database tables for branding configurations, billing customers, and subscription management. All addons are accessible through sidebar navigation with mobile-responsive design.
+
 # External Dependencies
 
 ## Database Integration

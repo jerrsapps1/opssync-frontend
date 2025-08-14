@@ -30,6 +30,7 @@ import ownerAdminRouter from "./routes/owner_admin";
 import analyticsRouter from "./routes/analytics";
 import brandingRouter from "./routes/branding";
 import billingRouter from "./routes/billing";
+import billingPortalRouter from "./routes/billing_portal";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import "./types"; // Import type declarations
@@ -1492,6 +1493,7 @@ Rules:
   app.use("/api/analytics", analyticsRouter);
   app.use("/api/branding", brandingRouter);
   app.use("/api/billing", billingRouter);
+  app.use("/api/billing", billingPortalRouter);
 
   const httpServer = createServer(app);
   return httpServer;
