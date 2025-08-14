@@ -40,6 +40,7 @@ import EquipmentDetail from "./pages/equipment-detail";
 import EmployeeDetail from "./pages/employee-detail";
 import DirectoryPage from "./pages/directory";
 import HistoryPage from "./pages/history";
+import SupervisorPortal from "./pages/supervisor";
 import PricingPage from "./pages/billing/pricing";
 import BillingHome from "./pages/billing";
 import ProjectProfile from "./pages/project-profile";
@@ -265,6 +266,7 @@ export default function App() {
                 <Route path="/project/:id" element={<ProjectProfile />} />
                 <Route path="/directory" element={<DirectoryPage />} />
                 <Route path="/history" element={<HistoryPage />} />
+                <Route path="/supervisor" element={<SupervisorPortal />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/billing" element={<BillingHome />} />
                 <Route path="/assignments" element={<Dashboard />} />

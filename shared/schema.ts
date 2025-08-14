@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -26,6 +26,9 @@ export const projects = pgTable("projects", {
   profitMargin: integer("profit_margin"), // Profit margin percentage
   riskLevel: text("risk_level").default("medium"), // low, medium, high, critical
   priority: text("priority").default("medium"), // low, medium, high, urgent
+  startBlocked: boolean("start_blocked").default(true), // Project blocked until checklist complete
+  supervisorEmail: text("supervisor_email"),
+  supervisorPhone: text("supervisor_phone"),
   // Company/Client Information
   clientName: text("client_name"), // Name of the client/customer
   clientContact: text("client_contact"), // Primary client contact person
@@ -180,6 +183,32 @@ export const insertProjectContactSchema = createInsertSchema(projectContacts).om
   createdAt: true,
   updatedAt: true,
 });
+
+// Supervisor Portal Tables
+export const timelinessItems = pgTable("timeliness_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // 'UPDATE' or 'CHANGE_REQUEST'
+  title: text("title").notNull(),
+  description: text("description").default(""),
+  dueAt: timestamp("due_at").notNull(),
+  submittedAt: timestamp("submitted_at"),
+  deletedAt: timestamp("deleted_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const checklists = pgTable("checklists", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  payload: json("payload").notNull().default({}),
+  note: text("note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type TimelinessItem = typeof timelinessItems.$inferSelect;
+export type InsertTimelinessItem = typeof timelinessItems.$inferInsert;
+export type Checklist = typeof checklists.$inferSelect;
+export type InsertChecklist = typeof checklists.$inferInsert;
 
 export const insertAlertSchema = createInsertSchema(alerts).omit({
   id: true,

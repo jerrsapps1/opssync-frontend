@@ -19,6 +19,7 @@ import bcrypt from "bcryptjs";
 import multer from 'multer';
 import * as XLSX from 'xlsx';
 import PDFDocument from 'pdfkit';
+import { computeStatus } from "./utils/timeliness";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1384,6 +1385,71 @@ Rules:
     } catch (error) {
       console.error("Project activity logs error:", error);
       res.status(500).json({ error: "Failed to get project activity logs" });
+    }
+  });
+
+  // ============================================================================
+  // SUPERVISOR PORTAL ROUTES
+  // ============================================================================
+  
+  // Supervisor overview - projects and timeliness items
+  app.get("/api/supervisor/overview", async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      const projectsFormatted = projects.map(p => ({
+        id: p.id,
+        name: p.name,
+        startBlocked: p.startBlocked ?? true
+      }));
+
+      // For now, return empty items until we implement full database integration
+      const items: any[] = [];
+
+      res.json({ projects: projectsFormatted, items });
+    } catch (error) {
+      console.error("Error fetching supervisor overview:", error);
+      res.status(500).json({ message: "Failed to fetch supervisor overview" });
+    }
+  });
+
+  // Acknowledge/mark done timeliness item
+  app.post("/api/supervisor/ack/:itemId", async (req, res) => {
+    try {
+      // For now, just return success
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error acknowledging item:", error);
+      res.status(500).json({ message: "Failed to acknowledge item" });
+    }
+  });
+
+  // Submit pre-start checklist
+  app.post("/api/supervisor/projects/:projectId/checklist", async (req, res) => {
+    try {
+      const { payload, note } = req.body;
+      
+      // For now, just return success - full implementation would save to checklists table
+      console.log("Checklist submitted for project:", req.params.projectId, { payload, note });
+      
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error submitting checklist:", error);
+      res.status(500).json({ message: "Failed to submit checklist" });
+    }
+  });
+
+  // Create update requirement
+  app.post("/api/supervisor/projects/:projectId/require-update", async (req, res) => {
+    try {
+      const { title, description, dueAt } = req.body;
+      
+      // For now, just return success - full implementation would save to timeliness_items table
+      console.log("Update requirement created for project:", req.params.projectId, { title, description, dueAt });
+      
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Error creating update requirement:", error);
+      res.status(500).json({ message: "Failed to create update requirement" });
     }
   });
 
