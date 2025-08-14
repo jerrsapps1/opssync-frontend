@@ -35,6 +35,7 @@ import { db, EMPLOYEES_KEY, EQUIPMENT_KEY, PROJECTS_KEY } from "./sharedDb";
 // Import storage to check for existing data
 import { storage } from "./storage";
 import { startTimelinessAddons } from "./services/scheduler_addons";
+import { startCronWithTenantChecks } from "./services/cron_feature_checks";
 
 // Initialize DB with realistic data from Excel import
 async function initData() {
@@ -266,7 +267,7 @@ app.get("/api/analytics", async (req, res) => {
   }, () => {
     log(`serving on port ${port}`);
     
-    // Start timeliness addon schedulers
-    startTimelinessAddons();
+    // Start timeliness addon schedulers with tenant-aware feature checks
+    startCronWithTenantChecks();
   });
 })();
