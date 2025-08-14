@@ -20,7 +20,7 @@ export default function FieldFriendlyRAGPanel() {
             <option value={90}>90d</option>
           </select>
           <button onClick={reload} className="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">{COPY.refresh}</button>
-          <a href={`/api/manager/export.csv?days=${days}`} className="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">{COPY.export}</a>
+          <a href={`/api/manager/export-friendly.csv?days=${days}`} className="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">{COPY.export}</a>
         </div>
       </div>
 

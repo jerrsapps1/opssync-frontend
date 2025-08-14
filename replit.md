@@ -1,42 +1,6 @@
 # Overview
 
-Asset Tracker Pro is a professional employee and equipment management application for construction and demolition. It offers drag-and-drop assignment, real-time conflict detection, and comprehensive asset management within a full-stack web application (React frontend, Express backend). Key features include enterprise-grade conflict management, a three-panel layout for assignments, JWT authentication, an enhanced navigation header, an advanced white-label system with page-level branding, object storage integration, a comprehensive settings system, a professional directory with profile management and a guided builder, complete archive/history tracking with audit trails, and live assignment synchronization with enhanced SSE real-time capabilities. The system includes a comprehensive Stripe billing integration with three pricing tiers and plan-based feature gates. The application ensures live data creation and an integrated workflow between settings management and the operational dashboard, with authentic equipment data for realistic testing. It supports enterprise-grade real-time collaboration with event ID tracking and missed event replay.
-
-## Recent Changes (August 2025)
-- **Text Readability Fix**: Completely resolved text visibility issues across all UI components by updating Input component styling from light theme to dark theme with proper contrast (white text on dark backgrounds)
-- **Form Field Visibility**: Fixed employee profile forms, equipment forms, and all input fields to use dark theme CSS variables ensuring readable white text
-- **Excel Export System**: Completely resolved data consistency and duplication issues in Excel exports
-- **Data Architecture**: Implemented shared database module ensuring consistent data across all API routes and exports
-- **Export Quality**: All Excel exports now provide complete authentic datasets (46 employees, 25 equipment, 15 projects) with clean formatting
-- **Professional Directory**: Directory functionality confirmed working perfectly with comprehensive asset management
-- **Employee Creation Enhancement**: Added emergency contact phone and company fields to 3-step employee wizard
-- **Navigation Streamlining**: Removed redundant Profile Builder tab, updated navigation to use consistent "Profiles" naming (Employee Profiles, Equipment Profiles, Project Profiles)
-- **Directory-First Navigation**: Streamlined employee and equipment profile access to use the comprehensive Directory system instead of individual profile pages, reducing redundancy
-- **Simplified Assignment Interface**: Removed "Drop here to unassign" functionality per user request for future replacement with different approach
-- **UI Cleanup**: Removed employee avatar displays, search bars, and command bar for minimal, clean interface focused on drag-and-drop workflow
-- **Layout Balance**: Made all three columns equal width for consistent visual balance across the dashboard
-- **Project Display Enhancement**: Replaced status dropdown with text-only status display, added progress bars and duration information
-- **History Page Simplification**: Focused History tab on assignment changes only, added date range filtering, entity type filtering, and "who did what when" tracking for complete audit trail
-- **Project Management Enhancement**: Fixed critical project creation issues with date validation and form submission flow
-- **Alphabetical Sorting**: Projects now display in alphabetical order by name for consistent organization
-- **Enhanced Activity Logging System**: Implemented comprehensive project activity tracking with source/destination project monitoring, authenticated user tracking, and detailed audit trails
-- **Dashboard Authentication Header**: Added professional header displaying logged-in user information with real-time clock and brand theming
-- **Advanced Activity Analytics**: Created detailed activity summary with statistics breakdown, visual indicators, and comprehensive CSV export functionality
-- **Enhanced Logging Schema**: Added fromProjectId, fromProjectName, performedByEmail fields to track complete movement paths and user authentication details
-- **Complete Project Movement Tracking**: Enhanced assignment routes with comprehensive from/to project information, supporting "moved" action type for direct project-to-project transfers with full audit trail
-- **Comprehensive Test Activity Logs**: Created detailed test logs demonstrating enhanced tracking functionality including employee and equipment movements between active projects with complete source/destination information and user authentication details
-- **Mobile-Friendly Activity Logs**: Implemented compact mobile view with toggle button for responsive activity log display, featuring condensed 3-row layout optimized for touch interfaces while preserving all tracking information
-- **Comprehensive Supervisor Portal Enhancement**: Integrated complete timeliness management system with pre-start safety checklists, change request workflows, and project blocking mechanisms
-- **Enterprise SLA Management**: Added automated SLA policies with per-project thresholds, RED/AMBER/GREEN scoring system, and configurable timeliness targets for comprehensive project oversight
-- **Automated Escalation System**: Implemented intelligent escalation rules that auto-escalate overdue items to project managers and owners after configurable hours (default 4 hours)
-- **Weekly Digest Automation**: Created Monday morning email summary system that automatically sends project status reports to supervisors and managers with comprehensive project metrics
-- **Advanced Timeliness Scheduling**: Enhanced cron-based scheduling system with escalation checks every 30 minutes and weekly digest delivery, fully integrated with server startup process
-- **Role-Aware Escalation System**: Implemented project-type specific escalation ladders (construction, demolition, infrastructure) with different timing and role-based escalation paths
-- **Manager Dashboard Integration**: Added comprehensive Manager Dashboard with RAG rollups, trend analysis, and executive oversight capabilities accessible via navigation
-- **Customer Controls MVP**: Implemented complete per-tenant feature management system allowing organizations to independently control features like Supervisor Portal, Manager Dashboard, SLA management, automated reminders, escalations, and weekly digests through an organization settings interface
-- **Feature Flag Architecture**: Added comprehensive feature flag system with server-side (`server/config/features.ts`) and client-side (`client/src/lib/features.ts`) configuration, supporting both global environment flags and per-tenant overrides
-- **Tenant Management Database**: Created complete tenant management schema with `tenants`, `org_users`, `feature_overrides`, and `notification_prefs` tables for enterprise multi-tenancy support
-- **Authorization Middleware**: Implemented role-based authorization with tenant context, supporting OWNER/ADMIN/SUPERVISOR/MANAGER/VIEWER roles and tenant-specific feature access control
+Asset Tracker Pro is a professional employee and equipment management application designed for the construction and demolition industry. It provides comprehensive asset management with drag-and-drop assignment capabilities, real-time conflict detection, and a full-stack web application architecture. Key features include enterprise-grade conflict management, a three-panel assignment layout, JWT authentication, an enhanced navigation header, an advanced white-label system with page-level branding, object storage integration, a comprehensive settings system, a professional directory with profile management, complete archive/history tracking with audit trails, and live assignment synchronization. The system also integrates comprehensive Stripe billing with tiered pricing and plan-based feature gating, and supports enterprise-grade real-time collaboration. Business vision centers on optimizing operational efficiency and resource allocation for construction and demolition projects, with market potential in mid-to-large scale construction firms. Project ambitions include becoming the industry standard for asset tracking and workforce management.
 
 # User Preferences
 
@@ -47,60 +11,40 @@ Focus on efficient, immediate solutions without unnecessary back-and-forth.
 # System Architecture
 
 ## Frontend Architecture
-The client uses React 18 with TypeScript and Chakra UI, built with Vite. State management is via React context (AppProvider) and local state for conflict management. Features include a `useConflictPolling` hook, `ConflictAlert` component, and a three-panel drag-and-drop layout. The drag-and-drop system uses `client/src/dnd/` utilities for reliable assignment persistence. A unified query key architecture (`["/api", "resource"]`) ensures consistent cache invalidation and real-time UI updates.
+The client is built with React 18, TypeScript, and Chakra UI, using Vite. State management relies on React context (AppProvider) and local state for conflict management. It features a `useConflictPolling` hook and a `ConflictAlert` component. The three-panel drag-and-drop layout utilizes `client/src/dnd/` utilities for reliable assignment persistence. A unified query key architecture (`["/api", "resource"]`) ensures consistent cache invalidation and real-time UI updates.
 
 ## Backend Architecture
-The server uses Express.js with TypeScript and a simplified RESTful API design. It integrates with Replit Database. The API provides CRUD operations for employees, equipment, projects, and supervisors, PATCH endpoints for assignments, POST for entity creation, and an enhanced `/api/conflicts` endpoint for detailed conflict detection. Real-time conflict detection uses 15-second polling.
+The server is built with Express.js and TypeScript, following a simplified RESTful API design. It integrates with Replit Database and provides CRUD operations for employees, equipment, projects, and supervisors, with PATCH endpoints for assignments and POST for entity creation. An enhanced `/api/conflicts` endpoint supports detailed conflict detection with 15-second polling.
 
 ## Data Storage Solutions
-Replit Database is used for persistent storage, with collections for employees, equipment, and projects. UUIDs are used for primary keys and `currentProjectId` for assignment tracking.
+Replit Database serves as the persistent storage, organizing data into collections for employees, equipment, and projects. UUIDs are used for primary keys, and `currentProjectId` for assignment tracking.
 
 ## Authentication and Authorization
-A JWT-based authentication system is implemented, including user registration with white-label brand configuration, secure login with 7-day token expiration, automatic token validation/refresh, in-app brand configuration updates, protected routes with authentication middleware, and user management with bcryptjs encrypted password storage.
+A JWT-based authentication system is implemented, featuring user registration with white-label brand configuration, secure login with 7-day token expiration, automatic token validation and refresh, in-app brand configuration updates, and protected routes via authentication middleware. User management uses bcryptjs for password storage. Role-based authorization supports OWNER/ADMIN/SUPERVISOR/MANAGER/VIEWER roles with tenant-specific feature access control.
 
 ## Styling and Theme System
-The application uses a professional tech-forward dark theme with Tailwind CSS, featuring a specific AI-inspired color palette (#121212 background, #1E1E2F panels, #4A90E2 primary, #BB86FC accents, #CF6679 alerts). It includes subtle gradients, backdrop blur effects, and custom scrollbars.
+The application employs a professional tech-forward dark theme using Tailwind CSS. The color palette is AI-inspired, featuring a #121212 background, #1E1E2F panels, #4A90E2 primary, #BB86FC accents, and #CF6679 alerts. Design elements include subtle gradients, backdrop blur effects, and custom scrollbars.
 
 ## White Label Configuration
-A comprehensive white-label system allows configuration of app name, branding, primary/secondary colors, and logo URL with real-time theme preview. A professional logo upload system supports drag & drop, validation, direct upload to object storage, and presigned URLs. Dynamic theming uses CSS variables (e.g., `--brand-primary`).
-
-### Dynamic CSS Variable Theming
-The `useBrandTheme` hook applies brand configuration to CSS custom properties at runtime. A complete UI component library (buttons, inputs, selects, dialogs, tables) automatically inherits brand configuration via CSS variables. Page-level integration includes branded headers, dynamic company names, and consistent branding across all operational pages.
+A comprehensive white-label system enables configuration of the app name, branding, primary/secondary colors, and logo URL with real-time theme previews. A professional logo upload system supports drag & drop, validation, direct upload to object storage, and presigned URLs. Dynamic theming is achieved using CSS variables (e.g., `--brand-primary`). The `useBrandTheme` hook applies brand configurations to CSS custom properties at runtime, ensuring all UI components (buttons, inputs, selects, dialogs, tables) inherit branding via CSS variables.
 
 ## Professional Directory System
-A comprehensive directory for employees, equipment, and projects includes:
-- **Unified Directory View**: Single page with tabs.
-- **Completeness Tracking**: Visual progress bars for profile completion.
-- **Context Menu Integration**: Right-click for "Open Profile", "Assign...", "Unassign".
-- **Dual Navigation**: Double-click for profiles, right-click for quick actions.
-- **Real-time Assignment**: Integration with the project assignment system.
+A unified directory for employees, equipment, and projects provides a single-page view with tabs, visual progress bars for profile completion, and context menu integration for actions like "Open Profile", "Assign...", "Unassign". Navigation supports double-click for profiles and right-click for quick actions. A Profile Builder Wizard guides users through a step-by-step process for completing profiles.
 
-**Profile Builder Wizard:** A guided step-by-step process for completing profiles based on entity type, with progressive form fields and real-time validation.
-
-**Archive & History System:** Soft delete architecture, complete audit trail of entity changes, action logging, recovery capabilities, and a chronological timeline view.
+## Archive & History System
+This system features a soft delete architecture, maintaining a complete audit trail of entity changes, action logging, recovery capabilities, and a chronological timeline view for "who did what when" tracking.
 
 ## Enhanced Settings Management System
-A comprehensive settings interface with a structured sub-page system.
-- **Settings Architecture**: Main settings shell with tabbed navigation (Project, Equipment, Employee Settings).
-- **Import/Export Capabilities**: Bulk CSV/Excel import/export for employees and equipment with template support.
-- **Enhanced Navigation**: Nested routing, white-label branding integration, and back navigation.
-- **Context Menu System**: Right-click context menus and double-click navigation on entity cards.
-- **Server Features**: Import/export API routes, project contacts management, notes system, and real-time data validation.
+A comprehensive settings interface with a structured sub-page system provides tabbed navigation (Project, Equipment, Employee Settings). It supports bulk CSV/Excel import/export for employees and equipment with template support.
 
 ## Navigation System
-A global layout system with consistent sidebar navigation across all pages, using React Router DOM. The `AppLayout` component provides a unified shell.
-
-## White Label Configuration System
-A dedicated admin section for white label configuration (company name, colors, logo upload) with specific API endpoints (`/api/auth/brand-config` and `/api/logo/upload-url`).
+A global layout system ensures consistent sidebar navigation across all pages, utilizing React Router DOM. The `AppLayout` component provides a unified shell.
 
 ## Natural Language Command Bar System
-An advanced natural language interface for plain English commands.
-- **OpenAI Integration**: Advanced NLP with fallback to pattern matching.
-- **API Consistency**: Uses same PATCH endpoints as drag-and-drop.
-- **Intelligent Matching**: Fuzzy search for employees/equipment, project resolution.
-- **Real-time Updates**: Automatic query invalidation.
-- **Comprehensive Error Handling**: User-friendly validation and toast notifications.
-Supported commands include employee/equipment assignments and asset queries.
+An advanced natural language interface allows for plain English commands. It integrates with OpenAI for advanced NLP, with fallback to pattern matching. It uses the same PATCH endpoints as drag-and-drop for API consistency, features intelligent matching for entities, and provides real-time updates via automatic query invalidation with comprehensive error handling.
+
+## Enterprise Features
+The system includes an enhanced tenant-aware cron system for per-tenant background jobs, field-friendly interface terminology replacing jargon, and a customizable terminology framework (`client/src/lib/copy.ts`). It supports enterprise job scheduling, a comprehensive supervisor portal with timeliness management and project blocking, enterprise SLA management with RAG scoring, and an automated escalation system for overdue items. Weekly digest automation sends project status reports. A customer controls MVP enables per-tenant feature management (e.g., Supervisor Portal, Manager Dashboard, SLA management), supported by a comprehensive feature flag architecture and a tenant management database schema (`tenants`, `org_users`, `feature_overrides`, `notification_prefs`).
 
 # External Dependencies
 
@@ -131,5 +75,6 @@ Supported commands include employee/equipment assignments and asset queries.
 - **Class Variance Authority**: Utility for variant-based component APIs
 - **CLSX**: Conditional className utility
 
-## Development Environment Integration
-- **Replit**: Development environment
+## External Services
+- **Stripe**: Billing integration
+- **OpenAI**: Natural Language Processing for command bar

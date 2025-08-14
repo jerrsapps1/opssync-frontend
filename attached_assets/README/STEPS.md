@@ -1,45 +1,28 @@
-# Per-Tenant Runners + Plain-Language Panel
+# Field-Friendly CSV + Postman
 
-This bundle gives you:
-- **Tenant-aware jobs**: run escalations/digest per tenant (filtered by `projects.tenant_id`)
-- **Scheduler**: `startCronPerTenant()` to run those safely
-- **Field-friendly wording** for the dashboard analytics panel
+This bundle adds a **plain-language CSV export** and an optional alias for the overview API,
+so PMs and supervisors see everyday language (not G/A/R jargon).
 
 ## 1) Unzip
 ```bash
-unzip tenant_runners_and_plain_language_bundle.zip
+unzip friendly_language_export_bundle.zip
 ```
 
-## 2) Use the per-tenant scheduler
+## 2) Mount the friendly routes
+In `server/routes.ts`, import and mount alongside your existing manager router:
 ```ts
-// server/index.ts
-import { startCronPerTenant } from "./services/cron_feature_checks_tenant";
-startCronPerTenant();
+import managerFriendlyRouter from "./routes/manager_friendly";
+app.use("/api/manager", managerFriendlyRouter);
 ```
+> This does **not** replace your existing `/api/manager` routes — it just adds:
+> - `GET /api/manager/export-friendly.csv?days=30`
+> - `GET /api/manager/schedule-health?days=30` (alias to overview)
 
-## 3) (Optional) Remove older scheduler calls
-Comment out or remove any previous `startTimelinessAddons()` or similar.
-
-## 4) Drop in the plain-language panel (replaces the technical one)
+## 3) Update the UI button (optional)
+Change your CSV export button to the friendly endpoint:
 ```tsx
-// client/src/pages/Dashboard.tsx
-import FieldFriendlyRAGPanel from "../partials/FieldFriendlyRAGPanel";
-
-export default function Dashboard() {
-  return (
-    <div className="space-y-6">
-      {/* ...your existing tiles... */}
-      <FieldFriendlyRAGPanel />
-    </div>
-  );
-}
+<a href={`/api/manager/export-friendly.csv?days=${days}`} className="btn">Export CSV</a>
 ```
 
-### Copy terms used
-- Green → **On time**
-- Amber → **Due soon**
-- Red → **Late**
-- SLA / RAG Overview → **Schedule Health**
-- Daily trend → **Daily activity**
-
-You can tweak `client/src/lib/copy.ts` to match your brand voice.
+## 4) Import the Postman collection (optional)
+Use `collections/field_friendly_collection.postman_collection.json` to test with the new wording.

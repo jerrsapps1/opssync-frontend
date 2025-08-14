@@ -10,4 +10,13 @@ export const COPY = {
   export: "Export CSV",
   refresh: "Refresh",
   range: "Range",
+  // Additional field-friendly terminology
+  sla: "Schedule Health",
+  escalation: "Follow-up",
+  timeliness: "Schedule Status",
+  overdue: "Past Due",
+  atRisk: "Due Soon",
+  compliant: "On Track",
+  weeklyDigest: "Weekly Summary",
+  notifications: "Reminders"
 };

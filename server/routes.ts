@@ -24,6 +24,7 @@ import supervisorRouter from "./routes/supervisor";
 import slaRouter from "./routes/sla";
 import devRouter from "./routes/dev";
 import managerRouter from "./routes/manager";
+import managerFriendlyRouter from "./routes/manager_friendly";
 import orgAdminRouter from "./routes/org_admin";
 import ownerAdminRouter from "./routes/owner_admin";
 import { mockAuth } from "./middleware/authz";
@@ -1475,6 +1476,7 @@ Rules:
   
   if (features.MANAGER) {
     app.use("/api/manager", managerRouter);
+    app.use("/api/manager", managerFriendlyRouter);
   }
   
   // Organization admin routes (always available for tenant controls)
