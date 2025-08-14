@@ -50,6 +50,8 @@ import OwnerSettings from "./pages/OwnerSettings";
 import BrandingSettings from "./pages/BrandingSettings";
 import BillingSettings from "./pages/BillingSettings";
 import AdvancedAnalytics from "./pages/AdvancedAnalytics";
+import OwnerBrandingControls from "./pages/OwnerBrandingControls";
+import WhiteLabelSettings from "./pages/WhiteLabelSettings";
 
 // Import the properly configured QueryClient
 import { queryClient } from "./lib/queryClient";
@@ -276,7 +278,9 @@ export default function App() {
                 <Route path="/manager" element={<ManagerDashboard />} />
                 <Route path="/org/settings" element={<OrgSettings />} />
                 <Route path="/owner/settings" element={<OwnerSettings />} />
+                <Route path="/owner/branding" element={<OwnerBrandingControls />} />
                 <Route path="/org/branding" element={<BrandingSettings />} />
+                <Route path="/org/white-label" element={<WhiteLabelSettings />} />
                 <Route path="/billing" element={<BillingSettings />} />
                 <Route path="/analytics" element={<AdvancedAnalytics />} />
                 <Route path="/pricing" element={<PricingPage />} />

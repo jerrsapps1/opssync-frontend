@@ -31,6 +31,9 @@ import analyticsRouter from "./routes/analytics";
 import brandingRouter from "./routes/branding";
 import billingRouter from "./routes/billing";
 import billingPortalRouter from "./routes/billing_portal";
+import ownerBrandingAdminRouter from "./routes/owner_branding_admin";
+import orgEntitlementsRouter from "./routes/org_entitlements";
+import whiteLabelRouter from "./routes/white_label";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import "./types"; // Import type declarations
@@ -1494,6 +1497,12 @@ Rules:
   app.use("/api/branding", brandingRouter);
   app.use("/api/billing", billingRouter);
   app.use("/api/billing", billingPortalRouter);
+
+    app.use("/api/owner-admin", ownerBrandingAdminRouter);
+
+    app.use("/api/org-entitlements", orgEntitlementsRouter);
+
+    app.use("/api/white-label", whiteLabelRouter);
 
   const httpServer = createServer(app);
   return httpServer;
