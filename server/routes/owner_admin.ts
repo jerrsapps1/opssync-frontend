@@ -13,7 +13,7 @@ router.get("/features", requireAuth, requirePlatformOwner, async (_req, res) => 
 // Update a global feature { key: 'SLA', value: true }
 router.post("/features", requireAuth, requirePlatformOwner, async (req, res) => {
   const { key, value } = req.body || {};
-  const allowed = ["SUPERVISOR","MANAGER","SLA","REMINDERS","ESCALATIONS","WEEKLY_DIGEST"];
+  const allowed = ["SUPERVISOR","MANAGER","SLA","REMINDERS","ESCALATIONS","WEEKLY_DIGEST","WALLETS_INFO"];
   if (!allowed.includes(key)) return res.status(400).send("Invalid key");
   await setGlobalFeature(key, !!value);
   res.json({ ok: true });

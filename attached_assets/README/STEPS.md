@@ -1,33 +1,52 @@
-# Tone Alignment + Email Legend
+# Apple Wallets Prep + Owner Toggle
 
-This bundle standardizes language to **On time / Due soon / Late** and adds a visible legend to emails.
+This bundle lets you prepare for Apple Pay now (domain verification) and add an owner-only
+**info toggle** to show/hide "Apple/Google wallets available" messaging in your UI.
+You can enable the actual wallet methods in Stripe later.
 
-## 1) Unzip
+## 1) Files in this bundle
+- `public/.well-known/apple-developer-merchantid-domain-association`
+  - **Replace** the contents with the file you download from Stripe Dashboard → Settings → Payments → Apple Pay → Add domain.
+  - Keep the **exact** filename and path.
+- `scripts/enable_wallets_info_toggle.js`
+  - Adds a new owner flag `WALLETS_INFO` to your Owner Settings page and API.
+
+## 2) Install
 ```bash
-unzip tone_alignment_bundle.zip
+unzip apple_wallets_prep_bundle.zip
 ```
 
-## 2) Replace calls to use friendly runners (optional but recommended)
-If you already use the per-tenant scheduler, switch to the friendly versions:
+## 3) Add the owner toggle (optional, for messaging)
+```bash
+node scripts/enable_wallets_info_toggle.js
+```
+Set a default in your env:
+```
+FEATURE_WALLETS_INFO=0
+```
+Now your **Owner Settings** page will show `WALLETS_INFO` as a toggle.
 
+## 4) Domain verification for Apple Pay (when ready)
+In Stripe Dashboard:
+1. Go to **Settings → Payments → Wallets → Apple Pay → Add new domain**.
+2. Download the verification file.
+3. Replace the contents of:
+   `public/.well-known/apple-developer-merchantid-domain-association`
+   with the exact file from Stripe (no extra whitespace, no rename).
+4. Deploy your site. Stripe will fetch:
+   `https://<your-domain>/.well-known/apple-developer-merchantid-domain-association`
+
+> If you serve static from Express, ensure dotfiles are allowed (or place the file in your frontend's public folder):
 ```ts
-// server/services/cron_feature_checks_tenant.ts (or your scheduler file)
-import { runEscalationsForTenantFriendly } from "./escalation_friendly";
-import { runWeeklyDigestForTenantFriendly } from "./digest_friendly";
-
-// ...inside tenant loops...
-await runEscalationsForTenantFriendly(t.id);
-await runWeeklyDigestForTenantFriendly(t.id);
+import path from "path";
+import express from "express";
+app.use("/.well-known", express.static(path.join(process.cwd(), "public/.well-known"), { dotfiles: "allow" }));
 ```
 
-## 3) Templates
-- Shared HTML helpers: `server/utils/email_templates.ts` (legend, status pill, wrapper)
-- Escalations: `server/services/escalation_friendly.ts`
-- Weekly digest: `server/services/digest_friendly.ts`
+## 5) Turn wallets ON (later, no code change if using Stripe Checkout)
+When you're ready, enable Apple Pay / Google Pay in Stripe Dashboard.
+- **Stripe Checkout** shows wallet buttons automatically on supported devices.
+- If you host payment UI yourself, render your Payment Request Button based on `WALLETS_INFO`.
 
-## 4) UI
-Your field-friendly dashboard panel already uses the same terms.
-If you still have older components with G/A/R wording, keep using the `copy.ts` pattern or replace strings to match:
-- Green → On time
-- Amber → Due soon
-- Red → Late
+## Notes
+- This bundle is safe to ship now; it doesn't change payment behavior until you enable wallets in Stripe and/or flip your messaging flag.

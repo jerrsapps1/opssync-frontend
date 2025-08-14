@@ -49,6 +49,9 @@ The system includes an enhanced tenant-aware cron system for per-tenant backgrou
 ## MVP Optional Addons System
 A comprehensive addon architecture provides enterprise-grade modular functionality with three core addons: Advanced Analytics with project metrics and utilization tracking (`/api/analytics/*`), Branding Settings with real-time theme customization and logo upload (`/api/branding/*`), and Billing Management with full Stripe integration for subscription handling (`/api/billing/*`). The system includes complete Stripe webhook processing (`server/routes/stripe_webhooks.ts`), billing portal integration (`server/routes/billing_portal.ts`), and database tables for branding configurations, billing customers, and subscription management. All addons are accessible through sidebar navigation with mobile-responsive design.
 
+## Apple Wallet Integration Preparation
+Apple Pay and Google Pay readiness features have been integrated with domain verification support. The system includes Apple domain association file at `public/.well-known/apple-developer-merchantid-domain-association` for Stripe Apple Pay verification, an owner-controlled WALLETS_INFO feature toggle for showing/hiding wallet messaging in the UI, and complete preparation for enabling wallet payments through Stripe Checkout. The FEATURE_WALLETS_INFO environment variable controls wallet-related messaging display (default: disabled).
+
 # External Dependencies
 
 ## Database Integration

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../lib/api";
 
-type Flags = { SUPERVISOR:boolean; MANAGER:boolean; SLA:boolean; REMINDERS:boolean; ESCALATIONS:boolean; WEEKLY_DIGEST:boolean };
+type Flags = { [key: string]: boolean };
 
 export default function OwnerSettings() {
   const [flags, setFlags] = useState<Flags | null>(null);
@@ -15,7 +15,7 @@ export default function OwnerSettings() {
   useEffect(() => { load(); }, []);
 
   async function setFlag(key: keyof Flags, value: boolean) {
-    setSavingKey(key);
+    setSavingKey(key as string);
     try {
       await api("/api/owner-admin/features", { method: "POST", body: JSON.stringify({ key, value }) });
       await load();
@@ -31,7 +31,7 @@ export default function OwnerSettings() {
       <div className="rounded-2xl border p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {keys.map(k => (
           <label key={k} className="flex items-center justify-between gap-3">
-            <span className="text-sm">{k.replace("_"," ")}</span>
+            <span className="text-sm">{String(k).replace("_"," ")}</span>
             <input type="checkbox" checked={flags[k]} onChange={e => setFlag(k, e.target.checked)} disabled={savingKey === k} />
           </label>
         ))}

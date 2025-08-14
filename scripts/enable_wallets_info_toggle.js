@@ -11,8 +11,8 @@
  *   node scripts/enable_wallets_info_toggle.js
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 function patchFile(file, replacers) {
   if (!fs.existsSync(file)) return false;

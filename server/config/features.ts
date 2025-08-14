@@ -6,6 +6,7 @@ export const features = {
   REMINDERS: process.env.FEATURE_REMINDERS === '1',
   ESCALATIONS: process.env.FEATURE_ESCALATIONS === '1',
   WEEKLY_DIGEST: process.env.FEATURE_WEEKLY_DIGEST === '1',
+  WALLETS_INFO: process.env.FEATURE_WALLETS_INFO === '1',
 };
 
 // Default to all features enabled for development if no env vars set
