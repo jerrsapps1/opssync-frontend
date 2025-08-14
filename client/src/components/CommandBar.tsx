@@ -40,8 +40,7 @@ export default function CommandBar({
         className="flex-1 px-3 py-2 rounded bg-gray-800 text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
-        className="px-3 py-2 rounded text-white disabled:opacity-60"
-        style={{ backgroundColor: 'var(--brand-primary)', color: 'var(--brand-primary-foreground)' }}
+        className="px-3 py-2 bg-blue-600 rounded text-white disabled:opacity-60"
         disabled={loading}
       >
         {loading ? "…" : "Run"}

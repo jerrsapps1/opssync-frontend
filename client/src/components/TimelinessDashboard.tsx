@@ -17,74 +17,35 @@ type Props = {
 };
 
 export default function TimelinessDashboard({ items, onAcknowledge }: Props) {
-  const onTimeCount = items.filter(i => i.status === "ON_TIME").length;
-  const atRiskCount = items.filter(i => i.status === "AT_RISK").length;
-  const overdueCount = items.filter(i => i.status === "OVERDUE").length;
-
   return (
-    <div className="rounded-xl border border-gray-700 bg-gradient-to-r from-[#1a1a2e] to-[#16213e] shadow-xl">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-        <div>
-          <h3 className="text-lg font-semibold text-white">Timeliness Monitor</h3>
-          <p className="text-xs text-gray-400">Real-time project status tracking</p>
-        </div>
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-green-400">{onTimeCount} On Time</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            <span className="text-yellow-400">{atRiskCount} At Risk</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            <span className="text-red-400">{overdueCount} Overdue</span>
-          </div>
-        </div>
+    <div className="rounded-2xl border">
+      <div className="flex items-center justify-between px-4 py-3 border-b">
+        <h3 className="text-lg font-semibold">Timeliness Monitor</h3>
+        <div className="text-xs text-gray-500">Auto-refreshes when you take actions</div>
       </div>
-      
-      <div className="divide-y divide-gray-700">
+      <div className="divide-y">
         {items.map((i) => (
-          <div key={i.id} className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 px-6 py-4 hover:bg-white/5 transition-colors">
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-3">
-                <div className="text-sm font-medium text-white">{i.title}</div>
-                <span className="px-2 py-1 rounded text-xs bg-gray-700 text-gray-300">
-                  {i.type.replace('_', ' ')}
-                </span>
-              </div>
-              <div className="text-xs text-gray-400">
-                <span className="text-blue-400">{i.projectName}</span>
-                <span className="mx-2">•</span>
-                <span>Due {new Date(i.dueAt).toLocaleDateString()} at {new Date(i.dueAt).toLocaleTimeString()}</span>
-                {i.submittedAt && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span className="text-green-400">Submitted {new Date(i.submittedAt).toLocaleString()}</span>
-                  </>
-                )}
+          <div key={i.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3">
+            <div className="space-y-1">
+              <div className="text-sm font-medium">{i.title}</div>
+              <div className="text-xs text-gray-500">
+                {i.projectName} • Due {new Date(i.dueAt).toLocaleString()}
+                {i.submittedAt && ` • Submitted ${new Date(i.submittedAt).toLocaleString()}`}
               </div>
             </div>
             <div className="flex items-center gap-3">
               <StatusPill status={i.status} />
-              {!i.submittedAt && (
-                <button
-                  onClick={() => onAcknowledge?.(i.id)}
-                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 text-sm font-medium transition-all duration-200 shadow-lg"
-                  data-testid={`button-mark-done-${i.id}`}
-                >
-                  Mark Done
-                </button>
-              )}
+              <button
+                onClick={() => onAcknowledge?.(i.id)}
+                className="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50"
+              >
+                Mark Done
+              </button>
             </div>
           </div>
         ))}
         {items.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <div className="text-gray-500 mb-2">🎉</div>
-            <div className="text-sm text-gray-400">No pending items. All projects are on track!</div>
-          </div>
+          <div className="px-4 py-6 text-sm text-gray-500">No pending items. You're all set.</div>
         )}
       </div>
     </div>

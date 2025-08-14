@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "Supervisor Portal",
+    "_postman_id": "9d9f5d61-6a2a-4b98-9a62-1234567890ab",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Overview",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/overview",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "overview"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Mark Done (Ack)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/ack/:itemId",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "ack",
+            ":itemId"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Checklist",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/projects/:projectId/checklist",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "projects",
+            ":projectId",
+            "checklist"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"items\": {\"scopeDefined\": true}, \"note\": \"Ready\"}"
+        }
+      }
+    },
+    {
+      "name": "New Change Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/projects/:projectId/change-requests",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "projects",
+            ":projectId",
+            "change-requests"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\":\"Daily update\",\"description\":\"\",\"dueAt\":\"2025-08-15T15:00:00Z\"}"
+        }
+      }
+    },
+    {
+      "name": "Require Update",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/projects/:projectId/require-update",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "projects",
+            ":projectId",
+            "require-update"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\":\"Supervisor Daily Field Update\",\"dueAt\":\"2025-08-15T13:00:00Z\"}"
+        }
+      }
+    },
+    {
+      "name": "Run Reminders",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/supervisor/run-reminders",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "supervisor",
+            "run-reminders"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000"
+    }
+  ]
+}

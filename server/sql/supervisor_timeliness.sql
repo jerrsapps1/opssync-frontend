@@ -1,24 +1,31 @@
--- Placeholder SQL file for supervisor timeliness tables
--- This will be replaced with the actual SQL from ChatGPT's bundle
+-- Projects table (minimal fields for demo; integrate with your existing schema)
+create table if not exists projects (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  start_blocked boolean not null default true,
+  supervisor_email text,
+  supervisor_phone text,
+  created_at timestamptz not null default now()
+);
 
--- CREATE TABLE supervisor_checklists (
---   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---   project_id VARCHAR REFERENCES projects(id),
---   checklist_data JSON NOT NULL,
---   submitted_at TIMESTAMP DEFAULT NOW(),
---   submitted_by VARCHAR,
---   notes TEXT
--- );
+-- Timeliness items (updates & change requests)
+create table if not exists timeliness_items (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects(id) on delete cascade,
+  type text not null check (type in ('UPDATE','CHANGE_REQUEST')),
+  title text not null,
+  description text default '',
+  due_at timestamptz not null,
+  submitted_at timestamptz,
+  deleted_at timestamptz,
+  created_at timestamptz not null default now()
+);
 
--- CREATE TABLE change_requests (
---   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---   project_id VARCHAR REFERENCES projects(id),
---   title TEXT NOT NULL,
---   description TEXT,
---   requested_by VARCHAR,
---   due_date TIMESTAMP,
---   status TEXT DEFAULT 'pending',
---   created_at TIMESTAMP DEFAULT NOW()
--- );
-
-SELECT 'Placeholder SQL - awaiting ChatGPT implementation' as message;
+-- Pre-start checklists (as JSON)
+create table if not exists checklists (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects(id) on delete cascade,
+  payload jsonb not null default '{}'::jsonb,
+  note text,
+  created_at timestamptz not null default now()
+);
