@@ -1,38 +1,45 @@
-# Cron Feature Checks (Per-tenant protection for background jobs)
+# Per-Tenant Runners + Plain-Language Panel
 
-This bundle keeps background jobs (escalations, weekly digest, reminders) from running
-for tenants who don't have the feature enabled — without adding more middleware.
+This bundle gives you:
+- **Tenant-aware jobs**: run escalations/digest per tenant (filtered by `projects.tenant_id`)
+- **Scheduler**: `startCronPerTenant()` to run those safely
+- **Field-friendly wording** for the dashboard analytics panel
 
 ## 1) Unzip
 ```bash
-unzip cron_feature_checks_bundle.zip
+unzip tenant_runners_and_plain_language_bundle.zip
 ```
 
-## 2) Use the checked scheduler
-Option A — auto-swap (tries to patch `server/index.ts`):
-```bash
-node scripts/swap_in_cron_checks.js
-```
-
-Option B — manual (explicit is fine):
+## 2) Use the per-tenant scheduler
 ```ts
 // server/index.ts
-import { startCronWithTenantChecks } from "./services/cron_feature_checks";
-startCronWithTenantChecks();
+import { startCronPerTenant } from "./services/cron_feature_checks_tenant";
+startCronPerTenant();
 ```
 
-## 3) (Optional but recommended) Update your services to be tenant-aware
-If your SQL has multi-tenant columns (e.g., `projects.tenant_id`), update the runners to filter by tenant:
-```sql
--- In escalation/digest SQL WHERE clause, add:
-WHERE p.tenant_id = $1
-```
-Then expose `runEscalationsForTenant(tenantId)` / `runWeeklyDigestForTenant(tenantId)`
-and call those in the wrappers. If not available yet, the wrapper still prevents
-sending anything when the tenant has the feature off.
+## 3) (Optional) Remove older scheduler calls
+Comment out or remove any previous `startTimelinessAddons()` or similar.
 
-## 4) That’s it
-You now have:
-- UI hidden by feature flags
-- APIs gated per-tenant
-- Background jobs skipping tenants where features/prefs are off
+## 4) Drop in the plain-language panel (replaces the technical one)
+```tsx
+// client/src/pages/Dashboard.tsx
+import FieldFriendlyRAGPanel from "../partials/FieldFriendlyRAGPanel";
+
+export default function Dashboard() {
+  return (
+    <div className="space-y-6">
+      {/* ...your existing tiles... */}
+      <FieldFriendlyRAGPanel />
+    </div>
+  );
+}
+```
+
+### Copy terms used
+- Green → **On time**
+- Amber → **Due soon**
+- Red → **Late**
+- SLA / RAG Overview → **Schedule Health**
+- Daily trend → **Daily activity**
+
+You can tweak `client/src/lib/copy.ts` to match your brand voice.

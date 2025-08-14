@@ -8,7 +8,7 @@ import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { DashboardHeader } from "@/components/DashboardHeader";
-import DashboardRAGPanel from "@/partials/DashboardRAGPanel";
+import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
 import { useTenantFeatures } from "@/hooks/useTenantFeatures";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
@@ -111,7 +111,7 @@ export default function Dashboard() {
       {/* SLA / RAG Overview Panel - Feature Gated */}
       {!featuresLoading && (features?.sla || features?.manager) && (
         <div className="p-4">
-          <DashboardRAGPanel />
+          <FieldFriendlyRAGPanel />
         </div>
       )}
 
