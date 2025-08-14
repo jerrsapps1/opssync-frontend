@@ -23,6 +23,7 @@ import { computeStatus } from "./utils/timeliness";
 import supervisorRouter from "./routes/supervisor";
 import slaRouter from "./routes/sla";
 import devRouter from "./routes/dev";
+import managerRouter from "./routes/manager";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1459,9 +1460,10 @@ Rules:
   // Supervisor Portal & Timeliness
   app.use("/api/supervisor", supervisorRouter);
   
-  // Mount SLA and dev routes
+  // Mount SLA, dev, and manager routes
   app.use("/api/sla", slaRouter);
   app.use("/api/dev", devRouter);
+  app.use("/api/manager", managerRouter);
 
   const httpServer = createServer(app);
   return httpServer;

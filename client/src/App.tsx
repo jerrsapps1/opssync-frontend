@@ -44,6 +44,7 @@ import SupervisorPortal from "./pages/supervisor";
 import PricingPage from "./pages/billing/pricing";
 import BillingHome from "./pages/billing";
 import ProjectProfile from "./pages/project-profile";
+import ManagerDashboard from "./pages/ManagerDashboard";
 
 // Import the properly configured QueryClient
 import { queryClient } from "./lib/queryClient";
@@ -267,6 +268,7 @@ export default function App() {
                 <Route path="/directory" element={<DirectoryPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/supervisor" element={<SupervisorPortal />} />
+                <Route path="/manager" element={<ManagerDashboard />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/billing" element={<BillingHome />} />
                 <Route path="/assignments" element={<Dashboard />} />
