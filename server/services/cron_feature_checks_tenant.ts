@@ -3,8 +3,8 @@ import pg from "pg";
 
 const { Pool } = pg;
 import { resolveTenantFeatures } from "../utils/tenant_features";
-import { runEscalationsForTenant } from "./escalation_tenant";
-import { runWeeklyDigestForTenant } from "./digest_tenant";
+import { runEscalationsForTenantFriendly } from "./escalation_friendly";
+import { runWeeklyDigestForTenantFriendly } from "./digest_friendly";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -26,7 +26,7 @@ async function runEscalationsForAllTenants() {
   for (const t of tenants) {
     const f = await resolveTenantFeatures(t.id);
     if (!f.ESCALATIONS) continue;
-    const res = await runEscalationsForTenant(t.id);
+    const res = await runEscalationsForTenantFriendly(t.id);
     total += Number(res?.escalated || 0);
   }
   console.log("[cron:tenant] escalations total sent:", total);
@@ -38,7 +38,7 @@ async function runWeeklyDigestForAllTenants() {
   for (const t of tenants) {
     const f = await resolveTenantFeatures(t.id);
     if (!f.WEEKLY_DIGEST) continue;
-    const res = await runWeeklyDigestForTenant(t.id);
+    const res = await runWeeklyDigestForTenantFriendly(t.id);
     total += Number(res?.sent || 0);
   }
   console.log("[cron:tenant] weekly digest total sent:", total);
