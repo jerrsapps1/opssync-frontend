@@ -1,0 +1,254 @@
+cat > install_stafftrak_branding_whitelabel.sh <<'SH'
+#!/bin/bash
+set -e
+
+echo "=== Creating SQL migrations ==="
+mkdir -p server/sql
+cat > server/sql/org_entitlements.sql <<'SQL'
+ALTER TABLE organizations
+ADD COLUMN IF NOT EXISTS branding_enabled BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS white_label_enabled BOOLEAN DEFAULT false;
+SQL
+
+cat > server/sql/org_white_label.sql <<'SQL'
+ALTER TABLE organizations
+ADD COLUMN IF NOT EXISTS custom_domain TEXT,
+ADD COLUMN IF NOT EXISTS from_email TEXT,
+ADD COLUMN IF NOT EXISTS white_label_status TEXT DEFAULT 'pending';
+SQL
+
+echo "=== Creating Stripe helper ==="
+mkdir -p server/services
+cat > server/services/stripe_addon.ts <<'TS'
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+
+export async function updateSubscriptionAddOns(
+  subscriptionId: string,
+  addBranding: boolean,
+  addWhiteLabel: boolean
+) {
+  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const currentItems = sub.items.data;
+
+  const updates: any[] = [];
+
+  function findPriceItem(priceId: string) {
+    return currentItems.find((item) => item.price.id === priceId);
+  }
+
+  const brandingPrice = process.env.STRIPE_PRICE_BRANDING!;
+  const whiteLabelPrice = process.env.STRIPE_PRICE_WHITE_LABEL!;
+
+  if (addBranding && !findPriceItem(brandingPrice)) {
+    updates.push({ price: brandingPrice });
+  } else if (!addBranding && findPriceItem(brandingPrice)) {
+    updates.push({ id: findPriceItem(brandingPrice)!.id, deleted: true });
+  }
+
+  if (addWhiteLabel && !findPriceItem(whiteLabelPrice)) {
+    updates.push({ price: whiteLabelPrice });
+  } else if (!addWhiteLabel && findPriceItem(whiteLabelPrice)) {
+    updates.push({ id: findPriceItem(whiteLabelPrice)!.id, deleted: true });
+  }
+
+  await stripe.subscriptions.update(subscriptionId, {
+    items: updates,
+  });
+}
+TS
+
+echo "=== Creating Owner Admin route ==="
+mkdir -p server/routes
+cat > server/routes/owner_branding_admin.ts <<'TS'
+import { Router } from "express";
+import db from "../db";
+import { updateSubscriptionAddOns } from "../services/stripe_addon";
+
+const router = Router();
+
+// PATCH /api/owner-admin/branding-settings/:orgId
+router.patch("/branding-settings/:orgId", async (req, res) => {
+  const { orgId } = req.params;
+  const { branding_enabled, white_label_enabled } = req.body;
+
+  const org = await db.query(
+    "SELECT stripe_subscription_id FROM organizations WHERE id = $1",
+    [orgId]
+  );
+
+  if (org.rows.length > 0 && org.rows[0].stripe_subscription_id) {
+    await updateSubscriptionAddOns(
+      org.rows[0].stripe_subscription_id,
+      branding_enabled,
+      white_label_enabled
+    );
+  }
+
+  await db.query(
+    `UPDATE organizations
+     SET branding_enabled = $1, white_label_enabled = $2
+     WHERE id = $3`,
+    [branding_enabled, white_label_enabled, orgId]
+  );
+
+  res.sendStatus(200);
+});
+
+export default router;
+TS
+
+echo "=== Creating Org Admin route ==="
+cat > server/routes/org_entitlements.ts <<'TS'
+import { Router } from "express";
+import db from "../db";
+
+const router = Router();
+
+router.get("/features", async (req, res) => {
+  const orgId = req.user?.org_id;
+  if (!orgId) return res.status(401).send("No org ID");
+
+  const { rows } = await db.query(
+    "SELECT branding_enabled, white_label_enabled FROM organizations WHERE id = $1",
+    [orgId]
+  );
+  res.json(rows[0]);
+});
+
+export default router;
+TS
+
+echo "=== Creating White Label settings route ==="
+cat > server/routes/white_label.ts <<'TS'
+import { Router } from "express";
+import db from "../db";
+
+const router = Router();
+
+router.post("/settings", async (req, res) => {
+  const orgId = req.user?.org_id;
+  const { custom_domain, from_email } = req.body;
+  if (!orgId) return res.status(401).send("No org ID");
+
+  await db.query(
+    `UPDATE organizations
+     SET custom_domain = $1, from_email = $2, white_label_status = 'configured'
+     WHERE id = $3`,
+    [custom_domain, from_email, orgId]
+  );
+
+  res.sendStatus(200);
+});
+
+export default router;
+TS
+
+echo "=== Creating OwnerBrandingControls page ==="
+mkdir -p client/src/pages
+cat > client/src/pages/OwnerBrandingControls.tsx <<'TSX'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+export default function OwnerBrandingControls() {
+  const [orgs, setOrgs] = useState<any[]>([]);
+
+  useEffect(() => {
+    axios.get("/api/owner-admin/orgs").then((res) => setOrgs(res.data));
+  }, []);
+
+  const updateFlags = (orgId: string, branding: boolean, whiteLabel: boolean) => {
+    axios.patch(`/api/owner-admin/branding-settings/${orgId}`, {
+      branding_enabled: branding,
+      white_label_enabled: whiteLabel
+    });
+  };
+
+  return (
+    <div>
+      <h1>Branding & White Label Controls</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Org</th>
+            <th>Branding</th>
+            <th>White Label</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orgs.map(org => (
+            <tr key={org.id}>
+              <td>{org.name}</td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={org.branding_enabled}
+                  onChange={(e) =>
+                    updateFlags(org.id, e.target.checked, org.white_label_enabled)
+                  }
+                />
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={org.white_label_enabled}
+                  onChange={(e) =>
+                    updateFlags(org.id, org.branding_enabled, e.target.checked)
+                  }
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+TSX
+
+echo "=== Creating WhiteLabelSettings page ==="
+cat > client/src/pages/WhiteLabelSettings.tsx <<'TSX'
+import React, { useState } from "react";
+import axios from "axios";
+
+export default function WhiteLabelSettings() {
+  const [domain, setDomain] = useState("");
+  const [email, setEmail] = useState("");
+
+  const saveSettings = () => {
+    axios.post("/api/org-admin/white-label/settings", {
+      custom_domain: domain,
+      from_email: email
+    });
+  };
+
+  return (
+    <div>
+      <h1>White Label Settings</h1>
+      <input
+        type="text"
+        placeholder="Custom Domain"
+        value={domain}
+        onChange={(e) => setDomain(e.target.value)}
+      />
+      <input
+        type="email"
+        placeholder="From Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button onClick={saveSettings}>Save</button>
+    </div>
+  );
+}
+TSX
+
+echo "=== All files created. Applying migrations ==="
+psql "$DATABASE_URL" -f server/sql/org_entitlements.sql
+psql "$DATABASE_URL" -f server/sql/org_white_label.sql
+
+echo "=== Done! ==="
+SH
+
+chmod +x install_stafftrak_branding_whitelabel.sh
+./install_stafftrak_branding_whitelabel.sh
