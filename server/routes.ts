@@ -24,6 +24,9 @@ import supervisorRouter from "./routes/supervisor";
 import slaRouter from "./routes/sla";
 import devRouter from "./routes/dev";
 import managerRouter from "./routes/manager";
+import orgAdminRouter from "./routes/org_admin";
+import { mockAuth } from "./middleware/authz";
+import { features } from "./config/features";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1460,10 +1463,21 @@ Rules:
   // Supervisor Portal & Timeliness
   app.use("/api/supervisor", supervisorRouter);
   
-  // Mount SLA, dev, and manager routes
-  app.use("/api/sla", slaRouter);
+  // Apply mock auth for development
+  app.use(mockAuth());
+
+  // Mount routes conditionally based on feature flags
+  if (features.SLA) {
+    app.use("/api/sla", slaRouter);
+  }
   app.use("/api/dev", devRouter);
-  app.use("/api/manager", managerRouter);
+  
+  if (features.MANAGER) {
+    app.use("/api/manager", managerRouter);
+  }
+  
+  // Organization admin routes (always available for tenant controls)
+  app.use("/api/org-admin", orgAdminRouter);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -49,6 +49,7 @@ export function Sidebar() {
         <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">
           Admin
         </div>
+        <Item to="/org/settings">Organization Settings</Item>
         <Item to="/white-label">White Label Config</Item>
       </nav>
 

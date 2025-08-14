@@ -31,6 +31,12 @@ Asset Tracker Pro is a professional employee and equipment management applicatio
 - **Automated Escalation System**: Implemented intelligent escalation rules that auto-escalate overdue items to project managers and owners after configurable hours (default 4 hours)
 - **Weekly Digest Automation**: Created Monday morning email summary system that automatically sends project status reports to supervisors and managers with comprehensive project metrics
 - **Advanced Timeliness Scheduling**: Enhanced cron-based scheduling system with escalation checks every 30 minutes and weekly digest delivery, fully integrated with server startup process
+- **Role-Aware Escalation System**: Implemented project-type specific escalation ladders (construction, demolition, infrastructure) with different timing and role-based escalation paths
+- **Manager Dashboard Integration**: Added comprehensive Manager Dashboard with RAG rollups, trend analysis, and executive oversight capabilities accessible via navigation
+- **Customer Controls MVP**: Implemented complete per-tenant feature management system allowing organizations to independently control features like Supervisor Portal, Manager Dashboard, SLA management, automated reminders, escalations, and weekly digests through an organization settings interface
+- **Feature Flag Architecture**: Added comprehensive feature flag system with server-side (`server/config/features.ts`) and client-side (`client/src/lib/features.ts`) configuration, supporting both global environment flags and per-tenant overrides
+- **Tenant Management Database**: Created complete tenant management schema with `tenants`, `org_users`, `feature_overrides`, and `notification_prefs` tables for enterprise multi-tenancy support
+- **Authorization Middleware**: Implemented role-based authorization with tenant context, supporting OWNER/ADMIN/SUPERVISOR/MANAGER/VIEWER roles and tenant-specific feature access control
 
 # User Preferences
 
