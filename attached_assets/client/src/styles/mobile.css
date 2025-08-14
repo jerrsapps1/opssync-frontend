@@ -1,0 +1,22 @@
+/* Larger tap targets and padding for small screens */
+@media (max-width: 640px) {
+  .btn, button, a.button, .rounded-lg {
+    padding: 12px 14px !important;
+  }
+  select, input, .border {
+    padding: 10px !important;
+  }
+  table thead {
+    display: none;
+  }
+  table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+  }
+  table td {
+    padding: 4px 6px !important;
+  }
+}

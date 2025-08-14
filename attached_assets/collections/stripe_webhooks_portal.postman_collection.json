@@ -1,0 +1,23 @@
+{
+  "info": {
+    "name": "Stripe Webhooks + Portal",
+    "_postman_id": "5f5f6765-aaaa-bbbb-cccc-121212121212",
+    "description": "Webhook + Billing Portal session endpoints for Stripe integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Billing Portal Session",
+      "request": {
+        "method": "POST",
+        "url": "{{BASE_URL}}/api/billing/portal/session"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000"
+    }
+  ]
+}
