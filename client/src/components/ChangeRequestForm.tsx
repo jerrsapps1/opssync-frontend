@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { api } from "../lib/api";
 
 type Props = {
   projectId: string;
@@ -14,7 +14,10 @@ export default function ChangeRequestForm({ projectId, onSubmitted }: Props) {
   async function submit() {
     setSaving(true);
     try {
-      await apiRequest("POST", `/api/supervisor/projects/${projectId}/change-requests`, { title, description, dueAt });
+      await api(`/api/supervisor/projects/${projectId}/change-requests`, {
+        method: "POST",
+        body: JSON.stringify({ title, description, dueAt }),
+      });
       setTitle(""); setDescription(""); setDueAt("");
       onSubmitted?.();
     } finally {

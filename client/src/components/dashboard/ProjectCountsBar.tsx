@@ -1,12 +1,18 @@
 import React from "react";
 import { useSelection } from "@/state/selection";
 import { useQuery } from "@tanstack/react-query";
-import type { Employee, Equipment } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+
+type Employee = { id: string; currentProjectId?: string|null };
+type Equipment = { id: string; currentProjectId?: string|null };
+
+async function getEmployees(): Promise<Employee[]> { const r = await apiRequest("GET", "/api/employees"); return r.json(); }
+async function getEquipment(): Promise<Equipment[]> { const r = await apiRequest("GET", "/api/equipment"); return r.json(); }
 
 export default function ProjectCountsBar() {
   const { projectId } = useSelection();
-  const { data: employees = [] } = useQuery<Employee[]>({ queryKey: ["/api/employees"] });
-  const { data: equipment = [] } = useQuery<Equipment[]>({ queryKey: ["/api/equipment"] });
+  const { data: employees = [] } = useQuery({ queryKey: ["employees"], queryFn: getEmployees });
+  const { data: equipment = [] } = useQuery({ queryKey: ["equipment"], queryFn: getEquipment });
 
   if (!projectId) return null;
 

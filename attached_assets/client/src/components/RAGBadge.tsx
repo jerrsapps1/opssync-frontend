@@ -1,6 +1,6 @@
 import React from "react";
 
-type Grade = "GREEN" | "AMBER" | "RED";
+export type Grade = "GREEN" | "AMBER" | "RED";
 export default function RAGBadge({ grade }: { grade: Grade }) {
   const map: Record<Grade, string> = {
     GREEN: "bg-green-100 text-green-800 ring-green-200",

@@ -8,6 +8,7 @@ import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import DashboardRAGPanel from "@/partials/DashboardRAGPanel";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
@@ -104,6 +105,11 @@ export default function Dashboard() {
           />
         </Box>
       )}
+
+      {/* SLA / RAG Overview Panel */}
+      <div className="p-4">
+        <DashboardRAGPanel />
+      </div>
 
       {/* Project Counts */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">

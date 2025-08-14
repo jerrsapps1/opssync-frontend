@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { api } from "../lib/api";
 
 type ChecklistItem = { key: string; label: string; required?: boolean };
 type Props = {
@@ -26,7 +26,10 @@ export default function ChecklistForm({ projectId, items = DEFAULT_ITEMS, onSubm
   async function submit() {
     setSaving(true);
     try {
-      await apiRequest("POST", `/api/supervisor/projects/${projectId}/checklist`, { items: state, note });
+      await api(`/api/supervisor/projects/${projectId}/checklist`, {
+        method: "POST",
+        body: JSON.stringify({ items: state, note }),
+      });
       onSubmitted?.();
     } finally {
       setSaving(false);
