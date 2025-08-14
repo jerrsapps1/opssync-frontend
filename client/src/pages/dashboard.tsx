@@ -9,6 +9,7 @@ import { EquipmentList } from "@/components/assignments/equipment-list";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import DashboardRAGPanel from "@/partials/DashboardRAGPanel";
+import { useTenantFeatures } from "@/hooks/useTenantFeatures";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
@@ -47,6 +48,7 @@ export default function Dashboard() {
   const { handleDragEnd, isAssigning } = useDragDrop();
   const appContext = useApp();
   const queryClient = useQueryClient();
+  const { features, loading: featuresLoading } = useTenantFeatures();
 
   // Provide default conflicts state if context is not available
   const conflicts = appContext?.conflicts || { employeeConflicts: [], equipmentConflicts: [] };
@@ -106,10 +108,12 @@ export default function Dashboard() {
         </Box>
       )}
 
-      {/* SLA / RAG Overview Panel */}
-      <div className="p-4">
-        <DashboardRAGPanel />
-      </div>
+      {/* SLA / RAG Overview Panel - Feature Gated */}
+      {!featuresLoading && (features?.sla || features?.manager) && (
+        <div className="p-4">
+          <DashboardRAGPanel />
+        </div>
+      )}
 
       {/* Project Counts */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">
