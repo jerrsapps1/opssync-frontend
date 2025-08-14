@@ -1498,11 +1498,10 @@ Rules:
   app.use("/api/billing", billingRouter);
   app.use("/api/billing", billingPortalRouter);
 
-    app.use("/api/owner-admin", ownerBrandingAdminRouter);
-
-    app.use("/api/org-entitlements", orgEntitlementsRouter);
-
-    app.use("/api/white-label", whiteLabelRouter);
+  // StaffTrak: Branding & White Label controls
+  app.use("/api/owner-admin", ownerBrandingAdminRouter);                 // owner toggles
+  app.use("/api/org-admin/entitlements", orgEntitlementsRouter);        // org feature status
+  app.use("/api/white-label", whiteLabelRouter);                         // org white-label settings
 
   const httpServer = createServer(app);
   return httpServer;
