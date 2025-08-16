@@ -15,14 +15,43 @@ import type { Equipment, WorkOrder } from "@shared/schema";
 async function getRepairShopEquipment(): Promise<Equipment[]> {
   const response = await apiRequest("GET", "/api/equipment");
   const allEquipment = await response.json();
-  // Equipment in repair shop has null projectId but status 'maintenance'
-  // OR currentProjectId === "repair-shop" (fallback)
-  console.log('DEBUG: All equipment status check:', allEquipment.map((eq: Equipment) => ({id: eq.id, name: eq.name, projectId: eq.currentProjectId, status: eq.status})));
+  
+  console.log('====== REPAIR SHOP EQUIPMENT DEBUG ======');
+  console.log('Total equipment count:', allEquipment.length);
+  
+  // Log all equipment with detailed info
+  allEquipment.forEach((eq: Equipment, index: number) => {
+    console.log(`Equipment ${index + 1}:`, {
+      id: eq.id,
+      name: eq.name,
+      type: eq.type,
+      currentProjectId: eq.currentProjectId,
+      status: eq.status,
+      hasNullProjectId: eq.currentProjectId === null,
+      hasUndefinedProjectId: eq.currentProjectId === undefined,
+      hasRepairShopProjectId: eq.currentProjectId === "repair-shop",
+      hasMaintenanceStatus: eq.status === "maintenance",
+      meetsFilter1: eq.currentProjectId === "repair-shop",
+      meetsFilter2: (!eq.currentProjectId && eq.status === "maintenance"),
+      meetsOverallFilter: eq.currentProjectId === "repair-shop" || (!eq.currentProjectId && eq.status === "maintenance")
+    });
+  });
+
+  // Filter for repair shop equipment
   const repairEquipment = allEquipment.filter((eq: Equipment) => 
     eq.currentProjectId === "repair-shop" || 
     (!eq.currentProjectId && eq.status === "maintenance")
   );
-  console.log('DEBUG: Filtered repair equipment:', repairEquipment.map((eq: Equipment) => ({id: eq.id, name: eq.name})));
+  
+  console.log('Filtered repair equipment count:', repairEquipment.length);
+  console.log('Filtered repair equipment:', repairEquipment.map((eq: Equipment) => ({
+    id: eq.id, 
+    name: eq.name,
+    projectId: eq.currentProjectId,
+    status: eq.status
+  })));
+  console.log('=========================================');
+  
   return repairEquipment;
 }
 
