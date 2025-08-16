@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+// Dialog components will be handled inline
 
 type Project = {
   id: string;
@@ -222,7 +222,15 @@ export default function ProjectSetUpPage() {
       contractValue: project.contractValue ? (project.contractValue / 100).toString() : "",
       profitMargin: project.profitMargin ? project.profitMargin.toString() : "",
       riskLevel: project.riskLevel || "medium",
-      priority: project.priority || "medium"
+      priority: project.priority || "medium",
+      clientName: project.clientName || "",
+      clientContact: project.clientContact || "",
+      clientEmail: project.clientEmail || "",
+      clientPhone: project.clientPhone || "",
+      generalContractor: project.generalContractor || "",
+      contractorContact: project.contractorContact || "",
+      contractorEmail: project.contractorEmail || "",
+      contractorPhone: project.contractorPhone || ""
     });
     setEditingProject(project);
     setCurrentStep(1);
