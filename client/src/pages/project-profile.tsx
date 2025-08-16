@@ -75,36 +75,6 @@ export default function ProjectProfile() {
     }
   });
 
-  if (!project) return <div className="p-4 text-gray-400">Loading…</div>;
-
-  const assignedEmp = employees.filter(e => e.currentProjectId === id);
-  const assignedEq = equipment.filter(e => e.currentProjectId === id);
-
-  const durationDays = daysBetween(project.startDate, project.endDate);
-  const autoPct = elapsedPct(project.startDate, project.endDate);
-  const mode = project.percentMode ?? "auto";
-  const pct = mode === "auto" ? autoPct : Math.max(0, Math.min(100, Math.round(project.percentComplete ?? 0)));
-
-  function setDates(key: "startDate" | "endDate", value: string) { 
-    if (!project) return;
-    mutate.mutate({ [key]: value ? new Date(value) : null } as any); 
-  }
-  function setMode(m: "auto" | "manual") {
-    if (!project) return;
-    const patch: any = { percentMode: m };
-    if (m === "auto") patch.percentComplete = undefined;
-    else patch.percentComplete = typeof project.percentComplete === "number" ? project.percentComplete : autoPct;
-    mutate.mutate(patch);
-  }
-  function setManualPercent(val: number) { 
-    if (!project || (project.percentMode ?? "auto") !== "manual") return;
-    mutate.mutate({ percentComplete: Math.max(0, Math.min(100, Math.round(val))) });
-  }
-
-  function setStatus(status: string) {
-    mutate.mutate({ status });
-  }
-
   // Bulk unassignment functionality
   const bulkUnassignMutation = useMutation({
     mutationFn: async ({ employeeIds, equipmentIds }: { employeeIds: string[], equipmentIds: string[] }) => {
@@ -137,6 +107,36 @@ export default function ProjectProfile() {
       });
     }
   });
+
+  if (!project) return <div className="p-4 text-gray-400">Loading…</div>;
+
+  const assignedEmp = employees.filter(e => e.currentProjectId === id);
+  const assignedEq = equipment.filter(e => e.currentProjectId === id);
+
+  const durationDays = daysBetween(project.startDate, project.endDate);
+  const autoPct = elapsedPct(project.startDate, project.endDate);
+  const mode = project.percentMode ?? "auto";
+  const pct = mode === "auto" ? autoPct : Math.max(0, Math.min(100, Math.round(project.percentComplete ?? 0)));
+
+  function setDates(key: "startDate" | "endDate", value: string) { 
+    if (!project) return;
+    mutate.mutate({ [key]: value ? new Date(value) : null } as any); 
+  }
+  function setMode(m: "auto" | "manual") {
+    if (!project) return;
+    const patch: any = { percentMode: m };
+    if (m === "auto") patch.percentComplete = undefined;
+    else patch.percentComplete = typeof project.percentComplete === "number" ? project.percentComplete : autoPct;
+    mutate.mutate(patch);
+  }
+  function setManualPercent(val: number) { 
+    if (!project || (project.percentMode ?? "auto") !== "manual") return;
+    mutate.mutate({ percentComplete: Math.max(0, Math.min(100, Math.round(val))) });
+  }
+
+  function setStatus(status: string) {
+    mutate.mutate({ status });
+  }
 
   function handleSendToDashboard() {
     const employeeIds = Array.from(selectedEmployees);
@@ -265,7 +265,10 @@ export default function ProjectProfile() {
     <DragDropContext onDragEnd={handleDragEnd}>
       {/* Project Template Display */}
       <ProjectTemplate 
-        project={project}
+        project={{
+          ...project,
+          description: project.description || undefined
+        }}
         assignedEmployees={assignedEmp}
         assignedEquipment={assignedEq}
         onExport={exportToExcel}
