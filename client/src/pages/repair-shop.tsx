@@ -194,7 +194,7 @@ export default function RepairShop() {
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white text-lg font-semibold">
-                Assigned Equipment ({repairEquipment.length})
+                Assets Needing Repairs or PM ({repairEquipment.length})
               </h3>
               {selectedItems.size > 0 && (
                 <div className="flex gap-2">
