@@ -162,9 +162,9 @@ export function EnhancedWorkOrderWizard({
       const file = result.successful[0];
       const newDocument: DocumentUpload = {
         id: Date.now().toString(),
-        filename: file.name,
+        filename: file.name || 'unknown-file',
         documentType: "receipt", // Default, user can change
-        uploadUrl: file.uploadURL ? String(file.uploadURL) : file.meta?.name || "",
+        uploadUrl: file.uploadURL ? String(file.uploadURL) : file.meta?.name as string || file.name || "uploaded-file",
       };
       setDocuments(prev => [...prev, newDocument]);
       toast({
