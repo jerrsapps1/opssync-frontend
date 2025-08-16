@@ -27,7 +27,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   if (isLoading) {
     return (
       <div className="flex-1 p-3 overflow-y-auto">
-        <h2 className="text-sm font-medium mb-3">Employees</h2>
+        <h2 className="text-sm font-medium mb-3">Available Employees</h2>
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="mb-6 p-3 bg-gray-800 border-gray-700 min-h-20">
@@ -64,7 +64,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   return (
     <div className="flex-1 p-3 overflow-y-auto">
       <h2 className="text-sm font-medium mb-3 text-white">
-        Employees ({filteredEmployees.length})
+        Available Employees ({filteredEmployees.length})
       </h2>
 
       

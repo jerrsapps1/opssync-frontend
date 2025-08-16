@@ -28,7 +28,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   if (isLoading) {
     return (
       <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-gray-800">
-        <h2 className="text-sm font-medium mb-3">Equipment</h2>
+        <h2 className="text-sm font-medium mb-3">Available Equipment</h2>
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="mb-6 p-3 bg-gray-700 border-gray-600 min-h-20">
@@ -69,7 +69,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   return (
     <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
       <h2 className="text-sm font-medium mb-3 text-white">
-        Equipment ({visible.length})
+        Available Equipment ({visible.length})
       </h2>
 
       <Droppable droppableId="equipment">
