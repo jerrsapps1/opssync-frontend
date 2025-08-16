@@ -123,8 +123,13 @@ export default function Dashboard() {
               Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
             </div>
             
-            {/* Repair Shop Drop Zone */}
-            <Droppable droppableId="repair-shop">
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-gray-500">
+                Drag equipment here to create repair work orders →
+              </span>
+              
+              {/* Repair Shop Drop Zone */}
+              <Droppable droppableId="repair-shop">
               {(provided, snapshot) => (
                 <div
                   ref={provided.innerRef}
@@ -145,6 +150,7 @@ export default function Dashboard() {
                 </div>
               )}
             </Droppable>
+            </div>
           </div>
         </div>
         
