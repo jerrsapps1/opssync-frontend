@@ -1,6 +1,6 @@
 // Removed Chakra UI imports - using Tailwind classes instead
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
 
 import { ProjectList } from "@/components/assignments/project-list";
@@ -121,6 +121,29 @@ export default function Dashboard() {
           <div className="text-sm text-gray-400">
             Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
           </div>
+          
+          {/* Repair Shop Drop Zone */}
+          <Droppable droppableId="repair-shop">
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`flex items-center gap-2 px-3 py-1 rounded border border-dashed transition-colors cursor-pointer ${
+                  snapshot.isDraggingOver
+                    ? "border-orange-400 bg-orange-900/20"
+                    : "border-orange-600 bg-orange-900/10"
+                }`}
+                onClick={() => window.location.href = '/repair-shop'}
+                data-testid="repair-shop-drop-zone"
+              >
+                <span className="text-orange-400 text-sm">🔧</span>
+                <span className="text-xs text-orange-300">
+                  Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
+                </span>
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
         </div>
       </div>
       

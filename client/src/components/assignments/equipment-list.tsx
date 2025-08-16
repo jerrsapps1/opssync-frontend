@@ -68,35 +68,9 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
 
   return (
     <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
-      {/* Equipment Header with Repair Shop */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium text-white">
-          Equipment ({visible.length})
-        </h2>
-        
-        {/* Repair Shop Drop Zone */}
-        <Droppable droppableId="repair-shop">
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`flex items-center gap-2 px-3 py-1 rounded border-2 border-dashed transition-colors cursor-pointer ${
-                snapshot.isDraggingOver
-                  ? "border-orange-400 bg-orange-900/20"
-                  : "border-orange-600 bg-orange-900/10"
-              }`}
-              onClick={() => nav('/repair-shop')}
-              data-testid="repair-shop-drop-zone"
-            >
-              <span className="text-orange-400 text-sm">🔧</span>
-              <span className="text-xs text-orange-300">
-                Repair Shop ({repairShopEquipment.length})
-              </span>
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </div>
+      <h2 className="text-sm font-medium mb-3 text-white">
+        Equipment ({visible.length})
+      </h2>
 
       <Droppable droppableId="equipment">
         {(provided, snapshot) => (
