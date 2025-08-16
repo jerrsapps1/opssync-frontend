@@ -1,5 +1,5 @@
 import { 
-  projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs,
+  projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, workOrders,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
   type Equipment, type InsertEquipment, type UpdateEquipment,
@@ -10,7 +10,10 @@ import {
   type UpdateEmployeeAssignment,
   type UpdateEquipmentAssignment,
   type ProjectActivityLog,
-  type InsertProjectActivityLog
+  type InsertProjectActivityLog,
+  type WorkOrder,
+  type InsertWorkOrder,
+  type UpdateWorkOrder
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -63,6 +66,13 @@ export interface IStorage {
   // Project Activity Logs
   getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]>;
   createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog>;
+  
+  // Work Orders
+  getWorkOrders(equipmentId?: string): Promise<WorkOrder[]>;
+  getWorkOrder(id: string): Promise<WorkOrder | undefined>;
+  createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder>;
+  updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder>;
+  deleteWorkOrder(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -1686,6 +1696,42 @@ export class PostgreSQLStorage extends MemStorage {
 
   async deleteProjectContact(id: string): Promise<void> {
     await db.delete(projectContacts).where(eq(projectContacts.id, id));
+  }
+
+  // Work Orders implementation
+  async getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
+    if (equipmentId) {
+      return await db.select().from(workOrders).where(eq(workOrders.equipmentId, equipmentId)).orderBy(desc(workOrders.dateCreated));
+    }
+    return await db.select().from(workOrders).orderBy(desc(workOrders.dateCreated));
+  }
+
+  async getWorkOrder(id: string): Promise<WorkOrder | undefined> {
+    const [workOrder] = await db.select().from(workOrders).where(eq(workOrders.id, id));
+    return workOrder;
+  }
+
+  async createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder> {
+    const [newWorkOrder] = await db.insert(workOrders).values(workOrder).returning();
+    return newWorkOrder;
+  }
+
+  async updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder> {
+    const [updatedWorkOrder] = await db
+      .update(workOrders)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(workOrders.id, id))
+      .returning();
+    
+    if (!updatedWorkOrder) {
+      throw new Error(`Work order with id ${id} not found`);
+    }
+    
+    return updatedWorkOrder;
+  }
+
+  async deleteWorkOrder(id: string): Promise<void> {
+    await db.delete(workOrders).where(eq(workOrders.id, id));
   }
 }
 

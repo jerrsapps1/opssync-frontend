@@ -72,7 +72,13 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                 borderColor: "orange.500",
                 transform: "translateY(-1px)",
               }}
-              onClick={() => setProjectId(repairShop.id)}
+              onClick={() => {
+                if (repairShop.id === "repair-shop") {
+                  navigate("/repair-shop");
+                } else {
+                  setProjectId(repairShop.id);
+                }
+              }}
             >
               <Text fontWeight="bold" fontSize="sm" mb={0.5} color="white" lineHeight="1.2">
                 {repairShop.name}
@@ -165,7 +171,13 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   borderColor: "blue.500",
                   transform: "translateY(-1px)",
                 }}
-                onClick={() => navigate(`/projects/${project.id}`)}
+                onClick={() => {
+                  if (project.id === "repair-shop") {
+                    navigate("/repair-shop");
+                  } else {
+                    navigate(`/projects/${project.id}`);
+                  }
+                }}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setContextMenu({ x: e.clientX, y: e.clientY, project });

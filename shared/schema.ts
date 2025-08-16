@@ -315,6 +315,36 @@ export type UpdateProject = z.infer<typeof updateProjectSchema>;
 export type UpdateEmployee = z.infer<typeof updateEmployeeSchema>;
 export type UpdateEquipment = z.infer<typeof updateEquipmentSchema>;
 
+// Work Orders table
+export const workOrders = pgTable("work_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  equipmentId: varchar("equipment_id").notNull().references(() => equipment.id),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  reason: text("reason").notNull(), // Why equipment needs repair
+  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
+  status: text("status").notNull().default("open"), // open, in-progress, completed, cancelled
+  assignedTo: text("assigned_to"), // Who is working on the repair
+  estimatedCost: integer("estimated_cost"), // Estimated repair cost in cents
+  actualCost: integer("actual_cost"), // Actual repair cost in cents
+  dateCreated: timestamp("date_created").defaultNow(),
+  dateStarted: timestamp("date_started"),
+  dateCompleted: timestamp("date_completed"),
+  notes: text("notes"), // Additional repair notes
+  partsUsed: text("parts_used"), // Parts/materials used
+  createdBy: varchar("created_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Work Order schema
+export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
+  id: true,
+  dateCreated: true,
+  updatedAt: true,
+});
+
+export const updateWorkOrderSchema = insertWorkOrderSchema.partial();
+
 // Project Activity Log schema
 export const insertProjectActivityLogSchema = z.object({
   date: z.string(),
@@ -333,3 +363,7 @@ export const insertProjectActivityLogSchema = z.object({
 
 export type ProjectActivityLog = typeof projectActivityLogs.$inferSelect;
 export type InsertProjectActivityLog = z.infer<typeof insertProjectActivityLogSchema>;
+
+export type WorkOrder = typeof workOrders.$inferSelect;
+export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
+export type UpdateWorkOrder = z.infer<typeof updateWorkOrderSchema>;

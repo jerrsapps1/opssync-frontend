@@ -12,7 +12,9 @@ import {
   updateProjectSchema,
   updateEmployeeSchema,
   updateEquipmentSchema,
-  updateBrandConfigSchema
+  updateBrandConfigSchema,
+  insertWorkOrderSchema,
+  updateWorkOrderSchema
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -1536,6 +1538,63 @@ Rules:
   app.use("/api/branding", brandingRouter);
   app.use("/api/billing", billingRouter);
   app.use("/api/billing", billingPortalRouter);
+
+  // Work Orders API Routes
+  app.get("/api/work-orders", authenticateToken, async (req, res) => {
+    try {
+      const equipmentId = req.query.equipmentId as string | undefined;
+      const workOrders = await storage.getWorkOrders(equipmentId);
+      res.json(workOrders);
+    } catch (error) {
+      console.error("Error fetching work orders:", error);
+      res.status(500).json({ message: "Failed to fetch work orders" });
+    }
+  });
+
+  app.get("/api/work-orders/:id", authenticateToken, async (req, res) => {
+    try {
+      const workOrder = await storage.getWorkOrder(req.params.id);
+      if (!workOrder) {
+        return res.status(404).json({ message: "Work order not found" });
+      }
+      res.json(workOrder);
+    } catch (error) {
+      console.error("Error fetching work order:", error);
+      res.status(500).json({ message: "Failed to fetch work order" });
+    }
+  });
+
+  app.post("/api/work-orders", authenticateToken, async (req, res) => {
+    try {
+      const workOrderData = insertWorkOrderSchema.parse(req.body);
+      const workOrder = await storage.createWorkOrder(workOrderData);
+      res.status(201).json(workOrder);
+    } catch (error) {
+      console.error("Error creating work order:", error);
+      res.status(400).json({ message: "Failed to create work order" });
+    }
+  });
+
+  app.patch("/api/work-orders/:id", authenticateToken, async (req, res) => {
+    try {
+      const updates = updateWorkOrderSchema.parse(req.body);
+      const workOrder = await storage.updateWorkOrder(req.params.id, updates);
+      res.json(workOrder);
+    } catch (error) {
+      console.error("Error updating work order:", error);
+      res.status(400).json({ message: "Failed to update work order" });
+    }
+  });
+
+  app.delete("/api/work-orders/:id", authenticateToken, async (req, res) => {
+    try {
+      await storage.deleteWorkOrder(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting work order:", error);
+      res.status(500).json({ message: "Failed to delete work order" });
+    }
+  });
 
   // StaffTrak: Branding & White Label controls
   app.use("/api/owner-admin", ownerBrandingAdminRouter);                 // owner toggles
