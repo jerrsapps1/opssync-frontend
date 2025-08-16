@@ -882,6 +882,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Project ID:", projectId);
       console.log("Request body:", req.body);
       
+      // Employees should not be assigned to special equipment locations
+      const isSpecialLocation = projectId === "warehouse" || projectId === "repair-shop";
+      if (isSpecialLocation) {
+        return res.status(400).json({ 
+          error: "Employees cannot be assigned to equipment locations (warehouse/repair-shop)" 
+        });
+      }
+      
       // Get current employee state for logging
       const currentEmployee = await storage.getEmployee(id);
       const previousProjectId = currentEmployee?.currentProjectId;
@@ -1118,26 +1126,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Project ID:", projectId);
       console.log("Request body:", req.body);
       
+      // Handle special equipment locations
+      const isSpecialLocation = projectId === "warehouse" || projectId === "repair-shop";
+      const dbProjectId = isSpecialLocation ? projectId : projectId; // Keep as-is for special locations
+      
       // Get current equipment state for logging
       const currentEquipment = await storage.getEquipmentItem(id);
       const previousProjectId = currentEquipment?.currentProjectId;
       
-      // Update equipment assignment directly via storage
-      const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+      // For special locations, directly update the database without foreign key constraint
+      let updatedEquipment;
+      if (isSpecialLocation) {
+        // Direct database update for special locations
+        const { equipment: equipmentTable } = await import("./schema");
+        const db = await import("./db").then(m => m.db);
+        const { eq } = await import("drizzle-orm");
+        
+        const [result] = await db
+          .update(equipmentTable)
+          .set({
+            currentProjectId: projectId,
+            status: "available", // warehouse = available, repair-shop = under repair
+            updatedAt: new Date(),
+          })
+          .where(eq(equipmentTable.id, id))
+          .returning();
+          
+        if (!result) {
+          throw new Error(`Equipment with id ${id} not found`);
+        }
+        updatedEquipment = result;
+      } else {
+        // Use normal storage method for real projects
+        updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+      }
       
       // Get user information for logging
       const currentUser = await storage.getUser(req.user!.id);
       
-      // Status-based conditional logging
-      await logProjectActivity({
-        equipmentId: id,
-        equipmentName: updatedEquipment.name,
-        previousProjectId,
-        newProjectId: projectId,
-        entityType: "equipment",
-        performedBy: currentUser?.username || "Unknown User",
-        performedByEmail: currentUser?.username
-      });
+      // Status-based conditional logging (skip for special locations to avoid foreign key issues)
+      if (!isSpecialLocation) {
+        await logProjectActivity({
+          equipmentId: id,
+          equipmentName: updatedEquipment.name,
+          previousProjectId,
+          newProjectId: projectId,
+          entityType: "equipment",
+          performedBy: currentUser?.username || "Unknown User",
+          performedByEmail: currentUser?.username
+        });
+      } else {
+        console.log(`📍 Equipment ${updatedEquipment.name} moved to ${projectId === "warehouse" ? "Warehouse" : "Repair Shop"}`);
+      }
       
       console.log("Equipment assignment complete:", updatedEquipment);
       console.log("=======================================");
