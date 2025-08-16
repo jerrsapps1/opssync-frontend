@@ -88,10 +88,10 @@ async function logProjectActivity({
         entityType,
         entityName,
         entityId,
-        projectId: newProjectId,
+        projectId: newProjectId!,
         projectName: newProject?.name || 'Unknown Project',
-        fromProjectId: previousProjectId,
-        fromProjectName: previousProject?.name || 'Unknown Project',
+        fromProjectId: previousProjectId || undefined,
+        fromProjectName: previousProject?.name || undefined,
         performedBy: performedBy || "Admin User",
         performedByEmail: performedByEmail || undefined
       });
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add all data rows
       exportData.forEach(row => {
-        worksheetData.push(Object.values(row));
+        worksheetData.push(Object.values(row).map(v => v?.toString() || ''));
       });
       
       // Create worksheet from the 2D array
@@ -731,7 +731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add all data rows
       exportData.forEach(row => {
-        worksheetData.push(Object.values(row));
+        worksheetData.push(Object.values(row).map(v => v?.toString() || ''));
       });
       
       // Create worksheet from the 2D array
@@ -985,7 +985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add all data rows
       exportData.forEach(row => {
-        worksheetData.push(Object.values(row));
+        worksheetData.push(Object.values(row).map(v => v?.toString() || ''));
       });
       
       // Create worksheet from the 2D array

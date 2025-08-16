@@ -76,13 +76,15 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private projects: Map<string, Project>;
-  private employees: Map<string, Employee>;
-  private equipment: Map<string, Equipment>;
-  private activities: Activity[];
-  private alerts: Map<string, Alert>;
-  private projectContacts: Map<string, ProjectContact>;
+  protected users: Map<string, User>;
+  protected projects: Map<string, Project>;
+  protected employees: Map<string, Employee>;
+  protected equipment: Map<string, Equipment>;
+  protected activities: Activity[];
+  protected alerts: Map<string, Alert>;
+  protected projectContacts: Map<string, ProjectContact>;
+  protected projectActivityLogs: ProjectActivityLog[];
+  protected workOrders: Map<string, WorkOrder>;
 
   constructor() {
     this.users = new Map();
@@ -92,6 +94,8 @@ export class MemStorage implements IStorage {
     this.activities = [];
     this.alerts = new Map();
     this.projectContacts = new Map();
+    this.projectActivityLogs = [];
+    this.workOrders = new Map();
     
     // Load data from shared database instead of hardcoded data
     this.loadFromSharedDatabase().catch(console.error);
@@ -1056,13 +1060,13 @@ export class MemStorage implements IStorage {
     // First, unassign all employees and equipment from this project
     for (const employee of Array.from(this.employees.values())) {
       if (employee.currentProjectId === id) {
-        await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
+        await this.updateEmployeeAssignment(employee.id, { projectId: null });
       }
     }
     
     for (const equipment of Array.from(this.equipment.values())) {
       if (equipment.currentProjectId === id) {
-        await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
+        await this.updateEquipmentAssignment(equipment.id, { projectId: null });
       }
     }
 
@@ -1331,13 +1335,79 @@ export class MemStorage implements IStorage {
 
   // Project Activity Logs (default implementation - can be overridden)
   async getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]> {
-    // Base class returns empty array - should be implemented in subclasses
-    return [];
+    let filteredLogs = this.projectActivityLogs;
+    
+    if (projectId) {
+      filteredLogs = filteredLogs.filter(log => log.projectId === projectId);
+    }
+    if (startDate) {
+      filteredLogs = filteredLogs.filter(log => log.date >= startDate);
+    }
+    if (endDate) {
+      filteredLogs = filteredLogs.filter(log => log.date <= endDate);
+    }
+    
+    return filteredLogs.sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return b.time.localeCompare(a.time);
+    });
   }
 
   async createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog> {
-    // Base class throws error - should be implemented in subclasses
-    throw new Error("Project activity logging not implemented in base storage class");
+    const id = randomUUID();
+    const newLog: ProjectActivityLog = {
+      ...log,
+      id,
+      createdAt: new Date(),
+    };
+    this.projectActivityLogs.push(newLog);
+    return newLog;
+  }
+
+  // Work Orders
+  async getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
+    const allWorkOrders = Array.from(this.workOrders.values());
+    if (equipmentId) {
+      return allWorkOrders.filter(wo => wo.equipmentId === equipmentId);
+    }
+    return allWorkOrders;
+  }
+
+  async getWorkOrder(id: string): Promise<WorkOrder | undefined> {
+    return this.workOrders.get(id);
+  }
+
+  async createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder> {
+    const id = randomUUID();
+    const newWorkOrder: WorkOrder = {
+      ...workOrder,
+      id,
+      priority: workOrder.priority || "medium",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.workOrders.set(id, newWorkOrder);
+    return newWorkOrder;
+  }
+
+  async updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder> {
+    const workOrder = this.workOrders.get(id);
+    if (!workOrder) {
+      throw new Error(`Work order with id ${id} not found`);
+    }
+
+    const updatedWorkOrder: WorkOrder = {
+      ...workOrder,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.workOrders.set(id, updatedWorkOrder);
+    return updatedWorkOrder;
+  }
+
+  async deleteWorkOrder(id: string): Promise<void> {
+    this.workOrders.delete(id);
   }
 }
 
@@ -1421,13 +1491,13 @@ export class PostgreSQLStorage extends MemStorage {
     // First, unassign all employees and equipment from this project
     for (const employee of Array.from(this.employees.values())) {
       if (employee.currentProjectId === id) {
-        await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
+        await this.updateEmployeeAssignment(employee.id, { projectId: null });
       }
     }
 
     for (const equipment of Array.from(this.equipment.values())) {
       if (equipment.currentProjectId === id) {
-        await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
+        await this.updateEquipmentAssignment(equipment.id, { projectId: null });
       }
     }
 
