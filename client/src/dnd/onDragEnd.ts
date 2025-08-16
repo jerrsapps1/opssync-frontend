@@ -33,9 +33,18 @@ export function onDragEndFactory(fns: Fns) {
     }
 
     // Handle legacy project IDs directly (for project cards that accept both)
-    // Check if destination is an unassigned area
+    // Check if destination is an unassigned area or repair shop
     const isUnassignedDestination = destination.droppableId.includes("unassigned");
-    const projectId: string | null = isUnassignedDestination ? null : destination.droppableId;
+    const isRepairShop = destination.droppableId === "repair-shop";
+    
+    let projectId: string | null;
+    if (isUnassignedDestination) {
+      projectId = null;
+    } else if (isRepairShop) {
+      projectId = "repair-shop"; // Special handling for repair shop
+    } else {
+      projectId = destination.droppableId;
+    }
 
     console.log("Drag and Drop Debug:", {
       draggableId,
@@ -44,7 +53,8 @@ export function onDragEndFactory(fns: Fns) {
       assetType: isEmp ? "emp" : "eq",
       assetId: id,
       projectId: projectId,
-      isUnassignedDestination
+      isUnassignedDestination,
+      isRepairShop
     });
 
     if (isEmp) {

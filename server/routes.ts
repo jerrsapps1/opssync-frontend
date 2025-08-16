@@ -1128,45 +1128,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Project ID:", projectId);
       console.log("Request body:", req.body);
       
-      // Handle repair shop location
-      const isRepairShop = projectId === "repair-shop";
+      // Handle repair shop location - treat as unassigned but create work order
+      if (projectId === "repair-shop") {
+        // Set to null to keep equipment unassigned, special handling in UI
+        const validatedData = updateEquipmentAssignmentSchema.parse({ projectId: null });
+        const updated = await storage.updateEquipmentAssignment(id, validatedData);
+        
+        // Note: Equipment marked for repair shop but kept as unassigned in DB
+        console.log(`Equipment ${id} marked for repair shop`);
+        return res.json(updated);
+      }
       
       // Get current equipment state for logging
       const currentEquipment = await storage.getEquipmentItem(id);
       const previousProjectId = currentEquipment?.currentProjectId;
       
-      // For repair shop, directly update the database without foreign key constraint
-      let updatedEquipment;
-      if (isRepairShop) {
-        // Direct database update for repair shop
-        const { equipment: equipmentTable } = await import("@shared/schema");
-        const db = await import("./db").then(m => m.db);
-        const { eq } = await import("drizzle-orm");
-        
-        const [result] = await db
-          .update(equipmentTable)
-          .set({
-            currentProjectId: projectId,
-            status: "under repair",
-            updatedAt: new Date(),
-          })
-          .where(eq(equipmentTable.id, id))
-          .returning();
-          
-        if (!result) {
-          throw new Error(`Equipment with id ${id} not found`);
-        }
-        updatedEquipment = result;
-      } else {
-        // Use normal storage method for real projects
-        updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
-      }
+      // Use normal storage method
+      const validatedData = updateEquipmentAssignmentSchema.parse(req.body);
+      const updatedEquipment = await storage.updateEquipmentAssignment(id, validatedData);
       
       // Get user information for logging
       const currentUser = await storage.getUser(req.user!.id);
       
-      // Status-based conditional logging (skip for repair shop to avoid foreign key issues)
-      if (!isRepairShop) {
+      // Status-based conditional logging
+      if (projectId !== "repair-shop") {
         await logProjectActivity({
           equipmentId: id,
           equipmentName: updatedEquipment.name,

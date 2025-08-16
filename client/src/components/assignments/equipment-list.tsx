@@ -8,6 +8,7 @@ import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import { useSelection } from "@/state/selection";
 import { buildDroppableId } from "@/dnd/ids";
+import { Button } from "@/components/ui/button";
 import type { Equipment, Project } from "@shared/schema";
 
 interface EquipmentListProps {
@@ -62,8 +63,64 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     setMenu({ id, x: e.clientX, y: e.clientY });
   }
 
+  // Get repair shop equipment (equipment marked for repair shop but stored as unassigned)
+  const repairShopEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance");
+
   return (
     <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
+      {/* Repair Shop Section */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-white flex items-center gap-2">
+            🔧 Repair Shop ({repairShopEquipment.length})
+          </h3>
+          <Button
+            onClick={() => nav('/repair-shop')}
+            variant="outline"
+            size="sm"
+            className="text-orange-400 border-orange-600 hover:bg-orange-900 text-xs px-2 py-1 h-6"
+          >
+            Open
+          </Button>
+        </div>
+        
+        <Droppable droppableId="repair-shop">
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`min-h-16 p-3 rounded border-2 border-dashed transition-colors ${
+                snapshot.isDraggingOver
+                  ? "border-orange-400 bg-orange-900/20"
+                  : "border-orange-600 bg-orange-900/10"
+              }`}
+            >
+              {repairShopEquipment.length === 0 ? (
+                <div className="text-center text-gray-400 text-xs">
+                  <div className="text-lg mb-1">🔧</div>
+                  <p>Drop equipment here for repair</p>
+                </div>
+              ) : (
+                <div className="grid gap-1">
+                  {repairShopEquipment.slice(0, 3).map((eq, index) => (
+                    <div key={eq.id} className="text-xs text-orange-300 bg-orange-900/30 rounded px-2 py-1 truncate">
+                      🔧 {eq.name}
+                    </div>
+                  ))}
+                  {repairShopEquipment.length > 3 && (
+                    <div className="text-xs text-orange-400 text-center">+{repairShopEquipment.length - 3} more</div>
+                  )}
+                </div>
+              )}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
+      
+      {/* Divider */}
+      <div className="border-b border-gray-700 mb-4" />
+      
       <h2 className="text-sm font-medium mb-3 text-white">
         Equipment ({visible.length})
       </h2>

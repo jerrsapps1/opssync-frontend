@@ -17,17 +17,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
-  // Repair shop for equipment
-  const repairShop = {
-    id: "repair-shop", 
-    name: "🔧 Repair Shop",
-    description: "Equipment Under Repair",
-    icon: "🔧",
-    color: "orange"
-  };
-  
-  // Get equipment assigned to repair shop
-  const repairShopEquipment = equipment.filter(eq => eq.currentProjectId === "repair-shop");
+  // Remove repair shop code - moved to equipment section
   
   return (
     <Box
@@ -39,104 +29,6 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       bg="gray.800"
     >
       <Heading size="md" mb={4} color="white">Projects</Heading>
-      
-      {/* Repair Shop */}
-      <Box mb={4}>
-        <Droppable droppableId={repairShop.id}>
-          {(provided, snapshot) => (
-            <Box
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              px={3}
-              py={2}
-              bg={
-                projectId === repairShop.id 
-                  ? "orange.600"
-                  : snapshot.isDraggingOver 
-                  ? "orange.700"
-                  : "#1F2937"
-              }
-              border="2px solid"
-              borderColor={
-                projectId === repairShop.id
-                  ? "orange.400"
-                  : snapshot.isDraggingOver 
-                  ? "orange.400"
-                  : "orange.700"
-              }
-              rounded="md"
-              minHeight="45px"
-              transition="all 0.2s"
-              cursor="pointer"
-              _hover={{
-                borderColor: "orange.500",
-                transform: "translateY(-1px)",
-              }}
-              onClick={() => {
-                if (repairShop.id === "repair-shop") {
-                  navigate("/repair-shop");
-                } else {
-                  setProjectId(repairShop.id);
-                }
-              }}
-            >
-              <Text fontWeight="bold" fontSize="sm" mb={0.5} color="white" lineHeight="1.2">
-                {repairShop.name}
-              </Text>
-              <Text fontSize="xs" color="#C0C0D8" mb={0.5} lineHeight="1.1">
-                {repairShop.description}
-              </Text>
-              
-              {/* Equipment Count */}
-              <Box>
-                <Box 
-                  h="2px" 
-                  rounded="full" 
-                  bg="orange.400"
-                  mb={0.5}
-                />
-                <Text fontSize="xs" color="orange.300" fontWeight="medium" lineHeight="1.1">
-                  {repairShopEquipment.length} equipment
-                </Text>
-              </Box>
-              
-              {/* Show assigned equipment when repair shop is focused */}
-              {projectId === repairShop.id && (
-                <Box mb={2}>
-                  {repairShopEquipment.map((eq, index) => (
-                    <Draggable key={eq.id} draggableId={eq.id} index={index}>
-                      {(provided, snapshot) => (
-                        <Box
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          bg={snapshot.isDragging ? "blue.600" : "blue.800"}
-                          p={1}
-                          mb={1}
-                          rounded="sm"
-                          cursor="grab"
-                          _active={{ cursor: "grabbing" }}
-                          border="1px solid"
-                          borderColor={snapshot.isDragging ? "blue.400" : "blue.700"}
-                        >
-                          <Text fontSize="xs" color="blue.200">
-                            🔧 {eq.name}
-                          </Text>
-                        </Box>
-                      )}
-                    </Draggable>
-                  ))}
-                </Box>
-              )}
-              
-              {provided.placeholder}
-            </Box>
-          )}
-        </Droppable>
-      </Box>
-      
-      {/* Divider */}
-      <Box borderTop="1px solid" borderColor="gray.600" mb={4} />
       
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
