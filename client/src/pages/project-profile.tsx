@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import type { Project, Employee, Equipment } from "@shared/schema";
 import ProjectTemplate from "../../../templates/project-template";
 
@@ -42,6 +44,11 @@ export default function ProjectProfile() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { handleDragEnd, isAssigning } = useDragDrop();
+  const { toast } = useToast();
+  
+  // State for bulk selection
+  const [selectedEmployees, setSelectedEmployees] = useState<Set<string>>(new Set());
+  const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
 
   const { data: project } = useQuery({ 
     queryKey: ["projects", id], 
@@ -96,6 +103,75 @@ export default function ProjectProfile() {
 
   function setStatus(status: string) {
     mutate.mutate({ status });
+  }
+
+  // Bulk unassignment functionality
+  const bulkUnassignMutation = useMutation({
+    mutationFn: async ({ employeeIds, equipmentIds }: { employeeIds: string[], equipmentIds: string[] }) => {
+      const promises = [
+        ...employeeIds.map(empId => 
+          apiRequest("PATCH", `/api/employees/${empId}/assignment`, { projectId: null })
+        ),
+        ...equipmentIds.map(eqId => 
+          apiRequest("PATCH", `/api/equipment/${eqId}/assignment`, { projectId: null })
+        )
+      ];
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api", "employees"] });
+      qc.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      qc.invalidateQueries({ queryKey: ["projects", id] });
+      setSelectedEmployees(new Set());
+      setSelectedEquipment(new Set());
+      toast({
+        title: "Assets Sent to Dashboard",
+        description: `Successfully unassigned ${selectedEmployees.size} employees and ${selectedEquipment.size} equipment items.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Unassignment Failed",
+        description: error.message || "Failed to unassign assets",
+        variant: "destructive",
+      });
+    }
+  });
+
+  function handleSendToDashboard() {
+    const employeeIds = Array.from(selectedEmployees);
+    const equipmentIds = Array.from(selectedEquipment);
+    
+    if (employeeIds.length === 0 && equipmentIds.length === 0) {
+      toast({
+        title: "No Assets Selected",
+        description: "Please select employees or equipment to send to dashboard.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    bulkUnassignMutation.mutate({ employeeIds, equipmentIds });
+  }
+
+  function toggleEmployeeSelection(empId: string) {
+    const newSelected = new Set(selectedEmployees);
+    if (newSelected.has(empId)) {
+      newSelected.delete(empId);
+    } else {
+      newSelected.add(empId);
+    }
+    setSelectedEmployees(newSelected);
+  }
+
+  function toggleEquipmentSelection(eqId: string) {
+    const newSelected = new Set(selectedEquipment);
+    if (newSelected.has(eqId)) {
+      newSelected.delete(eqId);
+    } else {
+      newSelected.add(eqId);
+    }
+    setSelectedEquipment(newSelected);
   }
 
   function markCompleted() {
@@ -307,6 +383,25 @@ export default function ProjectProfile() {
         </div>
       </div>
 
+      {/* Send to Dashboard Button */}
+      {(selectedEmployees.size > 0 || selectedEquipment.size > 0) && (
+        <div className="p-4 bg-blue-900/20 border border-blue-600/50 rounded">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-blue-300">
+              Selected: {selectedEmployees.size} employees, {selectedEquipment.size} equipment
+            </div>
+            <button
+              onClick={handleSendToDashboard}
+              disabled={bulkUnassignMutation.isPending}
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-800 text-white rounded text-sm font-medium"
+              data-testid="button-send-to-dashboard"
+            >
+              {bulkUnassignMutation.isPending ? "Sending..." : "Send to Dashboard"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-3">
         {/* Assigned Employees - Droppable for reassignment */}
         <div className="rounded border border-gray-800 p-3 bg-[#0b1220]">
@@ -328,12 +423,23 @@ export default function ProjectProfile() {
                       <div 
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 cursor-move transition-all ${
-                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : 'hover:bg-gray-700'
+                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 transition-all flex items-center gap-2 ${
+                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : selectedEmployees.has(e.id) ? 'bg-blue-800/30 border-blue-500' : 'hover:bg-gray-700'
                         }`}
                       >
-                        {e.name}
+                        <input
+                          type="checkbox"
+                          checked={selectedEmployees.has(e.id)}
+                          onChange={() => toggleEmployeeSelection(e.id)}
+                          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                          data-testid={`checkbox-employee-${e.id}`}
+                        />
+                        <div 
+                          {...provided.dragHandleProps}
+                          className="flex-1 cursor-move"
+                        >
+                          {e.name}
+                        </div>
                       </div>
                     )}
                   </Draggable>
@@ -369,17 +475,28 @@ export default function ProjectProfile() {
                       <div 
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 flex items-center gap-2 cursor-move transition-all ${
-                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : 'hover:bg-gray-700'
+                        className={`text-sm text-gray-200 rounded border border-gray-800 p-2 flex items-center gap-2 transition-all ${
+                          snapshot.isDragging ? 'bg-blue-600/30 border-blue-400 shadow-lg' : selectedEquipment.has(e.id) ? 'bg-blue-800/30 border-blue-500' : 'hover:bg-gray-700'
                         }`}
                       >
-                        <span>{e.name}</span>
-                        {e.assetNumber && (
-                          <span className="text-[11px] px-1.5 py-0.5 rounded bg-black/30 border border-white/10">
-                            {String(e.assetNumber)}
-                          </span>
-                        )}
+                        <input
+                          type="checkbox"
+                          checked={selectedEquipment.has(e.id)}
+                          onChange={() => toggleEquipmentSelection(e.id)}
+                          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                          data-testid={`checkbox-equipment-${e.id}`}
+                        />
+                        <div 
+                          {...provided.dragHandleProps}
+                          className="flex-1 cursor-move flex items-center gap-2"
+                        >
+                          <span>{e.name}</span>
+                          {e.assetNumber && (
+                            <span className="text-[11px] px-1.5 py-0.5 rounded bg-black/30 border border-white/10">
+                              {String(e.assetNumber)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </Draggable>
