@@ -115,39 +115,39 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Project Counts */}
-      <div className="p-4 bg-gray-800 border-b border-gray-700">
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-400">
-            Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
-          </div>
-          
-          {/* Repair Shop Drop Zone */}
-          <Droppable droppableId="repair-shop">
-            {(provided, snapshot) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={`flex items-center gap-2 px-3 py-1 rounded border border-dashed transition-colors cursor-pointer ${
-                  snapshot.isDraggingOver
-                    ? "border-orange-400 bg-orange-900/20"
-                    : "border-orange-600 bg-orange-900/10"
-                }`}
-                onClick={() => window.location.href = '/repair-shop'}
-                data-testid="repair-shop-drop-zone"
-              >
-                <span className="text-orange-400 text-sm">🔧</span>
-                <span className="text-xs text-orange-300">
-                  Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
-                </span>
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </div>
-      </div>
-      
       <DragDropContext onDragEnd={handleDragEnd}>
+        {/* Project Counts */}
+        <div className="p-4 bg-gray-800 border-b border-gray-700">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-400">
+              Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
+            </div>
+            
+            {/* Repair Shop Drop Zone */}
+            <Droppable droppableId="repair-shop">
+              {(provided, snapshot) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={`flex items-center gap-2 px-3 py-1 rounded border border-dashed transition-colors cursor-pointer ${
+                    snapshot.isDraggingOver
+                      ? "border-orange-400 bg-orange-900/20"
+                      : "border-orange-600 bg-orange-900/10"
+                  }`}
+                  onClick={() => window.location.href = '/repair-shop'}
+                  data-testid="repair-shop-drop-zone"
+                >
+                  <span className="text-orange-400 text-sm">🔧</span>
+                  <span className="text-xs text-orange-300">
+                    Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
+                  </span>
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </div>
+        </div>
+        
         <div className="flex" style={{ height: "calc(100vh - 180px)" }}>
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
