@@ -227,9 +227,13 @@ export default function RepairShop() {
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔧</div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Equipment in Repair</h3>
-                <p className="text-gray-400">
+                <p className="text-gray-400 mb-4">
                   Equipment will appear here when assigned to the repair shop from the dashboard.
                 </p>
+                <div className="mt-6 p-4 border-2 border-dashed border-gray-600 rounded-lg bg-gray-800/50">
+                  <div className="text-4xl mb-2">🔧</div>
+                  <p className="text-gray-400">Drop equipment here to send to repair shop</p>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -267,17 +271,62 @@ export default function RepairShop() {
                           className="mt-1"
                         />
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-white font-medium text-sm leading-tight">
-                            {equipment.name}
-                          </h4>
-                          <p className="text-gray-400 text-xs mt-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-white font-medium text-sm leading-tight">
+                              {equipment.name}
+                            </h4>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCreateWorkOrder(equipment);
+                              }}
+                              size="sm"
+                              className="bg-orange-600 hover:bg-orange-500 text-xs px-2 py-1 h-6"
+                              data-testid={`button-create-work-order-${equipment.id}`}
+                            >
+                              + Work Order
+                            </Button>
+                          </div>
+                          <p className="text-gray-400 text-xs mb-2">
                             {equipment.type}
                           </p>
-                          {equipmentWorkOrders.length > 0 && (
-                            <div className="mt-2">
-                              <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
-                                {equipmentWorkOrders.length} Work Order{equipmentWorkOrders.length !== 1 ? 's' : ''}
-                              </Badge>
+                          
+                          {/* Work Order Details */}
+                          {equipmentWorkOrders.length > 0 ? (
+                            <div className="space-y-2">
+                              {equipmentWorkOrders.map((workOrder) => (
+                                <div key={workOrder.id} className="bg-gray-600 p-2 rounded text-xs">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-white font-medium">{workOrder.title}</span>
+                                    <div className="flex gap-1">
+                                      <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-1 py-0`}>
+                                        {workOrder.priority.toUpperCase()}
+                                      </Badge>
+                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-1 py-0`}>
+                                        {workOrder.status.toUpperCase()}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <p className="text-gray-300 text-xs mb-1">{workOrder.description}</p>
+                                  <div className="text-gray-400 text-xs">
+                                    <div><strong>Reason:</strong> {workOrder.reason}</div>
+                                    {workOrder.assignedTo && (
+                                      <div><strong>Assigned to:</strong> {workOrder.assignedTo}</div>
+                                    )}
+                                    {workOrder.estimatedCost && (
+                                      <div><strong>Est. Cost:</strong> ${(workOrder.estimatedCost / 100).toFixed(2)}</div>
+                                    )}
+                                    {workOrder.notes && (
+                                      <div><strong>Notes:</strong> {workOrder.notes}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-gray-600 p-2 rounded text-xs text-gray-300">
+                              <p className="text-center">No work orders yet</p>
+                              <p className="text-center mt-1 text-gray-400">Click "+ Work Order" to create one</p>
                             </div>
                           )}
                         </div>
@@ -289,22 +338,14 @@ export default function RepairShop() {
             )}
           </div>
 
-          {/* Droppable area for new equipment */}
+          {/* Hidden droppable area for drag and drop functionality */}
           <Droppable droppableId="repair-shop">
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`mt-8 p-6 rounded-lg border-2 border-dashed transition-colors ${
-                  snapshot.isDraggingOver
-                    ? "border-orange-400 bg-orange-900/20"
-                    : "border-gray-600 bg-gray-800/50"
-                }`}
+                className="hidden"
               >
-                <div className="text-center text-gray-400">
-                  <div className="text-4xl mb-2">🔧</div>
-                  <p>Drop equipment here to send to repair shop</p>
-                </div>
                 {provided.placeholder}
               </div>
             )}
