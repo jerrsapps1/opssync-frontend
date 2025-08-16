@@ -15,7 +15,12 @@ import type { Equipment, WorkOrder } from "@shared/schema";
 async function getRepairShopEquipment(): Promise<Equipment[]> {
   const response = await apiRequest("GET", "/api/equipment");
   const allEquipment = await response.json();
-  return allEquipment.filter((eq: Equipment) => eq.currentProjectId === "repair-shop");
+  // Equipment in repair shop has null projectId but status 'maintenance'
+  // OR currentProjectId === "repair-shop" (fallback)
+  return allEquipment.filter((eq: Equipment) => 
+    eq.currentProjectId === "repair-shop" || 
+    (!eq.currentProjectId && eq.status === "maintenance")
+  );
 }
 
 async function getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {

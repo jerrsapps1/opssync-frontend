@@ -1128,15 +1128,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Project ID:", projectId);
       console.log("Request body:", req.body);
       
-      // Handle repair shop location - treat as unassigned but create work order
+      // Handle repair shop location - treat as unassigned but set status to maintenance
       if (projectId === "repair-shop") {
-        // Set to null to keep equipment unassigned, special handling in UI
+        // Set to null to keep equipment unassigned, but mark as maintenance status
         const validatedData = updateEquipmentAssignmentSchema.parse({ projectId: null });
         const updated = await storage.updateEquipmentAssignment(id, validatedData);
         
-        // Note: Equipment marked for repair shop but kept as unassigned in DB
-        console.log(`Equipment ${id} marked for repair shop`);
-        return res.json(updated);
+        // Also update the equipment status to maintenance
+        await storage.updateEquipment(id, { status: "maintenance" });
+        
+        // Return the equipment with updated status
+        const finalEquipment = await storage.getEquipmentItem(id);
+        console.log(`Equipment ${id} marked for repair shop with maintenance status`);
+        return res.json(finalEquipment);
       }
       
       // Get current equipment state for logging
