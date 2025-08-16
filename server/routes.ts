@@ -1138,7 +1138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let updatedEquipment;
       if (isSpecialLocation) {
         // Direct database update for special locations
-        const { equipment: equipmentTable } = await import("./schema");
+        const { equipment: equipmentTable } = await import("@shared/schema");
         const db = await import("./db").then(m => m.db);
         const { eq } = await import("drizzle-orm");
         
