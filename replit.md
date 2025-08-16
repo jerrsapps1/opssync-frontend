@@ -21,7 +21,7 @@ The server is built with Express.js and TypeScript, following a simplified RESTf
 Replit Database serves as the persistent storage, organizing data into collections for employees, equipment, and projects. UUIDs are used for primary keys, and `currentProjectId` for assignment tracking.
 
 ## Authentication and Authorization
-A JWT-based authentication system is implemented, featuring user registration with white-label brand configuration, secure login with 7-day token expiration, automatic token validation and refresh, in-app brand configuration updates, and protected routes via authentication middleware. User management uses bcryptjs for password storage. Role-based authorization supports OWNER/ADMIN/SUPERVISOR/MANAGER/VIEWER roles with tenant-specific feature access control.
+A JWT-based authentication system is implemented, featuring user registration with white-label brand configuration, secure login with 7-day token expiration, automatic token validation and refresh, in-app brand configuration updates, and protected routes via authentication middleware. A professional header with user info display and logout functionality is accessible on all pages for seamless session management. User management uses bcryptjs for password storage. Role-based authorization supports OWNER/ADMIN/SUPERVISOR/MANAGER/VIEWER roles with tenant-specific feature access control.
 
 ## Styling and Theme System
 The application employs a professional tech-forward dark theme using Tailwind CSS. The color palette is AI-inspired, featuring a #121212 background, #1E1E2F panels, #4A90E2 primary, #BB86FC accents, and #CF6679 alerts. Design elements include subtle gradients, backdrop blur effects, and custom scrollbars.
