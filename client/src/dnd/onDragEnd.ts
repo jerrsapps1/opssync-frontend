@@ -33,7 +33,9 @@ export function onDragEndFactory(fns: Fns) {
     }
 
     // Handle legacy project IDs directly (for project cards that accept both)
-    const projectId: string | null = destination.droppableId;
+    // Check if destination is an unassigned area
+    const isUnassignedDestination = destination.droppableId.includes("unassigned");
+    const projectId: string | null = isUnassignedDestination ? null : destination.droppableId;
 
     console.log("Drag and Drop Debug:", {
       draggableId,
@@ -41,7 +43,8 @@ export function onDragEndFactory(fns: Fns) {
       destination: destination.droppableId,
       assetType: isEmp ? "emp" : "eq",
       assetId: id,
-      projectId
+      projectId: projectId,
+      isUnassignedDestination
     });
 
     if (isEmp) {
