@@ -17,28 +17,6 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
-  // Special equipment locations
-  const specialLocations = [
-    {
-      id: "warehouse",
-      name: "🏢 Warehouse",
-      description: "Available Equipment",
-      icon: "🏢",
-      color: "green"
-    },
-    {
-      id: "repair-shop", 
-      name: "🔧 Repair Shop",
-      description: "Equipment Under Repair",
-      icon: "🔧",
-      color: "orange"
-    }
-  ];
-  
-  // Get equipment assigned to special locations
-  const getEquipmentForLocation = (locationId: string) => {
-    return equipment.filter(eq => eq.currentProjectId === locationId);
-  };
   
   return (
     <Box
@@ -52,102 +30,6 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       <Heading size="md" mb={4} color="white">Projects</Heading>
       
 
-      {/* Special Equipment Locations */}
-      <VStack spacing={2} align="stretch" mb={4}>
-        {specialLocations.map((location) => {
-          const assignedEquipment = getEquipmentForLocation(location.id);
-          return (
-            <Droppable key={location.id} droppableId={location.id}>
-              {(provided, snapshot) => (
-                <Box
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  px={3}
-                  py={2}
-                  bg={
-                    projectId === location.id 
-                      ? location.color === "green" ? "green.600" : "orange.600"
-                      : snapshot.isDraggingOver 
-                      ? location.color === "green" ? "green.700" : "orange.700"
-                      : location.color === "green" ? "#1F2937" : "#1F2937"
-                  }
-                  border="2px solid"
-                  borderColor={
-                    projectId === location.id
-                      ? location.color === "green" ? "green.400" : "orange.400"
-                      : snapshot.isDraggingOver 
-                      ? location.color === "green" ? "green.400" : "orange.400"
-                      : location.color === "green" ? "green.700" : "orange.700"
-                  }
-                  rounded="md"
-                  minHeight="45px"
-                  transition="all 0.2s"
-                  cursor="pointer"
-                  _hover={{
-                    borderColor: location.color === "green" ? "green.500" : "orange.500",
-                    transform: "translateY(-1px)",
-                  }}
-                  onClick={() => setProjectId(location.id)}
-                >
-                  <Text fontWeight="bold" fontSize="sm" mb={0.5} color="white" lineHeight="1.2">
-                    {location.name}
-                  </Text>
-                  <Text fontSize="xs" color="#C0C0D8" mb={0.5} lineHeight="1.1">
-                    {location.description}
-                  </Text>
-                  
-                  {/* Equipment Count */}
-                  <Box>
-                    <Box 
-                      h="2px" 
-                      rounded="full" 
-                      bg={location.color === "green" ? "green.400" : "orange.400"}
-                      mb={0.5}
-                    />
-                    <Text fontSize="xs" color={location.color === "green" ? "green.300" : "orange.300"} fontWeight="medium" lineHeight="1.1">
-                      {assignedEquipment.length} equipment
-                    </Text>
-                  </Box>
-                  
-                  {/* Show assigned equipment when location is focused */}
-                  {projectId === location.id && (
-                    <Box mb={2}>
-                      {assignedEquipment.map((eq, index) => (
-                        <Draggable key={eq.id} draggableId={eq.id} index={index}>
-                          {(provided, snapshot) => (
-                            <Box
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              bg={snapshot.isDragging ? "blue.600" : "blue.800"}
-                              p={1}
-                              mb={1}
-                              rounded="sm"
-                              cursor="grab"
-                              _active={{ cursor: "grabbing" }}
-                              border="1px solid"
-                              borderColor={snapshot.isDragging ? "blue.400" : "blue.700"}
-                            >
-                              <Text fontSize="xs" color="blue.200">
-                                🔧 {eq.name}
-                              </Text>
-                            </Box>
-                          )}
-                        </Draggable>
-                      ))}
-                    </Box>
-                  )}
-                  
-                  {provided.placeholder}
-                </Box>
-              )}
-            </Droppable>
-          );
-        })}
-      </VStack>
-      
-      {/* Divider */}
-      <Box borderTop="1px solid" borderColor="gray.600" mb={4} />
       
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
