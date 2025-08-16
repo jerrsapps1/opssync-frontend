@@ -1130,16 +1130,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle repair shop location - treat as unassigned but set status to maintenance
       if (projectId === "repair-shop") {
+        console.log(`🔧 REPAIR SHOP: Starting assignment for equipment ${id}`);
+        
+        // Get current equipment state
+        const beforeEquipment = await storage.getEquipmentItem(id);
+        console.log(`🔧 BEFORE: Equipment status:`, {
+          id: beforeEquipment?.id,
+          name: beforeEquipment?.name,
+          projectId: beforeEquipment?.currentProjectId,
+          status: beforeEquipment?.status
+        });
+        
         // Set to null to keep equipment unassigned, but mark as maintenance status
         const validatedData = updateEquipmentAssignmentSchema.parse({ projectId: null });
         const updated = await storage.updateEquipmentAssignment(id, validatedData);
         
+        console.log(`🔧 AFTER updateEquipmentAssignment:`, {
+          id: updated.id,
+          name: updated.name,
+          projectId: updated.currentProjectId,
+          status: updated.status
+        });
+        
         // Also update the equipment status to maintenance
-        await storage.updateEquipment(id, { status: "maintenance" });
+        const maintenanceUpdate = await storage.updateEquipment(id, { status: "maintenance" });
+        console.log(`🔧 AFTER updateEquipment (maintenance):`, {
+          id: maintenanceUpdate.id,
+          name: maintenanceUpdate.name,
+          projectId: maintenanceUpdate.currentProjectId,
+          status: maintenanceUpdate.status
+        });
         
         // Return the equipment with updated status
         const finalEquipment = await storage.getEquipmentItem(id);
-        console.log(`Equipment ${id} marked for repair shop with maintenance status:`, {
+        console.log(`🔧 FINAL: Equipment marked for repair shop:`, {
           id: finalEquipment?.id,
           name: finalEquipment?.name,
           projectId: finalEquipment?.currentProjectId,
