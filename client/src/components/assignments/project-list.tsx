@@ -1,5 +1,5 @@
 import { Box, VStack, Text, Heading, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
-import { Droppable } from "react-beautiful-dnd";
+import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useSelection } from "@/state/selection";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -96,15 +96,51 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                 {/* Show assigned employees and equipment only when project is focused */}
                 {projectId === project.id && (
                   <Box mb={2}>
-                    {employees.filter(emp => emp.currentProjectId === project.id).map(emp => (
-                      <Text key={emp.id} fontSize="xs" color="green.400" mb={1}>
-                        👤 {emp.name}
-                      </Text>
+                    {employees.filter(emp => emp.currentProjectId === project.id).map((emp, index) => (
+                      <Draggable key={emp.id} draggableId={emp.id} index={index}>
+                        {(provided, snapshot) => (
+                          <Box
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            bg={snapshot.isDragging ? "green.600" : "green.800"}
+                            p={1}
+                            mb={1}
+                            rounded="sm"
+                            cursor="grab"
+                            _active={{ cursor: "grabbing" }}
+                            border="1px solid"
+                            borderColor={snapshot.isDragging ? "green.400" : "green.700"}
+                          >
+                            <Text fontSize="xs" color="green.200">
+                              👤 {emp.name}
+                            </Text>
+                          </Box>
+                        )}
+                      </Draggable>
                     ))}
-                    {equipment.filter(eq => eq.currentProjectId === project.id).map(eq => (
-                      <Text key={eq.id} fontSize="xs" color="blue.400" mb={1}>
-                        🔧 {eq.name}
-                      </Text>
+                    {equipment.filter(eq => eq.currentProjectId === project.id).map((eq, index) => (
+                      <Draggable key={eq.id} draggableId={eq.id} index={employees.filter(emp => emp.currentProjectId === project.id).length + index}>
+                        {(provided, snapshot) => (
+                          <Box
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            bg={snapshot.isDragging ? "blue.600" : "blue.800"}
+                            p={1}
+                            mb={1}
+                            rounded="sm"
+                            cursor="grab"
+                            _active={{ cursor: "grabbing" }}
+                            border="1px solid"
+                            borderColor={snapshot.isDragging ? "blue.400" : "blue.700"}
+                          >
+                            <Text fontSize="xs" color="blue.200">
+                              🔧 {eq.name}
+                            </Text>
+                          </Box>
+                        )}
+                      </Draggable>
                     ))}
                   </Box>
                 )}
