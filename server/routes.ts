@@ -1139,7 +1139,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Return the equipment with updated status
         const finalEquipment = await storage.getEquipmentItem(id);
-        console.log(`Equipment ${id} marked for repair shop with maintenance status`);
+        console.log(`Equipment ${id} marked for repair shop with maintenance status:`, {
+          id: finalEquipment?.id,
+          name: finalEquipment?.name,
+          projectId: finalEquipment?.currentProjectId,
+          status: finalEquipment?.status
+        });
         return res.json(finalEquipment);
       }
       

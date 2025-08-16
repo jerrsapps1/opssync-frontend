@@ -17,10 +17,13 @@ async function getRepairShopEquipment(): Promise<Equipment[]> {
   const allEquipment = await response.json();
   // Equipment in repair shop has null projectId but status 'maintenance'
   // OR currentProjectId === "repair-shop" (fallback)
-  return allEquipment.filter((eq: Equipment) => 
+  console.log('DEBUG: All equipment status check:', allEquipment.map((eq: Equipment) => ({id: eq.id, name: eq.name, projectId: eq.currentProjectId, status: eq.status})));
+  const repairEquipment = allEquipment.filter((eq: Equipment) => 
     eq.currentProjectId === "repair-shop" || 
     (!eq.currentProjectId && eq.status === "maintenance")
   );
+  console.log('DEBUG: Filtered repair equipment:', repairEquipment.map((eq: Equipment) => ({id: eq.id, name: eq.name})));
+  return repairEquipment;
 }
 
 async function getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
@@ -47,16 +50,19 @@ export default function RepairShop() {
 
   // Auto-open work order wizard when new equipment is dragged to repair shop
   useEffect(() => {
+    console.log('DEBUG: useEffect triggered - isLoading:', isLoading, 'repairEquipment.length:', repairEquipment.length, 'previousCount:', previousEquipmentCount.current);
     if (!isLoading && repairEquipment.length > 0) {
       // If this is the first load, just set the previous count
       if (previousEquipmentCount.current === 0) {
         previousEquipmentCount.current = repairEquipment.length;
+        console.log('DEBUG: First load, setting count to:', repairEquipment.length);
         return;
       }
       
       // If we have more equipment than before, auto-open wizard for the newest one
       if (repairEquipment.length > previousEquipmentCount.current) {
         const newestEquipment = repairEquipment[repairEquipment.length - 1];
+        console.log('DEBUG: Auto-opening wizard for:', newestEquipment.name);
         setSelectedEquipment(newestEquipment);
         setShowWorkOrderWizard(true);
       }
