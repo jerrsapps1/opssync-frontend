@@ -91,14 +91,15 @@ export function EnhancedWorkOrderWizard({
         approvalRequired,
       };
 
-      const response = await apiRequest("/api/work-orders", "POST", workOrderData);
+      const response = await apiRequest("POST", "/api/work-orders", workOrderData);
+      const workOrderResult = await response.json();
 
       // If there are documents, upload them
       if (data.documents.length > 0) {
         for (const doc of data.documents) {
           if (doc.uploadUrl) {
-            await apiRequest("/api/work-order-documents", "POST", {
-              workOrderId: response.id,
+            await apiRequest("POST", "/api/work-order-documents", {
+              workOrderId: workOrderResult.id,
               filename: doc.filename,
               originalFilename: doc.filename,
               documentType: doc.documentType,
@@ -109,7 +110,7 @@ export function EnhancedWorkOrderWizard({
         }
       }
 
-      return response;
+      return workOrderResult;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/work-orders"] });
@@ -144,10 +145,11 @@ export function EnhancedWorkOrderWizard({
 
   const handleGetUploadParameters = async () => {
     try {
-      const response = await apiRequest("/api/work-order-documents/upload", "POST", {});
+      const response = await apiRequest("POST", "/api/work-order-documents/upload", {});
+      const data = await response.json();
       return {
         method: "PUT" as const,
-        url: response.uploadURL,
+        url: data.uploadURL || '',
       };
     } catch (error) {
       console.error("Failed to get upload parameters:", error);
@@ -162,7 +164,7 @@ export function EnhancedWorkOrderWizard({
         id: Date.now().toString(),
         filename: file.name,
         documentType: "receipt", // Default, user can change
-        uploadUrl: file.uploadURL ? String(file.uploadURL) : "",
+        uploadUrl: file.uploadURL ? String(file.uploadURL) : file.meta?.name || "",
       };
       setDocuments(prev => [...prev, newDocument]);
       toast({
