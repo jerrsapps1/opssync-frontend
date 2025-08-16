@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WorkOrderWizard } from "@/components/work-orders/work-order-wizard";
+import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
@@ -44,6 +48,14 @@ export default function RepairShop() {
   const [showWorkOrderWizard, setShowWorkOrderWizard] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const previousEquipmentCount = useRef(0);
+  
+  // Work Order Log state
+  const [searchFilter, setSearchFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"dateCreated" | "priority" | "status" | "equipment">("dateCreated");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -151,6 +163,65 @@ export default function RepairShop() {
       newSelected.add(equipmentId);
     }
     setSelectedItems(newSelected);
+  };
+
+  // Filter and sort work orders for the log
+  const filteredAndSortedWorkOrders = workOrders
+    .filter(wo => {
+      // Search filter
+      const searchMatch = searchFilter === "" || 
+        wo.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        wo.description.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        wo.assignedTo?.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        (repairEquipment.find(eq => eq.id === wo.equipmentId)?.name.toLowerCase().includes(searchFilter.toLowerCase()));
+      
+      // Status filter
+      const statusMatch = statusFilter === "all" || wo.status === statusFilter;
+      
+      // Priority filter
+      const priorityMatch = priorityFilter === "all" || wo.priority === priorityFilter;
+      
+      return searchMatch && statusMatch && priorityMatch;
+    })
+    .sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case "dateCreated":
+          aValue = a.dateCreated ? new Date(a.dateCreated) : new Date(0);
+          bValue = b.dateCreated ? new Date(b.dateCreated) : new Date(0);
+          break;
+        case "priority":
+          const priorityOrder = { "urgent": 4, "high": 3, "medium": 2, "low": 1 };
+          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          break;
+        case "status":
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case "equipment":
+          const aEquipment = repairEquipment.find(eq => eq.id === a.equipmentId);
+          const bEquipment = repairEquipment.find(eq => eq.id === b.equipmentId);
+          aValue = aEquipment?.name || "";
+          bValue = bEquipment?.name || "";
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
   };
 
   if (isLoading) {
@@ -336,6 +407,277 @@ export default function RepairShop() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* Work Order Activity Log */}
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 mt-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-white text-lg font-semibold flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Work Order Activity Log ({filteredAndSortedWorkOrders.length})
+              </h3>
+            </div>
+
+            {/* Filters and Search */}
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search work orders..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="w-64 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  data-testid="input-search-workorders"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white" data-testid="select-status-filter">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white" data-testid="select-priority-filter">
+                  <SelectValue placeholder="All Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="text-sm text-gray-400">
+                Showing {filteredAndSortedWorkOrders.length} of {workOrders.length} work orders
+              </div>
+            </div>
+
+            {/* Sort Headers */}
+            <div className="bg-gray-700 border border-gray-600 rounded-t-lg p-3">
+              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-300">
+                <button
+                  onClick={() => handleSort("dateCreated")}
+                  className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  data-testid="button-sort-date"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Date
+                  {sortBy === "dateCreated" && (
+                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => handleSort("equipment")}
+                  className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  data-testid="button-sort-equipment"
+                >
+                  <Wrench className="h-4 w-4" />
+                  Equipment
+                  {sortBy === "equipment" && (
+                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+                
+                <div className="col-span-3 flex items-center gap-1">
+                  Work Order Details
+                </div>
+                
+                <button
+                  onClick={() => handleSort("priority")}
+                  className="col-span-1 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  data-testid="button-sort-priority"
+                >
+                  Priority
+                  {sortBy === "priority" && (
+                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => handleSort("status")}
+                  className="col-span-1 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  data-testid="button-sort-status"
+                >
+                  Status
+                  {sortBy === "status" && (
+                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+                
+                <div className="col-span-2 flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  Assigned To
+                </div>
+                
+                <div className="col-span-1 flex items-center gap-1">
+                  <DollarSign className="h-4 w-4" />
+                  Cost
+                </div>
+              </div>
+            </div>
+
+            {/* Work Order Log Items */}
+            <div className="border border-gray-600 border-t-0 rounded-b-lg bg-gray-800 max-h-96 overflow-y-auto">
+              {filteredAndSortedWorkOrders.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <Wrench className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No work orders found</p>
+                  {(searchFilter || statusFilter !== "all" || priorityFilter !== "all") && (
+                    <p className="text-sm mt-2">Try adjusting your filters</p>
+                  )}
+                </div>
+              ) : (
+                filteredAndSortedWorkOrders.map((workOrder) => {
+                  const equipment = repairEquipment.find(eq => eq.id === workOrder.equipmentId);
+                  const isExpanded = expandedWorkOrder === workOrder.id;
+                  
+                  return (
+                    <div key={workOrder.id} className="border-b border-gray-700 last:border-b-0">
+                      <div 
+                        className="grid grid-cols-12 gap-4 p-3 hover:bg-gray-700 transition-colors cursor-pointer"
+                        onClick={() => setExpandedWorkOrder(isExpanded ? null : workOrder.id)}
+                        data-testid={`workorder-row-${workOrder.id}`}
+                      >
+                        <div className="col-span-2 text-sm">
+                          <div className="text-white font-medium">
+                            {format(new Date(workOrder.dateCreated || new Date()), "MMM dd, yyyy")}
+                          </div>
+                          <div className="text-gray-400 text-xs">
+                            {format(new Date(workOrder.dateCreated || new Date()), "h:mm a")}
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1 bg-orange-900/30 rounded">
+                              <Wrench className="h-3 w-3 text-orange-400" />
+                            </div>
+                            <div>
+                              <div className="text-white font-medium text-sm">
+                                {equipment?.name || "Unknown Equipment"}
+                              </div>
+                              <div className="text-gray-400 text-xs">
+                                {equipment?.type}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-3">
+                          <div className="text-white font-medium text-sm mb-1">
+                            {workOrder.title}
+                          </div>
+                          <div className="text-gray-400 text-xs line-clamp-2">
+                            {workOrder.description}
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-1">
+                          <Badge className={`${getPriorityColor(workOrder.priority)} text-xs`}>
+                            {workOrder.priority.toUpperCase()}
+                          </Badge>
+                        </div>
+                        
+                        <div className="col-span-1">
+                          <Badge className={`${getStatusColor(workOrder.status)} text-xs`}>
+                            {workOrder.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        
+                        <div className="col-span-2 text-sm">
+                          <div className="text-white">
+                            {workOrder.assignedTo || (
+                              <span className="text-gray-400 italic">Unassigned</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-1 text-sm">
+                          <div className="text-white">
+                            {workOrder.estimatedCost ? (
+                              `$${(workOrder.estimatedCost / 100).toFixed(2)}`
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </div>
+                          {workOrder.actualCost && (
+                            <div className="text-gray-400 text-xs">
+                              Actual: ${(workOrder.actualCost / 100).toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="bg-gray-750 p-4 border-t border-gray-600">
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Timeline & Details
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div>
+                                  <span className="text-gray-400">Reason:</span>
+                                  <span className="text-white ml-2">{workOrder.reason}</span>
+                                </div>
+                                {workOrder.dateStarted && (
+                                  <div>
+                                    <span className="text-gray-400">Started:</span>
+                                    <span className="text-white ml-2">
+                                      {format(new Date(workOrder.dateStarted), "MMM dd, yyyy h:mm a")}
+                                    </span>
+                                  </div>
+                                )}
+                                {workOrder.dateCompleted && (
+                                  <div>
+                                    <span className="text-gray-400">Completed:</span>
+                                    <span className="text-white ml-2">
+                                      {format(new Date(workOrder.dateCompleted), "MMM dd, yyyy h:mm a")}
+                                    </span>
+                                  </div>
+                                )}
+                                {workOrder.partsUsed && (
+                                  <div>
+                                    <span className="text-gray-400">Parts Used:</span>
+                                    <span className="text-white ml-2">{workOrder.partsUsed}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-white font-medium mb-3">Additional Notes</h4>
+                              <div className="text-sm">
+                                {workOrder.notes ? (
+                                  <div className="text-gray-300 bg-gray-700 p-3 rounded">
+                                    {workOrder.notes}
+                                  </div>
+                                ) : (
+                                  <div className="text-gray-400 italic">No additional notes</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           {/* Hidden droppable area for drag and drop functionality */}
