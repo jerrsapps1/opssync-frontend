@@ -284,6 +284,26 @@ export class MemStorage implements IStorage {
         description: "New concrete bridge construction over highway interchange",
         status: "active",
         progress: 45,
+        percentComplete: 45,
+        percentMode: "auto",
+        projectType: "Infrastructure",
+        estimatedBudget: 2500000,
+        actualCost: 1125000,
+        contractValue: 2400000,
+        profitMargin: 15,
+        riskLevel: "medium",
+        priority: "high",
+        startBlocked: false,
+        supervisorEmail: "supervisor@bridge.com",
+        supervisorPhone: "+1-206-555-0100",
+        clientName: "Washington State DOT",
+        clientContact: "John Smith",
+        clientEmail: "john.smith@wsdot.wa.gov",
+        clientPhone: "+1-360-555-0200",
+        generalContractor: "Pacific Bridge Corp",
+        contractorContact: "Sarah Wilson",
+        contractorEmail: "sarah@pacificbridge.com",
+        contractorPhone: "+1-206-555-0300",
         startDate: new Date('2024-12-15'),
         endDate: new Date('2025-08-30'),
         createdAt: new Date(),
@@ -300,6 +320,26 @@ export class MemStorage implements IStorage {
         description: "Demolition of obsolete industrial warehouse complex",
         status: "planning",
         progress: 25,
+        percentComplete: 25,
+        percentMode: "auto",
+        projectType: "Demolition",
+        estimatedBudget: 850000,
+        actualCost: 212500,
+        contractValue: 800000,
+        profitMargin: 12,
+        riskLevel: "medium",
+        priority: "medium",
+        startBlocked: true,
+        supervisorEmail: "demo.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0101",
+        clientName: "Kent Industrial LLC",
+        clientContact: "Mike Johnson",
+        clientEmail: "mike@kentindustrial.com",
+        clientPhone: "+1-425-555-0201",
+        generalContractor: "Demolition Experts Inc",
+        contractorContact: "Tom Brown",
+        contractorEmail: "tom@demoexperts.com",
+        contractorPhone: "+1-206-555-0301",
         startDate: new Date('2025-03-01'),
         endDate: new Date('2025-06-15'),
         createdAt: new Date(),
@@ -316,6 +356,26 @@ export class MemStorage implements IStorage {
         description: "Complete renovation of elementary school facilities",
         status: "active",
         progress: 75,
+        percentComplete: 75,
+        percentMode: "auto",
+        projectType: "Renovation",
+        estimatedBudget: 1800000,
+        actualCost: 1350000,
+        contractValue: 1750000,
+        profitMargin: 18,
+        riskLevel: "low",
+        priority: "high",
+        startBlocked: false,
+        supervisorEmail: "school.supervisor@company.com",
+        supervisorPhone: "+1-425-555-0102",
+        clientName: "Bellevue School District",
+        clientContact: "Jane Davis",
+        clientEmail: "jane.davis@bsd405.org",
+        clientPhone: "+1-425-555-0202",
+        generalContractor: "Education Builders Ltd",
+        contractorContact: "Robert Garcia",
+        contractorEmail: "robert@edubuilders.com",
+        contractorPhone: "+1-425-555-0302",
         startDate: new Date('2024-09-01'),
         endDate: new Date('2025-04-30'),
         createdAt: new Date(),
@@ -332,6 +392,26 @@ export class MemStorage implements IStorage {
         description: "25-story mixed-use office and retail tower",
         status: "active",
         progress: 35,
+        percentComplete: 35,
+        percentMode: "auto",
+        projectType: "Commercial Construction",
+        estimatedBudget: 45000000,
+        actualCost: 15750000,
+        contractValue: 43500000,
+        profitMargin: 22,
+        riskLevel: "high",
+        priority: "high",
+        startBlocked: false,
+        supervisorEmail: "tower.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0103",
+        clientName: "Belltown Development Group",
+        clientContact: "Lisa Chen",
+        clientEmail: "lisa@belltowndev.com",
+        clientPhone: "+1-206-555-0203",
+        generalContractor: "High Rise Specialists",
+        contractorContact: "David Martinez",
+        contractorEmail: "david@highrisespec.com",
+        contractorPhone: "+1-206-555-0303",
         startDate: new Date('2024-10-01'),
         endDate: new Date('2026-02-28'),
         createdAt: new Date(),
@@ -348,6 +428,26 @@ export class MemStorage implements IStorage {
         description: "Controlled demolition of 6-level parking structure",
         status: "planning",
         progress: 10,
+        percentComplete: 10,
+        percentMode: "auto",
+        projectType: "Demolition",
+        estimatedBudget: 680000,
+        actualCost: 68000,
+        contractValue: 650000,
+        profitMargin: 10,
+        riskLevel: "medium",
+        priority: "medium",
+        startBlocked: true,
+        supervisorEmail: "garage.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0104",
+        clientName: "Capitol Hill Community",
+        clientContact: "Alex Thompson",
+        clientEmail: "alex@caphill.org",
+        clientPhone: "+1-206-555-0204",
+        generalContractor: "Urban Demo Solutions",
+        contractorContact: "Maria Rodriguez",
+        contractorEmail: "maria@urbandemo.com",
+        contractorPhone: "+1-206-555-0304",
         startDate: new Date('2025-04-15'),
         endDate: new Date('2025-07-30'),
         createdAt: new Date(),
@@ -364,6 +464,26 @@ export class MemStorage implements IStorage {
         description: "Platform extension and accessibility improvements",
         status: "active",
         progress: 60,
+        percentComplete: 60,
+        percentMode: "auto",
+        projectType: "Infrastructure",
+        estimatedBudget: 3200000,
+        actualCost: 1920000,
+        contractValue: 3100000,
+        profitMargin: 16,
+        riskLevel: "high",
+        priority: "urgent",
+        startBlocked: false,
+        supervisorEmail: "subway.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0105",
+        clientName: "Sound Transit",
+        clientContact: "Kevin Wong",
+        clientEmail: "kevin@soundtransit.org",
+        clientPhone: "+1-206-555-0205",
+        generalContractor: "Transit Infrastructure Corp",
+        contractorContact: "Jennifer Lee",
+        contractorEmail: "jennifer@transitinfra.com",
+        contractorPhone: "+1-206-555-0305",
         startDate: new Date('2024-08-01'),
         endDate: new Date('2025-12-31'),
         createdAt: new Date(),
@@ -380,6 +500,26 @@ export class MemStorage implements IStorage {
         description: "New emergency department and surgical wing construction",
         status: "active",
         progress: 55,
+        percentComplete: 55,
+        percentMode: "auto",
+        projectType: "Healthcare Construction",
+        estimatedBudget: 28000000,
+        actualCost: 15400000,
+        contractValue: 27200000,
+        profitMargin: 20,
+        riskLevel: "high",
+        priority: "urgent",
+        startBlocked: false,
+        supervisorEmail: "hospital.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0106",
+        clientName: "First Hill Medical Center",
+        clientContact: "Dr. Patricia Williams",
+        clientEmail: "patricia@firsthill.org",
+        clientPhone: "+1-206-555-0206",
+        generalContractor: "Medical Facility Builders",
+        contractorContact: "Andrew Kim",
+        contractorEmail: "andrew@medfacility.com",
+        contractorPhone: "+1-206-555-0306",
         startDate: new Date('2024-11-15'),
         endDate: new Date('2026-01-15'),
         createdAt: new Date(),
@@ -396,6 +536,26 @@ export class MemStorage implements IStorage {
         description: "Historic pier restoration and seismic retrofitting",
         status: "planning",
         progress: 20,
+        percentComplete: 20,
+        percentMode: "auto",
+        projectType: "Historic Restoration",
+        estimatedBudget: 1950000,
+        actualCost: 390000,
+        contractValue: 1900000,
+        profitMargin: 14,
+        riskLevel: "medium",
+        priority: "medium",
+        startBlocked: true,
+        supervisorEmail: "pier.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0107",
+        clientName: "Seattle Port Authority",
+        clientContact: "Mark Anderson",
+        clientEmail: "mark@portseattle.org",
+        clientPhone: "+1-206-555-0207",
+        generalContractor: "Historic Marine Works",
+        contractorContact: "Susan Taylor",
+        contractorEmail: "susan@historicmarine.com",
+        contractorPhone: "+1-206-555-0307",
         startDate: new Date('2025-05-01'),
         endDate: new Date('2025-11-30'),
         createdAt: new Date(),
@@ -412,6 +572,26 @@ export class MemStorage implements IStorage {
         description: "Major renovation of sports stadium infrastructure",
         status: "active",
         progress: 40,
+        percentComplete: 40,
+        percentMode: "auto",
+        projectType: "Sports Facility",
+        estimatedBudget: 35000000,
+        actualCost: 14000000,
+        contractValue: 34000000,
+        profitMargin: 19,
+        riskLevel: "high",
+        priority: "high",
+        startBlocked: false,
+        supervisorEmail: "stadium.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0108",
+        clientName: "SoDo Sports LLC",
+        clientContact: "Chris Johnson",
+        clientEmail: "chris@sodosports.com",
+        clientPhone: "+1-206-555-0208",
+        generalContractor: "Stadium Specialists Inc",
+        contractorContact: "Rachel Green",
+        contractorEmail: "rachel@stadiumspec.com",
+        contractorPhone: "+1-206-555-0308",
         startDate: new Date('2024-12-01'),
         endDate: new Date('2025-09-15'),
         createdAt: new Date(),
@@ -428,6 +608,26 @@ export class MemStorage implements IStorage {
         description: "Complete demolition of outdated shopping center",
         status: "planning",
         progress: 15,
+        percentComplete: 15,
+        percentMode: "auto",
+        projectType: "Demolition",
+        estimatedBudget: 1200000,
+        actualCost: 180000,
+        contractValue: 1150000,
+        profitMargin: 11,
+        riskLevel: "medium",
+        priority: "low",
+        startBlocked: true,
+        supervisorEmail: "shopping.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0109",
+        clientName: "Northgate Development Corp",
+        clientContact: "Linda Zhang",
+        clientEmail: "linda@northgatedev.com",
+        clientPhone: "+1-206-555-0209",
+        generalContractor: "Retail Demo Experts",
+        contractorContact: "Brian Foster",
+        contractorEmail: "brian@retaildemo.com",
+        contractorPhone: "+1-206-555-0309",
         startDate: new Date('2025-06-01'),
         endDate: new Date('2025-10-31'),
         createdAt: new Date(),
@@ -444,6 +644,26 @@ export class MemStorage implements IStorage {
         description: "300-unit luxury apartment complex with amenities",
         status: "active",
         progress: 30,
+        percentComplete: 30,
+        percentMode: "auto",
+        projectType: "Residential Construction",
+        estimatedBudget: 52000000,
+        actualCost: 15600000,
+        contractValue: 50000000,
+        profitMargin: 25,
+        riskLevel: "medium",
+        priority: "high",
+        startBlocked: false,
+        supervisorEmail: "apartment.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0110",
+        clientName: "South Lake Union Properties",
+        clientContact: "Michael Davis",
+        clientEmail: "michael@sluproperties.com",
+        clientPhone: "+1-206-555-0210",
+        generalContractor: "Luxury Residential Builders",
+        contractorContact: "Emily Carter",
+        contractorEmail: "emily@luxuryres.com",
+        contractorPhone: "+1-206-555-0310",
         startDate: new Date('2024-09-15'),
         endDate: new Date('2026-03-31'),
         createdAt: new Date(),
@@ -460,6 +680,26 @@ export class MemStorage implements IStorage {
         description: "Environmental remediation and factory demolition",
         status: "planning",
         progress: 5,
+        percentComplete: 5,
+        percentMode: "auto",
+        projectType: "Environmental Remediation",
+        estimatedBudget: 3200000,
+        actualCost: 160000,
+        contractValue: 3100000,
+        profitMargin: 8,
+        riskLevel: "high",
+        priority: "medium",
+        startBlocked: true,
+        supervisorEmail: "factory.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0111",
+        clientName: "Georgetown Industrial LLC",
+        clientContact: "Robert Miller",
+        clientEmail: "robert@georgetownind.com",
+        clientPhone: "+1-206-555-0211",
+        generalContractor: "Environmental Solutions Corp",
+        contractorContact: "Jessica White",
+        contractorEmail: "jessica@envsolutions.com",
+        contractorPhone: "+1-206-555-0311",
         startDate: new Date('2025-07-01'),
         endDate: new Date('2025-12-15'),
         createdAt: new Date(),
@@ -476,6 +716,26 @@ export class MemStorage implements IStorage {
         description: "Complete renovation of community recreation center",
         status: "active",
         progress: 80,
+        percentComplete: 80,
+        percentMode: "auto",
+        projectType: "Community Facility",
+        estimatedBudget: 2200000,
+        actualCost: 1760000,
+        contractValue: 2100000,
+        profitMargin: 17,
+        riskLevel: "low",
+        priority: "medium",
+        startBlocked: false,
+        supervisorEmail: "community.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0112",
+        clientName: "Fremont Community Association",
+        clientContact: "Nancy Johnson",
+        clientEmail: "nancy@fremontcommunity.org",
+        clientPhone: "+1-206-555-0212",
+        generalContractor: "Community Builders Inc",
+        contractorContact: "Paul Wilson",
+        contractorEmail: "paul@communitybuilders.com",
+        contractorPhone: "+1-206-555-0312",
         startDate: new Date('2024-07-01'),
         endDate: new Date('2025-03-31'),
         createdAt: new Date(),
@@ -492,6 +752,26 @@ export class MemStorage implements IStorage {
         description: "New public library with modern technology center",
         status: "active",
         progress: 50,
+        percentComplete: 50,
+        percentMode: "auto",
+        projectType: "Public Facility",
+        estimatedBudget: 8500000,
+        actualCost: 4250000,
+        contractValue: 8200000,
+        profitMargin: 21,
+        riskLevel: "low",
+        priority: "medium",
+        startBlocked: false,
+        supervisorEmail: "library.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0113",
+        clientName: "Seattle Public Library",
+        clientContact: "Carol Thompson",
+        clientEmail: "carol@spl.org",
+        clientPhone: "+1-206-555-0213",
+        generalContractor: "Public Works Contractors",
+        contractorContact: "Steven Lee",
+        contractorEmail: "steven@publicworks.com",
+        contractorPhone: "+1-206-555-0313",
         startDate: new Date('2024-10-15'),
         endDate: new Date('2025-08-15'),
         createdAt: new Date(),
@@ -508,6 +788,26 @@ export class MemStorage implements IStorage {
         description: "Expansion of marina facilities and dock infrastructure",
         status: "planning",
         progress: 30,
+        percentComplete: 30,
+        percentMode: "auto",
+        projectType: "Marine Infrastructure",
+        estimatedBudget: 4800000,
+        actualCost: 1440000,
+        contractValue: 4650000,
+        profitMargin: 16,
+        riskLevel: "medium",
+        priority: "low",
+        startBlocked: true,
+        supervisorEmail: "marina.supervisor@company.com",
+        supervisorPhone: "+1-206-555-0114",
+        clientName: "Shilshole Bay Marina",
+        clientContact: "James Peterson",
+        clientEmail: "james@shilsholebay.com",
+        clientPhone: "+1-206-555-0214",
+        generalContractor: "Marine Construction LLC",
+        contractorContact: "Diana Brown",
+        contractorEmail: "diana@marineconstruction.com",
+        contractorPhone: "+1-206-555-0314",
         startDate: new Date('2025-08-01'),
         endDate: new Date('2026-05-31'),
         createdAt: new Date(),
@@ -744,13 +1044,13 @@ export class MemStorage implements IStorage {
 
   async deleteProject(id: string): Promise<void> {
     // First, unassign all employees and equipment from this project
-    for (const employee of this.employees.values()) {
+    for (const employee of Array.from(this.employees.values())) {
       if (employee.currentProjectId === id) {
         await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
       }
     }
     
-    for (const equipment of this.equipment.values()) {
+    for (const equipment of Array.from(this.equipment.values())) {
       if (equipment.currentProjectId === id) {
         await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
       }
@@ -817,8 +1117,8 @@ export class MemStorage implements IStorage {
     
     const updatedEmployee: Employee = {
       ...employee,
-      currentProjectId: assignment.currentProjectId,
-      status: assignment.currentProjectId ? "busy" : "available",
+      currentProjectId: assignment.projectId,
+      status: assignment.projectId ? "busy" : "available",
       updatedAt: new Date(),
     };
     
@@ -837,20 +1137,20 @@ export class MemStorage implements IStorage {
     console.log("=== STORAGE ASSIGNMENT DEBUG END ===");
     
     // Create activity
-    const projectName = assignment.currentProjectId 
-      ? this.projects.get(assignment.currentProjectId)?.name 
+    const projectName = assignment.projectId 
+      ? this.projects.get(assignment.projectId)?.name 
       : null;
     
-    const description = assignment.currentProjectId
+    const description = assignment.projectId
       ? `${employee.name} was assigned to ${projectName}`
       : `${employee.name} was unassigned from project`;
     
     await this.createActivity({
-      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      type: assignment.projectId ? "assignment" : "unassignment",
       description,
       entityType: "employee",
       entityId: id,
-      projectId: assignment.currentProjectId,
+      projectId: assignment.projectId,
     });
     
     return updatedEmployee;
@@ -906,28 +1206,28 @@ export class MemStorage implements IStorage {
     
     const updatedEquipment: Equipment = {
       ...equipment,
-      currentProjectId: assignment.currentProjectId,
-      status: assignment.currentProjectId ? "in-use" : "available",
+      currentProjectId: assignment.projectId,
+      status: assignment.projectId ? "in-use" : "available",
       updatedAt: new Date(),
     };
     
     this.equipment.set(id, updatedEquipment);
     
     // Create activity
-    const projectName = assignment.currentProjectId 
-      ? this.projects.get(assignment.currentProjectId)?.name 
+    const projectName = assignment.projectId 
+      ? this.projects.get(assignment.projectId)?.name 
       : null;
     
-    const description = assignment.currentProjectId
+    const description = assignment.projectId
       ? `${equipment.name} was assigned to ${projectName}`
       : `${equipment.name} was unassigned from project`;
     
     await this.createActivity({
-      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      type: assignment.projectId ? "assignment" : "unassignment",
       description,
       entityType: "equipment",
       entityId: id,
-      projectId: assignment.currentProjectId,
+      projectId: assignment.projectId,
     });
     
     return updatedEquipment;
@@ -1109,13 +1409,13 @@ export class PostgreSQLStorage extends MemStorage {
     console.log(`💾 PostgreSQLStorage.deleteProject: Deleting project ${id} from PostgreSQL database`);
     
     // First, unassign all employees and equipment from this project
-    for (const employee of this.employees.values()) {
+    for (const employee of Array.from(this.employees.values())) {
       if (employee.currentProjectId === id) {
         await this.updateEmployeeAssignment(employee.id, { currentProjectId: null });
       }
     }
 
-    for (const equipment of this.equipment.values()) {
+    for (const equipment of Array.from(this.equipment.values())) {
       if (equipment.currentProjectId === id) {
         await this.updateEquipmentAssignment(equipment.id, { currentProjectId: null });
       }
@@ -1219,8 +1519,8 @@ export class PostgreSQLStorage extends MemStorage {
     const [updatedEmployee] = await db
       .update(employees)
       .set({
-        currentProjectId: assignment.currentProjectId,
-        status: assignment.currentProjectId ? "assigned" : "available",
+        currentProjectId: assignment.projectId,
+        status: assignment.projectId ? "assigned" : "available",
         updatedAt: new Date(),
       })
       .where(eq(employees.id, id))
@@ -1234,20 +1534,20 @@ export class PostgreSQLStorage extends MemStorage {
     this.employees.set(id, updatedEmployee);
     
     // Create activity
-    const projectName = assignment.currentProjectId 
-      ? this.projects.get(assignment.currentProjectId)?.name 
+    const projectName = assignment.projectId 
+      ? this.projects.get(assignment.projectId)?.name 
       : null;
     
-    const description = assignment.currentProjectId
+    const description = assignment.projectId
       ? `${updatedEmployee.name} was assigned to ${projectName}`
       : `${updatedEmployee.name} was unassigned from project`;
     
     await this.createActivity({
-      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      type: assignment.projectId ? "assignment" : "unassignment",
       description,
       entityType: "employee",
       entityId: id,
-      projectId: assignment.currentProjectId,
+      projectId: assignment.projectId,
     });
     
     return updatedEmployee;
@@ -1315,8 +1615,8 @@ export class PostgreSQLStorage extends MemStorage {
     const [updatedEquipment] = await db
       .update(equipment)
       .set({
-        currentProjectId: assignment.currentProjectId,
-        status: assignment.currentProjectId ? "in-use" : "available",
+        currentProjectId: assignment.projectId,
+        status: assignment.projectId ? "in-use" : "available",
         updatedAt: new Date(),
       })
       .where(eq(equipment.id, id))
@@ -1330,20 +1630,20 @@ export class PostgreSQLStorage extends MemStorage {
     this.equipment.set(id, updatedEquipment);
     
     // Create activity
-    const projectName = assignment.currentProjectId 
-      ? this.projects.get(assignment.currentProjectId)?.name 
+    const projectName = assignment.projectId 
+      ? this.projects.get(assignment.projectId)?.name 
       : null;
     
-    const description = assignment.currentProjectId
+    const description = assignment.projectId
       ? `${updatedEquipment.name} was assigned to ${projectName}`
       : `${updatedEquipment.name} was unassigned from project`;
     
     await this.createActivity({
-      type: assignment.currentProjectId ? "assignment" : "unassignment",
+      type: assignment.projectId ? "assignment" : "unassignment",
       description,
       entityType: "equipment",
       entityId: id,
-      projectId: assignment.currentProjectId,
+      projectId: assignment.projectId,
     });
     
     return updatedEquipment;

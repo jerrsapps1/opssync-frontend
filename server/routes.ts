@@ -87,9 +87,9 @@ async function logProjectActivity({
         entityName,
         entityId,
         projectId: newProjectId,
-        projectName: newProject.name,
+        projectName: newProject?.name || 'Unknown Project',
         fromProjectId: previousProjectId,
-        fromProjectName: previousProject.name,
+        fromProjectName: previousProject?.name || 'Unknown Project',
         performedBy: performedBy || "Admin User",
         performedByEmail: performedByEmail || undefined
       });
@@ -706,8 +706,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Email': emp.email || '',
         'Phone': emp.phone || '',
         'Employment Status': emp.employmentStatus || 'active',
-        'Years Experience': emp.yearsExperience || '',
-        'Equipment Operated': Array.isArray(emp.operates) ? emp.operates.join(', ') : '',
+        'Years Experience': '',
+        'Equipment Operated': '',
         'Current Project': emp.currentProjectId || 'Unassigned',
         'Created Date': emp.createdAt ? new Date(emp.createdAt).toLocaleDateString() : '',
         'Updated Date': emp.updatedAt ? new Date(emp.updatedAt).toLocaleDateString() : ''
@@ -887,7 +887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const previousProjectId = currentEmployee?.currentProjectId;
       
       // Update employee assignment directly via storage
-      const updatedEmployee = await storage.updateEmployeeAssignment(id, { currentProjectId: projectId });
+      const updatedEmployee = await storage.updateEmployeeAssignment(id, { projectId });
       
       // Get user information for logging
       const currentUser = await storage.getUser(req.user!.id);
@@ -900,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newProjectId: projectId,
         entityType: "employee",
         performedBy: currentUser?.username || "Unknown User",
-        performedByEmail: currentUser?.email
+        performedByEmail: currentUser?.username
       });
       
       console.log("Assignment complete:", updatedEmployee);
@@ -1123,7 +1123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const previousProjectId = currentEquipment?.currentProjectId;
       
       // Update equipment assignment directly via storage
-      const updatedEquipment = await storage.updateEquipmentAssignment(id, { currentProjectId: projectId });
+      const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
       
       // Get user information for logging
       const currentUser = await storage.getUser(req.user!.id);
@@ -1136,7 +1136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newProjectId: projectId,
         entityType: "equipment",
         performedBy: currentUser?.username || "Unknown User",
-        performedByEmail: currentUser?.email
+        performedByEmail: currentUser?.username
       });
       
       console.log("Equipment assignment complete:", updatedEquipment);
