@@ -260,7 +260,7 @@ export default function RepairShop() {
                                     <div>
                                       <span>Created:</span>
                                       <span className="text-gray-300 ml-1">
-                                        {new Date(workOrder.dateCreated).toLocaleDateString()}
+                                        {workOrder.dateCreated ? new Date(workOrder.dateCreated).toLocaleDateString() : "N/A"}
                                       </span>
                                     </div>
                                   </div>

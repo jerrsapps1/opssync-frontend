@@ -2,12 +2,14 @@ import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import type { DropResult } from "react-beautiful-dnd";
 import { onDragEndFactory } from "@/dnd/onDragEnd";
 
 export function useDragDrop() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Create assignment functions for the onDragEndFactory
   const setEmployeeAssignment = async (id: string, projectId: string | null) => {
@@ -15,7 +17,14 @@ export function useDragDrop() {
   };
 
   const setEquipmentAssignment = async (id: string, projectId: string | null) => {
-    return assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
+    const result = await assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
+    
+    // Navigate to repair shop if equipment was assigned to repair shop
+    if (projectId === "repair-shop") {
+      navigate("/repair-shop");
+    }
+    
+    return result;
   };
 
   const assignEmployeeMutation = useMutation({

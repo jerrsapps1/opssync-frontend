@@ -1,6 +1,7 @@
 // Removed Chakra UI imports - using Tailwind classes instead
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { useNavigate } from "react-router-dom";
 import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
 
 import { ProjectList } from "@/components/assignments/project-list";
@@ -45,6 +46,7 @@ function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => 
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const appContext = useApp();
   const queryClient = useQueryClient();
@@ -139,7 +141,7 @@ export default function Dashboard() {
                       ? "border-orange-400 bg-orange-900/30 scale-105"
                       : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
                   }`}
-                  onClick={() => window.location.href = '/repair-shop'}
+                  onClick={() => navigate('/repair-shop')}
                   data-testid="repair-shop-drop-zone"
                 >
                   <span className="text-orange-400 text-lg">🔧</span>
