@@ -542,9 +542,9 @@ export default function ProjectSetUpPage() {
                           <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-[#121212] border-gray-700">
                             {PROJECT_STATUSES.map(status => (
-                              <SelectItem key={status} value={status}>{status}</SelectItem>
+                              <SelectItem key={status} value={status} className="text-white focus:bg-gray-700 focus:text-white">{status}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -558,11 +558,11 @@ export default function ProjectSetUpPage() {
                           <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
                             <SelectValue placeholder="Select priority" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="urgent">Urgent</SelectItem>
+                          <SelectContent className="bg-[#121212] border-gray-700">
+                            <SelectItem value="low" className="text-white focus:bg-gray-700 focus:text-white">Low</SelectItem>
+                            <SelectItem value="medium" className="text-white focus:bg-gray-700 focus:text-white">Medium</SelectItem>
+                            <SelectItem value="high" className="text-white focus:bg-gray-700 focus:text-white">High</SelectItem>
+                            <SelectItem value="urgent" className="text-white focus:bg-gray-700 focus:text-white">Urgent</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -605,9 +605,9 @@ export default function ProjectSetUpPage() {
                         <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
                           <SelectValue placeholder="Select project type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-[#121212] border-gray-700">
                           {PROJECT_TYPES.map(type => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                            <SelectItem key={type} value={type} className="text-white focus:bg-gray-700 focus:text-white">{type}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -682,11 +682,11 @@ export default function ProjectSetUpPage() {
                           <SelectTrigger className="bg-[#121212] border-gray-700 text-white">
                             <SelectValue placeholder="Select risk level" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
+                          <SelectContent className="bg-[#121212] border-gray-700">
+                            <SelectItem value="low" className="text-white focus:bg-gray-700 focus:text-white">Low</SelectItem>
+                            <SelectItem value="medium" className="text-white focus:bg-gray-700 focus:text-white">Medium</SelectItem>
+                            <SelectItem value="high" className="text-white focus:bg-gray-700 focus:text-white">High</SelectItem>
+                            <SelectItem value="critical" className="text-white focus:bg-gray-700 focus:text-white">Critical</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
