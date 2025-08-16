@@ -1126,26 +1126,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Project ID:", projectId);
       console.log("Request body:", req.body);
       
+      // Handle repair shop location
+      const isRepairShop = projectId === "repair-shop";
+      
       // Get current equipment state for logging
       const currentEquipment = await storage.getEquipmentItem(id);
       const previousProjectId = currentEquipment?.currentProjectId;
       
-      // Update equipment assignment via storage
-      const updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+      // For repair shop, directly update the database without foreign key constraint
+      let updatedEquipment;
+      if (isRepairShop) {
+        // Direct database update for repair shop
+        const { equipment: equipmentTable } = await import("@shared/schema");
+        const db = await import("./db").then(m => m.db);
+        const { eq } = await import("drizzle-orm");
+        
+        const [result] = await db
+          .update(equipmentTable)
+          .set({
+            currentProjectId: projectId,
+            status: "under repair",
+            updatedAt: new Date(),
+          })
+          .where(eq(equipmentTable.id, id))
+          .returning();
+          
+        if (!result) {
+          throw new Error(`Equipment with id ${id} not found`);
+        }
+        updatedEquipment = result;
+      } else {
+        // Use normal storage method for real projects
+        updatedEquipment = await storage.updateEquipmentAssignment(id, { projectId });
+      }
       
       // Get user information for logging
       const currentUser = await storage.getUser(req.user!.id);
       
-      // Status-based conditional logging
-      await logProjectActivity({
-        equipmentId: id,
-        equipmentName: updatedEquipment.name,
-        previousProjectId,
-        newProjectId: projectId,
-        entityType: "equipment",
-        performedBy: currentUser?.username || "Unknown User",
-        performedByEmail: currentUser?.username
-      });
+      // Status-based conditional logging (skip for repair shop to avoid foreign key issues)
+      if (!isRepairShop) {
+        await logProjectActivity({
+          equipmentId: id,
+          equipmentName: updatedEquipment.name,
+          previousProjectId,
+          newProjectId: projectId,
+          entityType: "equipment",
+          performedBy: currentUser?.username || "Unknown User",
+          performedByEmail: currentUser?.username
+        });
+      } else {
+        console.log(`🔧 Equipment ${updatedEquipment.name} moved to Repair Shop`);
+      }
       
       console.log("Equipment assignment complete:", updatedEquipment);
       console.log("=======================================");
