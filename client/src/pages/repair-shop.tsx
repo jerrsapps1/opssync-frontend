@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { WorkOrderWizard } from "@/components/work-orders/work-order-wizard";
 import type { Equipment, WorkOrder } from "@shared/schema";
 
@@ -31,6 +32,7 @@ export default function RepairShop() {
   
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [showWorkOrderWizard, setShowWorkOrderWizard] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const previousEquipmentCount = useRef(0);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
@@ -128,6 +130,16 @@ export default function RepairShop() {
     completeRepairMutation.mutate(equipmentId);
   };
 
+  const toggleSelection = (equipmentId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(equipmentId)) {
+      newSelected.delete(equipmentId);
+    } else {
+      newSelected.add(equipmentId);
+    }
+    setSelectedItems(newSelected);
+  };
+
   if (isLoading) {
     return <div className="p-6 text-gray-400">Loading repair shop...</div>;
   }
@@ -165,145 +177,104 @@ export default function RepairShop() {
             </div>
           )}
 
-          {repairEquipment.length === 0 ? (
-            <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="text-center py-12">
+          {/* Assigned Equipment Section */}
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-lg font-semibold">
+                Assigned Equipment ({repairEquipment.length})
+              </h3>
+              {selectedItems.size > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      const equipment = repairEquipment.find(eq => selectedItems.has(eq.id));
+                      if (equipment) handleCreateWorkOrder(equipment);
+                    }}
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-500"
+                  >
+                    Create Work Order
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      selectedItems.forEach(id => handleCompleteRepair(id));
+                      setSelectedItems(new Set());
+                    }}
+                    size="sm"
+                    variant="outline"
+                    className="text-green-400 border-green-600 hover:bg-green-900"
+                  >
+                    Return to Service
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {repairEquipment.length === 0 ? (
+              <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔧</div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Equipment in Repair</h3>
                 <p className="text-gray-400">
                   Equipment will appear here when assigned to the repair shop from the dashboard.
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6">
-              {repairEquipment.map((equipment) => {
-                const equipmentWorkOrders = getWorkOrdersForEquipment(equipment.id);
-                const activeWorkOrder = equipmentWorkOrders.find(wo => wo.status !== "completed" && wo.status !== "cancelled");
-                
-                return (
-                  <Card key={equipment.id} className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-white flex items-center gap-3">
-                          <span className="text-2xl">🔧</span>
-                          <div>
-                            <div>{equipment.name}</div>
-                            <div className="text-sm text-gray-400 font-normal">
-                              {equipment.type} • {equipment.model}
-                            </div>
-                          </div>
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          {!activeWorkOrder && (
-                            <Button
-                              onClick={() => handleCreateWorkOrder(equipment)}
-                              size="sm"
-                              className="bg-orange-600 hover:bg-orange-500"
-                              data-testid={`button-create-work-order-${equipment.id}`}
-                            >
-                              Create Work Order
-                            </Button>
-                          )}
-                          <Button
-                            onClick={() => handleCompleteRepair(equipment.id)}
-                            disabled={completeRepairMutation.isPending}
-                            size="sm"
-                            variant="outline"
-                            className="text-green-400 border-green-600 hover:bg-green-900"
-                            data-testid={`button-complete-repair-${equipment.id}`}
-                          >
-                            {completeRepairMutation.isPending ? "Completing..." : "Return to Service"}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent>
-                      <div className="space-y-4">
-                        {/* Equipment Details */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-400">Serial Number:</span>
-                            <span className="text-white ml-2">{equipment.serialNumber || "N/A"}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Status:</span>
-                            <Badge className="ml-2 bg-orange-100 text-orange-800 border-orange-200">
-                              Under Repair
-                            </Badge>
-                          </div>
-                        </div>
-
-                        {/* Work Orders */}
-                        <div>
-                          <h4 className="text-white font-semibold mb-3">Work Orders</h4>
-                          {equipmentWorkOrders.length === 0 ? (
-                            <div className="text-center py-6 bg-gray-700/50 rounded border border-gray-600 border-dashed">
-                              <p className="text-gray-400 mb-2">No work orders created yet</p>
-                              <Button
-                                onClick={() => handleCreateWorkOrder(equipment)}
-                                size="sm"
-                                variant="outline"
-                                className="text-orange-400 border-orange-600 hover:bg-orange-900"
-                              >
-                                Create Work Order
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              {equipmentWorkOrders.map((workOrder) => (
-                                <div
-                                  key={workOrder.id}
-                                  className="p-4 bg-gray-700 rounded border border-gray-600"
-                                  data-testid={`work-order-${workOrder.id}`}
-                                >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <h5 className="text-white font-medium">{workOrder.title}</h5>
-                                      <p className="text-gray-300 text-sm mt-1">{workOrder.description}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Badge className={getPriorityColor(workOrder.priority)}>
-                                        {workOrder.priority}
-                                      </Badge>
-                                      <Badge className={getStatusColor(workOrder.status)}>
-                                        {workOrder.status}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-400">
-                                    <div>
-                                      <span>Reason:</span>
-                                      <span className="text-gray-300 ml-1">{workOrder.reason}</span>
-                                    </div>
-                                    <div>
-                                      <span>Created:</span>
-                                      <span className="text-gray-300 ml-1">
-                                        {workOrder.dateCreated ? new Date(workOrder.dateCreated).toLocaleDateString() : "N/A"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  
-                                  {workOrder.notes && (
-                                    <div className="mt-2 text-sm">
-                                      <span className="text-gray-400">Notes:</span>
-                                      <p className="text-gray-300 mt-1">{workOrder.notes}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {repairEquipment.map((equipment) => {
+                  const equipmentWorkOrders = getWorkOrdersForEquipment(equipment.id);
+                  const isSelected = selectedItems.has(equipment.id);
+                  
+                  return (
+                    <div
+                      key={equipment.id}
+                      className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:bg-gray-600 transition-colors cursor-pointer"
+                      onClick={() => {
+                        const newSelected = new Set(selectedItems);
+                        if (isSelected) {
+                          newSelected.delete(equipment.id);
+                        } else {
+                          newSelected.add(equipment.id);
+                        }
+                        setSelectedItems(newSelected);
+                      }}
+                      data-testid={`equipment-card-${equipment.id}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => {
+                            const newSelected = new Set(selectedItems);
+                            if (checked) {
+                              newSelected.add(equipment.id);
+                            } else {
+                              newSelected.delete(equipment.id);
+                            }
+                            setSelectedItems(newSelected);
+                          }}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-medium text-sm leading-tight">
+                            {equipment.name}
+                          </h4>
+                          <p className="text-gray-400 text-xs mt-1">
+                            {equipment.type}
+                          </p>
+                          {equipmentWorkOrders.length > 0 && (
+                            <div className="mt-2">
+                              <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
+                                {equipmentWorkOrders.length} Work Order{equipmentWorkOrders.length !== 1 ? 's' : ''}
+                              </Badge>
                             </div>
                           )}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Droppable area for new equipment */}
           <Droppable droppableId="repair-shop">
