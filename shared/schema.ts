@@ -323,10 +323,21 @@ export const workOrders = pgTable("work_orders", {
   description: text("description").notNull(),
   reason: text("reason").notNull(), // Why equipment needs repair
   priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
-  status: text("status").notNull().default("open"), // open, in-progress, completed, cancelled
+  status: text("status").notNull().default("open"), // open, in-progress, completed, cancelled, pending-approval, approved, rejected
   assignedTo: text("assigned_to"), // Who is working on the repair
   estimatedCost: integer("estimated_cost"), // Estimated repair cost in cents
   actualCost: integer("actual_cost"), // Actual repair cost in cents
+  laborCost: integer("labor_cost"), // Labor cost in cents
+  partsCost: integer("parts_cost"), // Parts cost in cents
+  externalServiceCost: integer("external_service_cost"), // External service cost in cents
+  jobNumber: text("job_number"), // Billing job number
+  poNumber: text("po_number"), // Purchase order number
+  vendorInvoiceNumber: text("vendor_invoice_number"), // Vendor invoice number
+  approvalRequired: boolean("approval_required").default(false),
+  approvalStatus: text("approval_status").default("pending"), // pending, approved, rejected
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
   dateCreated: timestamp("date_created").defaultNow(),
   dateStarted: timestamp("date_started"),
   dateCompleted: timestamp("date_completed"),
@@ -334,6 +345,58 @@ export const workOrders = pgTable("work_orders", {
   partsUsed: text("parts_used"), // Parts/materials used
   createdBy: varchar("created_by").references(() => users.id),
   updatedAt: timestamp("updated_at").defaultNow(),
+  costCenter: text("cost_center"), // Cost center for accounting
+  warrantyInfo: text("warranty_info"), // Warranty information
+  completionNotes: text("completion_notes"), // Notes added upon completion
+  technicianNotes: text("technician_notes"), // Private technician notes
+});
+
+// Work Order Documents table for PDF attachments
+export const workOrderDocuments = pgTable("work_order_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workOrderId: varchar("work_order_id").notNull().references(() => workOrders.id, { onDelete: "cascade" }),
+  filename: text("filename").notNull(),
+  originalFilename: text("original_filename").notNull(),
+  fileSize: integer("file_size"),
+  mimeType: text("mime_type"),
+  documentType: text("document_type").notNull(), // receipt, invoice, photo, warranty, estimate, report
+  description: text("description"),
+  objectPath: text("object_path").notNull(), // Path in object storage
+  uploadedBy: varchar("uploaded_by").references(() => users.id),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+});
+
+// Work Order Approvals table for approval workflow
+export const workOrderApprovals = pgTable("work_order_approvals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workOrderId: varchar("work_order_id").notNull().references(() => workOrders.id, { onDelete: "cascade" }),
+  approverRole: text("approver_role").notNull(), // equipment-manager, maintenance-manager, financial-approver
+  approverUserId: varchar("approver_user_id").references(() => users.id),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  comments: text("comments"),
+  approvedAt: timestamp("approved_at"),
+  thresholdAmount: integer("threshold_amount"), // Cost threshold that triggered this approval
+  requiredBy: timestamp("required_by"), // When approval is needed by
+});
+
+// Work Order Activity Log table
+export const workOrderActivities = pgTable("work_order_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workOrderId: varchar("work_order_id").notNull().references(() => workOrders.id, { onDelete: "cascade" }),
+  action: text("action").notNull(), // created, updated, started, completed, approved, rejected, document-added, etc.
+  description: text("description").notNull(),
+  performedBy: varchar("performed_by").references(() => users.id),
+  performedAt: timestamp("performed_at").defaultNow(),
+  metadata: text("metadata"), // JSON metadata for additional context
+});
+
+// Cost Approval Thresholds table
+export const costApprovalThresholds = pgTable("cost_approval_thresholds", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  role: text("role").notNull(), // equipment-manager, maintenance-manager, financial-approver
+  maxAmount: integer("max_amount").notNull(), // Maximum amount in cents this role can approve
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Work Order schema
@@ -341,9 +404,42 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   id: true,
   dateCreated: true,
   updatedAt: true,
+  approvedAt: true,
 });
 
 export const updateWorkOrderSchema = insertWorkOrderSchema.partial();
+
+// Work Order Documents schema
+export const insertWorkOrderDocumentSchema = createInsertSchema(workOrderDocuments).omit({
+  id: true,
+  uploadedAt: true,
+});
+
+export const updateWorkOrderDocumentSchema = insertWorkOrderDocumentSchema.partial();
+
+// Work Order Approvals schema
+export const insertWorkOrderApprovalSchema = createInsertSchema(workOrderApprovals).omit({
+  id: true,
+  approvedAt: true,
+});
+
+export const updateWorkOrderApprovalSchema = insertWorkOrderApprovalSchema.partial();
+
+// Work Order Activities schema
+export const insertWorkOrderActivitySchema = createInsertSchema(workOrderActivities).omit({
+  id: true,
+  performedAt: true,
+});
+
+export const updateWorkOrderActivitySchema = insertWorkOrderActivitySchema.partial();
+
+// Cost Approval Thresholds schema
+export const insertCostApprovalThresholdSchema = createInsertSchema(costApprovalThresholds).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateCostApprovalThresholdSchema = insertCostApprovalThresholdSchema.partial();
 
 // Project Activity Log schema
 export const insertProjectActivityLogSchema = z.object({
@@ -367,3 +463,19 @@ export type InsertProjectActivityLog = z.infer<typeof insertProjectActivityLogSc
 export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
 export type UpdateWorkOrder = z.infer<typeof updateWorkOrderSchema>;
+
+export type WorkOrderDocument = typeof workOrderDocuments.$inferSelect;
+export type InsertWorkOrderDocument = z.infer<typeof insertWorkOrderDocumentSchema>;
+export type UpdateWorkOrderDocument = z.infer<typeof updateWorkOrderDocumentSchema>;
+
+export type WorkOrderApproval = typeof workOrderApprovals.$inferSelect;
+export type InsertWorkOrderApproval = z.infer<typeof insertWorkOrderApprovalSchema>;
+export type UpdateWorkOrderApproval = z.infer<typeof updateWorkOrderApprovalSchema>;
+
+export type WorkOrderActivity = typeof workOrderActivities.$inferSelect;
+export type InsertWorkOrderActivity = z.infer<typeof insertWorkOrderActivitySchema>;
+export type UpdateWorkOrderActivity = z.infer<typeof updateWorkOrderActivitySchema>;
+
+export type CostApprovalThreshold = typeof costApprovalThresholds.$inferSelect;
+export type InsertCostApprovalThreshold = z.infer<typeof insertCostApprovalThresholdSchema>;
+export type UpdateCostApprovalThreshold = z.infer<typeof updateCostApprovalThresholdSchema>;

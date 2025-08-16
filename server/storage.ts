@@ -1,5 +1,6 @@
 import { 
   projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, workOrders,
+  workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
   type Equipment, type InsertEquipment, type UpdateEquipment,
@@ -13,7 +14,19 @@ import {
   type InsertProjectActivityLog,
   type WorkOrder,
   type InsertWorkOrder,
-  type UpdateWorkOrder
+  type UpdateWorkOrder,
+  type WorkOrderDocument,
+  type InsertWorkOrderDocument,
+  type UpdateWorkOrderDocument,
+  type WorkOrderApproval,
+  type InsertWorkOrderApproval,
+  type UpdateWorkOrderApproval,
+  type WorkOrderActivity,
+  type InsertWorkOrderActivity,
+  type UpdateWorkOrderActivity,
+  type CostApprovalThreshold,
+  type InsertCostApprovalThreshold,
+  type UpdateCostApprovalThreshold
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -73,6 +86,31 @@ export interface IStorage {
   createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder>;
   updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder>;
   deleteWorkOrder(id: string): Promise<void>;
+  
+  // Work Order Documents
+  getWorkOrderDocuments(workOrderId: string): Promise<WorkOrderDocument[]>;
+  getWorkOrderDocument(id: string): Promise<WorkOrderDocument | undefined>;
+  createWorkOrderDocument(document: InsertWorkOrderDocument): Promise<WorkOrderDocument>;
+  updateWorkOrderDocument(id: string, updates: UpdateWorkOrderDocument): Promise<WorkOrderDocument>;
+  deleteWorkOrderDocument(id: string): Promise<void>;
+  
+  // Work Order Approvals
+  getWorkOrderApprovals(workOrderId: string): Promise<WorkOrderApproval[]>;
+  getWorkOrderApproval(id: string): Promise<WorkOrderApproval | undefined>;
+  createWorkOrderApproval(approval: InsertWorkOrderApproval): Promise<WorkOrderApproval>;
+  updateWorkOrderApproval(id: string, updates: UpdateWorkOrderApproval): Promise<WorkOrderApproval>;
+  deleteWorkOrderApproval(id: string): Promise<void>;
+  
+  // Work Order Activities
+  getWorkOrderActivities(workOrderId: string): Promise<WorkOrderActivity[]>;
+  createWorkOrderActivity(activity: InsertWorkOrderActivity): Promise<WorkOrderActivity>;
+  
+  // Cost Approval Thresholds
+  getCostApprovalThresholds(): Promise<CostApprovalThreshold[]>;
+  getCostApprovalThreshold(id: string): Promise<CostApprovalThreshold | undefined>;
+  createCostApprovalThreshold(threshold: InsertCostApprovalThreshold): Promise<CostApprovalThreshold>;
+  updateCostApprovalThreshold(id: string, updates: UpdateCostApprovalThreshold): Promise<CostApprovalThreshold>;
+  deleteCostApprovalThreshold(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -1783,7 +1821,196 @@ export class PostgreSQLStorage extends MemStorage {
 
   async createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder> {
     const [newWorkOrder] = await db.insert(workOrders).values(workOrder).returning();
+    
+    // Create initial activity log
+    await this.createWorkOrderActivity({
+      workOrderId: newWorkOrder.id,
+      action: "created",
+      description: `Work order "${newWorkOrder.title}" was created`,
+      performedBy: workOrder.createdBy,
+    });
+    
     return newWorkOrder;
+  }
+
+  async updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder> {
+    const [updatedWorkOrder] = await db
+      .update(workOrders)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(workOrders.id, id))
+      .returning();
+    
+    if (!updatedWorkOrder) {
+      throw new Error(`Work order with id ${id} not found`);
+    }
+    
+    // Log the update activity
+    if (updates.status) {
+      await this.createWorkOrderActivity({
+        workOrderId: id,
+        action: "status-changed",
+        description: `Work order status changed to ${updates.status}`,
+        performedBy: updates.createdBy,
+      });
+    }
+    
+    return updatedWorkOrder;
+  }
+
+  async deleteWorkOrder(id: string): Promise<void> {
+    await db.delete(workOrders).where(eq(workOrders.id, id));
+  }
+
+  // Work Order Documents
+  async getWorkOrderDocuments(workOrderId: string): Promise<WorkOrderDocument[]> {
+    return await db.select().from(workOrderDocuments).where(eq(workOrderDocuments.workOrderId, workOrderId)).orderBy(desc(workOrderDocuments.uploadedAt));
+  }
+
+  async getWorkOrderDocument(id: string): Promise<WorkOrderDocument | undefined> {
+    const [document] = await db.select().from(workOrderDocuments).where(eq(workOrderDocuments.id, id));
+    return document;
+  }
+
+  async createWorkOrderDocument(document: InsertWorkOrderDocument): Promise<WorkOrderDocument> {
+    const [newDocument] = await db.insert(workOrderDocuments).values(document).returning();
+    
+    // Log document upload activity
+    await this.createWorkOrderActivity({
+      workOrderId: newDocument.workOrderId,
+      action: "document-added",
+      description: `Document "${newDocument.originalFilename}" (${newDocument.documentType}) was uploaded`,
+      performedBy: newDocument.uploadedBy,
+    });
+    
+    return newDocument;
+  }
+
+  async updateWorkOrderDocument(id: string, updates: UpdateWorkOrderDocument): Promise<WorkOrderDocument> {
+    const [updatedDocument] = await db
+      .update(workOrderDocuments)
+      .set(updates)
+      .where(eq(workOrderDocuments.id, id))
+      .returning();
+    
+    if (!updatedDocument) {
+      throw new Error(`Work order document with id ${id} not found`);
+    }
+    
+    return updatedDocument;
+  }
+
+  async deleteWorkOrderDocument(id: string): Promise<void> {
+    const document = await this.getWorkOrderDocument(id);
+    if (document) {
+      await this.createWorkOrderActivity({
+        workOrderId: document.workOrderId,
+        action: "document-removed",
+        description: `Document "${document.originalFilename}" was removed`,
+        performedBy: undefined,
+      });
+    }
+    await db.delete(workOrderDocuments).where(eq(workOrderDocuments.id, id));
+  }
+
+  // Work Order Approvals
+  async getWorkOrderApprovals(workOrderId: string): Promise<WorkOrderApproval[]> {
+    return await db.select().from(workOrderApprovals).where(eq(workOrderApprovals.workOrderId, workOrderId));
+  }
+
+  async getWorkOrderApproval(id: string): Promise<WorkOrderApproval | undefined> {
+    const [approval] = await db.select().from(workOrderApprovals).where(eq(workOrderApprovals.id, id));
+    return approval;
+  }
+
+  async createWorkOrderApproval(approval: InsertWorkOrderApproval): Promise<WorkOrderApproval> {
+    const [newApproval] = await db.insert(workOrderApprovals).values(approval).returning();
+    
+    // Log approval request activity
+    await this.createWorkOrderActivity({
+      workOrderId: newApproval.workOrderId,
+      action: "approval-requested",
+      description: `Approval requested from ${newApproval.approverRole} for $${(newApproval.thresholdAmount || 0) / 100}`,
+      performedBy: undefined,
+    });
+    
+    return newApproval;
+  }
+
+  async updateWorkOrderApproval(id: string, updates: UpdateWorkOrderApproval): Promise<WorkOrderApproval> {
+    const [updatedApproval] = await db
+      .update(workOrderApprovals)
+      .set({
+        ...updates,
+        approvedAt: updates.status === "approved" ? new Date() : undefined,
+      })
+      .where(eq(workOrderApprovals.id, id))
+      .returning();
+    
+    if (!updatedApproval) {
+      throw new Error(`Work order approval with id ${id} not found`);
+    }
+    
+    // Log approval decision activity
+    if (updates.status) {
+      await this.createWorkOrderActivity({
+        workOrderId: updatedApproval.workOrderId,
+        action: updates.status === "approved" ? "approved" : "rejected",
+        description: `Work order ${updates.status} by ${updatedApproval.approverRole}${updates.comments ? `: ${updates.comments}` : ""}`,
+        performedBy: updatedApproval.approverUserId,
+      });
+    }
+    
+    return updatedApproval;
+  }
+
+  async deleteWorkOrderApproval(id: string): Promise<void> {
+    await db.delete(workOrderApprovals).where(eq(workOrderApprovals.id, id));
+  }
+
+  // Work Order Activities
+  async getWorkOrderActivities(workOrderId: string): Promise<WorkOrderActivity[]> {
+    return await db.select().from(workOrderActivities).where(eq(workOrderActivities.workOrderId, workOrderId)).orderBy(desc(workOrderActivities.performedAt));
+  }
+
+  async createWorkOrderActivity(activity: InsertWorkOrderActivity): Promise<WorkOrderActivity> {
+    const [newActivity] = await db.insert(workOrderActivities).values(activity).returning();
+    return newActivity;
+  }
+
+  // Cost Approval Thresholds
+  async getCostApprovalThresholds(): Promise<CostApprovalThreshold[]> {
+    return await db.select().from(costApprovalThresholds).orderBy(costApprovalThresholds.maxAmount);
+  }
+
+  async getCostApprovalThreshold(id: string): Promise<CostApprovalThreshold | undefined> {
+    const [threshold] = await db.select().from(costApprovalThresholds).where(eq(costApprovalThresholds.id, id));
+    return threshold;
+  }
+
+  async createCostApprovalThreshold(threshold: InsertCostApprovalThreshold): Promise<CostApprovalThreshold> {
+    const [newThreshold] = await db.insert(costApprovalThresholds).values(threshold).returning();
+    return newThreshold;
+  }
+
+  async updateCostApprovalThreshold(id: string, updates: UpdateCostApprovalThreshold): Promise<CostApprovalThreshold> {
+    const [updatedThreshold] = await db
+      .update(costApprovalThresholds)
+      .set(updates)
+      .where(eq(costApprovalThresholds.id, id))
+      .returning();
+    
+    if (!updatedThreshold) {
+      throw new Error(`Cost approval threshold with id ${id} not found`);
+    }
+    
+    return updatedThreshold;
+  }
+
+  async deleteCostApprovalThreshold(id: string): Promise<void> {
+    await db.delete(costApprovalThresholds).where(eq(costApprovalThresholds.id, id));
   }
 
   async updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder> {

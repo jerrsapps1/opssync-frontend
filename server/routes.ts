@@ -1584,8 +1584,40 @@ Rules:
 
   app.post("/api/work-orders", authenticateToken, async (req, res) => {
     try {
-      const workOrderData = insertWorkOrderSchema.parse(req.body);
+      const validatedData = insertWorkOrderSchema.parse(req.body);
+      
+      // Check if approval is required based on cost thresholds
+      const totalCost = (validatedData.estimatedCost || 0) + 
+                       (validatedData.laborCost || 0) + 
+                       (validatedData.partsCost || 0) + 
+                       (validatedData.externalServiceCost || 0);
+      
+      const approvalRequired = totalCost > 100000; // $1000 in cents
+      
+      const workOrderData = {
+        ...validatedData,
+        approvalRequired,
+        status: approvalRequired ? "pending-approval" : "open",
+        createdBy: req.user!.id,
+      };
+
       const workOrder = await storage.createWorkOrder(workOrderData);
+      
+      // If approval required, create approval requests
+      if (approvalRequired) {
+        const thresholds = await storage.getCostApprovalThresholds();
+        for (const threshold of thresholds) {
+          if (totalCost > threshold.maxAmount) {
+            await storage.createWorkOrderApproval({
+              workOrderId: workOrder.id,
+              approverRole: threshold.role,
+              thresholdAmount: threshold.maxAmount,
+              requiredBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+            });
+          }
+        }
+      }
+      
       res.status(201).json(workOrder);
     } catch (error) {
       console.error("Error creating work order:", error);
@@ -1611,6 +1643,71 @@ Rules:
     } catch (error) {
       console.error("Error deleting work order:", error);
       res.status(500).json({ message: "Failed to delete work order" });
+    }
+  });
+
+  // Work Order Documents
+  app.get("/api/work-orders/:workOrderId/documents", async (req, res) => {
+    try {
+      const documents = await storage.getWorkOrderDocuments(req.params.workOrderId);
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching work order documents:", error);
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
+
+  app.post("/api/work-order-documents/upload", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getWorkOrderDocumentUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.post("/api/work-order-documents", async (req, res) => {
+    try {
+      const validatedData = req.body;
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeWorkOrderDocumentPath(validatedData.objectPath);
+      
+      const documentData = {
+        ...validatedData,
+        objectPath: normalizedPath,
+        uploadedBy: "test-user-001", // TODO: Get from auth
+      };
+
+      const document = await storage.createWorkOrderDocument(documentData);
+      res.json(document);
+    } catch (error) {
+      console.error("Error creating work order document:", error);
+      res.status(500).json({ error: "Failed to create document" });
+    }
+  });
+
+  app.get("/work-order-documents/:documentPath(*)", async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const documentPath = `/${req.params.documentPath}`;
+      const documentFile = await objectStorageService.getWorkOrderDocumentFile(documentPath);
+      objectStorageService.downloadObject(documentFile, res);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  });
+
+  // Work Order Activities
+  app.get("/api/work-orders/:workOrderId/activities", async (req, res) => {
+    try {
+      const activities = await storage.getWorkOrderActivities(req.params.workOrderId);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching work order activities:", error);
+      res.status(500).json({ error: "Failed to fetch activities" });
     }
   });
 

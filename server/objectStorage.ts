@@ -92,11 +92,12 @@ export class ObjectStorageService {
     try {
       // Get file metadata
       const [metadata] = await file.getMetadata();
+      
       // Set appropriate headers
       res.set({
         "Content-Type": metadata.contentType || "application/octet-stream",
         "Content-Length": metadata.size,
-        "Cache-Control": `public, max-age=${cacheTtlSec}`,
+        "Cache-Control": `private, max-age=${cacheTtlSec}`,
       });
 
       // Stream the file to the response
@@ -118,18 +119,18 @@ export class ObjectStorageService {
     }
   }
 
-  // Gets the upload URL for a logo file.
-  async getLogoUploadURL(): Promise<string> {
-    const publicObjectPaths = this.getPublicObjectSearchPaths();
-    if (publicObjectPaths.length === 0) {
+  // Gets the upload URL for a work order document.
+  async getWorkOrderDocumentUploadURL(): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
       throw new Error(
-        "PUBLIC_OBJECT_SEARCH_PATHS not set. Create a bucket in 'Object Storage' " +
-          "tool and set PUBLIC_OBJECT_SEARCH_PATHS env var."
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
       );
     }
 
-    const logoId = randomUUID();
-    const fullPath = `${publicObjectPaths[0]}/logos/${logoId}`;
+    const documentId = randomUUID();
+    const fullPath = `${privateObjectDir}/work-order-documents/${documentId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
@@ -142,26 +143,48 @@ export class ObjectStorageService {
     });
   }
 
-  // Gets the public URL for a logo file.
-  getLogoPublicURL(logoPath: string): string {
-    const publicObjectPaths = this.getPublicObjectSearchPaths();
-    if (publicObjectPaths.length === 0) {
-      return logoPath;
+  // Gets the work order document file from the object path.
+  async getWorkOrderDocumentFile(objectPath: string): Promise<File> {
+    if (!objectPath.startsWith("/work-order-documents/")) {
+      throw new ObjectNotFoundError();
     }
-    
-    if (logoPath.startsWith("https://storage.googleapis.com/")) {
-      // Extract the path from the URL
-      const url = new URL(logoPath);
-      const rawObjectPath = url.pathname;
-      const publicBasePath = publicObjectPaths[0];
-      
-      if (rawObjectPath.startsWith(publicBasePath)) {
-        const relativePath = rawObjectPath.slice(publicBasePath.length + 1);
-        return `/public-objects/${relativePath}`;
-      }
+
+    let documentDir = this.getPrivateObjectDir();
+    if (!documentDir.endsWith("/")) {
+      documentDir = `${documentDir}/`;
     }
-    
-    return logoPath;
+    const documentObjectPath = `${documentDir}${objectPath.slice(1)}`;
+    const { bucketName, objectName } = parseObjectPath(documentObjectPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const documentFile = bucket.file(objectName);
+    const [exists] = await documentFile.exists();
+    if (!exists) {
+      throw new ObjectNotFoundError();
+    }
+    return documentFile;
+  }
+
+  normalizeWorkOrderDocumentPath(rawPath: string): string {
+    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
+      return rawPath;
+    }
+  
+    // Extract the path from the URL by removing query parameters and domain
+    const url = new URL(rawPath);
+    const rawObjectPath = url.pathname;
+  
+    let documentDir = this.getPrivateObjectDir();
+    if (!documentDir.endsWith("/")) {
+      documentDir = `${documentDir}/`;
+    }
+  
+    if (!rawObjectPath.startsWith(documentDir)) {
+      return rawObjectPath;
+    }
+  
+    // Extract the document ID from the path
+    const documentPath = rawObjectPath.slice(documentDir.length);
+    return `/${documentPath}`;
   }
 }
 

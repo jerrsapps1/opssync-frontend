@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WorkOrderWizard } from "@/components/work-orders/work-order-wizard";
+import { EnhancedWorkOrderWizard } from "@/components/work-orders/EnhancedWorkOrderWizard";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
@@ -695,15 +695,16 @@ export default function RepairShop() {
         </div>
       </div>
 
-      {/* Work Order Wizard */}
+      {/* Enhanced Work Order Wizard */}
       {showWorkOrderWizard && selectedEquipment && (
-        <WorkOrderWizard
-          equipment={selectedEquipment}
+        <EnhancedWorkOrderWizard
+          equipmentId={selectedEquipment.id}
+          equipmentName={selectedEquipment.name}
           onClose={() => {
             setShowWorkOrderWizard(false);
             setSelectedEquipment(null);
           }}
-          onWorkOrderCreated={handleWorkOrderCreated}
+          onSuccess={handleWorkOrderCreated}
         />
       )}
     </DragDropContext>
