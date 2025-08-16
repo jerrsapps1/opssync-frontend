@@ -60,13 +60,19 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log("Equipment assignment success:", data);
       // Force immediate invalidation and refetch using consistent query keys
       queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
       queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
+      
+      // If equipment was assigned to repair shop, also invalidate repair shop queries
+      if (variables.projectId === "repair-shop") {
+        queryClient.invalidateQueries({ queryKey: ["/api", "repair-shop", "equipment"] });
+        queryClient.refetchQueries({ queryKey: ["/api", "repair-shop", "equipment"] });
+      }
     },
     onError: (error) => {
       toast({

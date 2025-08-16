@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useNavigate } from "react-router-dom";
@@ -31,11 +31,32 @@ export default function RepairShop() {
   
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [showWorkOrderWizard, setShowWorkOrderWizard] = useState(false);
+  const previousEquipmentCount = useRef(0);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
     queryFn: getRepairShopEquipment,
   });
+
+  // Auto-open work order wizard when new equipment is dragged to repair shop
+  useEffect(() => {
+    if (!isLoading && repairEquipment.length > 0) {
+      // If this is the first load, just set the previous count
+      if (previousEquipmentCount.current === 0) {
+        previousEquipmentCount.current = repairEquipment.length;
+        return;
+      }
+      
+      // If we have more equipment than before, auto-open wizard for the newest one
+      if (repairEquipment.length > previousEquipmentCount.current) {
+        const newestEquipment = repairEquipment[repairEquipment.length - 1];
+        setSelectedEquipment(newestEquipment);
+        setShowWorkOrderWizard(true);
+      }
+      
+      previousEquipmentCount.current = repairEquipment.length;
+    }
+  }, [repairEquipment, isLoading]);
 
   const { data: workOrders = [] } = useQuery({
     queryKey: ["/api", "work-orders"],
