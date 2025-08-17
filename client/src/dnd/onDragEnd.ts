@@ -44,6 +44,7 @@ export function onDragEndFactory(fns: Fns) {
     } else if (isRepairShop) {
       projectId = "repair-shop"; // Special handling for repair shop
     } else {
+      // Direct project ID (from project cards in dashboard)
       projectId = destination.droppableId;
     }
 

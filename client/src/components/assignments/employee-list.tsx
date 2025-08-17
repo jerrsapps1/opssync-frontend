@@ -69,7 +69,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
       
       {/* Single employee list - drag to projects */}
-      <Droppable droppableId="employees">
+      <Droppable droppableId="employee-unassigned">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}

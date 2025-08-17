@@ -55,7 +55,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
       const searchResults: SearchResult[] = [];
 
       // Search employees
-      employees.forEach((emp: Employee) => {
+      (employees as Employee[]).forEach((emp: Employee) => {
         if (emp.name.toLowerCase().includes(searchQuery)) {
           const projectName = emp.currentProjectId === "repair-shop" 
             ? "Repair Shop" 
@@ -76,7 +76,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
       });
 
       // Search equipment
-      equipment.forEach((eq: Equipment) => {
+      (equipment as Equipment[]).forEach((eq: Equipment) => {
         if (eq.name.toLowerCase().includes(searchQuery)) {
           const projectName = eq.currentProjectId === "repair-shop" 
             ? "Repair Shop" 
