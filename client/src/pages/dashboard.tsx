@@ -147,7 +147,7 @@ export default function Dashboard() {
                 >
                   <span className="text-orange-400 text-lg">🔧</span>
                   <span className="text-sm text-orange-300 font-medium">
-                    Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
+                    Repair Shop ({equipment.filter(eq => eq.status === "maintenance").length})
                   </span>
                   {provided.placeholder}
                 </div>

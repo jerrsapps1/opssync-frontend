@@ -10,23 +10,10 @@ export function onDragEndFactory(fns: Fns) {
   return async function onDragEnd(result: DropResult) {
     const { destination, source, draggableId } = result;
     
-    console.log("🎯 DRAG END DEBUG:", {
-      draggableId,
-      source: source?.droppableId,
-      destination: destination?.droppableId,
-      hasDestination: !!destination
-    });
-    
-    if (!destination) {
-      console.log("❌ No destination - drag cancelled");
-      return;
-    }
+    if (!destination) return;
 
     // Ignore if dropped back in same location
-    if (destination.droppableId === source.droppableId && destination.index === source.index) {
-      console.log("❌ Same location - no change needed");
-      return;
-    }
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     const isEmp = draggableId.startsWith("emp-");
     const id = draggableId;
@@ -60,16 +47,7 @@ export function onDragEndFactory(fns: Fns) {
       projectId = destination.droppableId;
     }
 
-    console.log("Drag and Drop Debug:", {
-      draggableId,
-      source: source.droppableId,
-      destination: destination.droppableId,
-      assetType: isEmp ? "emp" : "eq",
-      assetId: id,
-      projectId: projectId,
-      isUnassignedDestination,
-      isRepairShop
-    });
+    // Clean assignment logic
 
     if (isEmp) {
       await fns.setEmployeeAssignment(id, projectId);
