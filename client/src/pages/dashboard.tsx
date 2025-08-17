@@ -131,7 +131,7 @@ export default function Dashboard() {
               </span>
               
               {/* Repair Shop Drop Zone */}
-              <Droppable droppableId="repair-shop">
+              <Droppable droppableId="repair-shop" type="EQUIPMENT">
               {(provided, snapshot) => (
                 <div
                   ref={provided.innerRef}
@@ -143,6 +143,7 @@ export default function Dashboard() {
                   }`}
                   onClick={() => navigate('/repair-shop')}
                   data-testid="repair-shop-drop-zone"
+                  style={{ minHeight: '48px' }}
                 >
                   <span className="text-orange-400 text-lg">🔧</span>
                   <span className="text-sm text-orange-300 font-medium">
@@ -156,7 +157,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="flex" style={{ height: "calc(100vh - 180px)" }}>
+        <div className="flex overflow-hidden" style={{ height: "calc(100vh - 180px)" }}>
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
