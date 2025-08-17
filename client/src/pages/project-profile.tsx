@@ -411,7 +411,7 @@ export default function ProjectProfile() {
           <div className="font-medium text-white mb-2">
             Assigned Employees ({assignedEmp.length})
           </div>
-          <Droppable droppableId="unassigned-employees">
+          <Droppable droppableId={`employee-${id}`}>
             {(provided, snapshot) => (
               <div 
                 ref={provided.innerRef}
@@ -463,7 +463,7 @@ export default function ProjectProfile() {
           <div className="font-medium text-white mb-2">
             Assigned Equipment ({assignedEq.length})
           </div>
-          <Droppable droppableId="unassigned-equipment">
+          <Droppable droppableId={`equipment-${id}`}>
             {(provided, snapshot) => (
               <div 
                 ref={provided.innerRef}

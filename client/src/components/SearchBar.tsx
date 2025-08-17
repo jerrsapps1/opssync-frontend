@@ -95,7 +95,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
     });
 
     setResults(searchResults.slice(0, 10)); // Limit to 10 results
-  }, [query, employees, equipment, projectMap]);
+  }, [query, employees.length, equipment.length, projects.length]);
 
   // Handle click outside to close
   useEffect(() => {
