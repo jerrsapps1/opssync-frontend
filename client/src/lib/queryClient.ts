@@ -20,7 +20,7 @@ export async function apiRequest(
   }
   
   // Add authorization token if available
-  const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("token");
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -45,7 +45,7 @@ export const getQueryFn: <T>(options: {
     const headers: Record<string, string> = {};
     
     // Add authorization token if available
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem("token");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }

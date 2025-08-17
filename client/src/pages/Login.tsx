@@ -91,8 +91,9 @@ export default function Login({ brandConfig }: LoginProps) {
       }
 
       const result = await loginResponse.json();
+      console.log("Login successful:", result);
       
-      // Update user context with token
+      // Update user context with token (user first, then token)
       login(result.user, result.token);
       
       toast({
@@ -100,8 +101,10 @@ export default function Login({ brandConfig }: LoginProps) {
         description: `Logged in as ${result.user.username}`,
       });
 
-      // Redirect to intended page
-      navigate(from, { replace: true });
+      // Small delay to ensure state is updated before navigation
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 100);
       
     } catch (error: any) {
       toast({

@@ -44,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuthStatus = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("token");
       if (!token) {
         setIsLoading(false);
         return;
@@ -62,35 +62,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(userData);
       } else {
         // Token is invalid, remove it
-        localStorage.removeItem("auth_token");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     } catch (error) {
       console.error("Auth check failed:", error);
-      localStorage.removeItem("auth_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = (userData: User, token: string) => {
-    localStorage.setItem("auth_token", token);
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("auth_token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
-    // Redirect to login page
-    window.location.href = "/login";
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
-      setUser({ ...user, ...userData });
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
     }
   };
 
-  const value: AuthContextType = {
+  const value = {
     user,
     isLoading,
     isAuthenticated: !!user,
