@@ -552,8 +552,9 @@ export function EnhancedWorkOrderWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-700/50">
+      <div className="bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-700/50 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -600,13 +601,15 @@ export function EnhancedWorkOrderWizard({
           <h3 className="text-lg font-semibold text-gray-200 mt-4">{getStepTitle()}</h3>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {getCurrentStepContent()}
           </form>
         </div>
 
-        <div className="p-6 border-t border-gray-700/50 flex justify-between">
+        {/* Fixed Footer with Navigation */}
+        <div className="p-6 border-t border-gray-700/50 flex justify-between flex-shrink-0 bg-gray-900/95">
           <Button
             type="button"
             variant="outline"
