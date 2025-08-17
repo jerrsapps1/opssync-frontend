@@ -25,7 +25,6 @@ const workOrderSchema = z.object({
   reason: z.string().min(1, "Reason is required"),
   priority: z.enum(["low", "medium", "high", "urgent"]),
   assignedTo: z.string().optional(),
-  estimatedCost: z.number().min(0).optional(),
   laborCost: z.number().min(0).optional(),
   partsCost: z.number().min(0).optional(),
   externalServiceCost: z.number().min(0).optional(),
@@ -94,7 +93,7 @@ export function EnhancedWorkOrderWizard({
       reason: editingWorkOrder.reason,
       priority: editingWorkOrder.priority as "low" | "medium" | "high" | "urgent",
       assignedTo: editingWorkOrder.assignedTo || "",
-      estimatedCost: editingWorkOrder.estimatedCost ? Number((editingWorkOrder.estimatedCost / 100).toFixed(2)) : undefined,
+
       laborCost: editingWorkOrder.laborCost ? Number((editingWorkOrder.laborCost / 100).toFixed(2)) : undefined,
       partsCost: editingWorkOrder.partsCost ? Number((editingWorkOrder.partsCost / 100).toFixed(2)) : undefined,
       externalServiceCost: editingWorkOrder.externalServiceCost ? Number((editingWorkOrder.externalServiceCost / 100).toFixed(2)) : undefined,
@@ -108,7 +107,7 @@ export function EnhancedWorkOrderWizard({
     } : {
       equipmentId,
       priority: "medium",
-      estimatedCost: undefined,
+
       laborCost: undefined,
       partsCost: undefined,
       externalServiceCost: undefined,
@@ -177,11 +176,10 @@ export function EnhancedWorkOrderWizard({
   });
 
   const calculateTotalCost = (values: Partial<WorkOrderFormData>) => {
-    const estimated = values.estimatedCost || 0;
     const labor = values.laborCost || 0;
     const parts = values.partsCost || 0;
     const external = values.externalServiceCost || 0;
-    const total = estimated + labor + parts + external;
+    const total = labor + parts + external;
     setTotalCost(total);
     setApprovalRequired(total > 1000); // Require approval for costs over $1000
     return total;
@@ -300,8 +298,16 @@ export function EnhancedWorkOrderWizard({
   };
 
   const onSubmit = (data: WorkOrderFormData) => {
-    createWorkOrderMutation.mutate({
+    // Convert dollars to cents for database storage
+    const dataWithConvertedCosts = {
       ...data,
+      laborCost: data.laborCost ? Math.round(data.laborCost * 100) : undefined,
+      partsCost: data.partsCost ? Math.round(data.partsCost * 100) : undefined,
+      externalServiceCost: data.externalServiceCost ? Math.round(data.externalServiceCost * 100) : undefined,
+    };
+
+    createWorkOrderMutation.mutate({
+      ...dataWithConvertedCosts,
       documents,
     });
   };
@@ -386,22 +392,6 @@ export function EnhancedWorkOrderWizard({
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="estimatedCost" className="text-sm font-medium text-gray-200">Estimated Total Cost</Label>
-                <div className="relative mt-1">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    id="estimatedCost"
-                    type="number"
-                    step="0.01"
-                    {...form.register("estimatedCost", { valueAsNumber: true, onChange: (e) => calculateTotalCost({...form.getValues(), estimatedCost: parseFloat(e.target.value) || 0}) })}
-                    placeholder="0.00"
-                    className="pl-10"
-                    data-testid="input-estimated-cost"
-                  />
-                </div>
-              </div>
-
               <div>
                 <Label htmlFor="laborCost" className="text-sm font-medium text-gray-200">Labor Cost</Label>
                 <div className="relative mt-1">
