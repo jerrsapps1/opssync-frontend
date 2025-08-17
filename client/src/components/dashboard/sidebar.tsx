@@ -21,12 +21,12 @@ export function Sidebar() {
 
       <nav className="p-3 space-y-1">
         <Item to="/dashboard">Dashboard</Item>
-        <Item to="/repair-shop">Repair Shop</Item>
         <Item to="/projects">Projects</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>
         <Item to="/analytics">Advanced Analytics</Item>
         <Item to="/settings">Settings</Item>
+        <Item to="/repair-shop">Repair Shop</Item>
         <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">
           Admin
         </div>
