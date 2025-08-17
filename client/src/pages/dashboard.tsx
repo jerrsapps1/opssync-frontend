@@ -10,6 +10,7 @@ import { EquipmentList } from "@/components/assignments/equipment-list";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
+import { SearchBar } from "@/components/SearchBar";
 import { useTenantFeatures } from "@/hooks/useTenantFeatures";
 import { useApp } from "@/App";
 import { useDragDrop } from "@/hooks/use-drag-drop";
@@ -126,6 +127,8 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-4">
+              <SearchBar />
+              
               <span className="text-xs text-gray-500">
                 Drag equipment here to create repair work orders →
               </span>
