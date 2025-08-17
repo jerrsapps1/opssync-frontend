@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Upload, DollarSign, AlertCircle, CheckCircle, Clock, Download, Receipt, Printer } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileText, Upload, DollarSign, AlertCircle, CheckCircle, Clock, Download, Receipt, Printer, AlertTriangle } from "lucide-react";
 import { ObjectUploader } from "./ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ const workOrderSchema = z.object({
   laborCost: z.number().min(0).optional(),
   partsCost: z.number().min(0).optional(),
   externalServiceCost: z.number().min(0).optional(),
+  taxExempt: z.boolean().optional(),
   jobNumber: z.string().optional(),
   poNumber: z.string().optional(),
   vendorInvoiceNumber: z.string().optional(),
@@ -60,11 +62,13 @@ interface InvoiceData {
   workOrderTitle: string;
   equipmentName: string;
   dateCreated: string;
-  estimatedCost: number;
   laborCost: number;
   partsCost: number;
   externalServiceCost: number;
   totalCost: number;
+  taxAmount: number;
+  finalCost: number;
+  taxExempt: boolean;
   assignedTo?: string;
   notes?: string;
 }
@@ -79,6 +83,8 @@ export function EnhancedWorkOrderWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [finalCost, setFinalCost] = useState(0);
   const [approvalRequired, setApprovalRequired] = useState(false);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const queryClient = useQueryClient();
@@ -97,6 +103,7 @@ export function EnhancedWorkOrderWizard({
       laborCost: editingWorkOrder.laborCost ? Number((editingWorkOrder.laborCost / 100).toFixed(2)) : undefined,
       partsCost: editingWorkOrder.partsCost ? Number((editingWorkOrder.partsCost / 100).toFixed(2)) : undefined,
       externalServiceCost: editingWorkOrder.externalServiceCost ? Number((editingWorkOrder.externalServiceCost / 100).toFixed(2)) : undefined,
+      taxExempt: editingWorkOrder.taxExempt ?? false,
       jobNumber: editingWorkOrder.jobNumber || "",
       poNumber: editingWorkOrder.poNumber || "",
       vendorInvoiceNumber: editingWorkOrder.vendorInvoiceNumber || "",
@@ -111,6 +118,7 @@ export function EnhancedWorkOrderWizard({
       laborCost: undefined,
       partsCost: undefined,
       externalServiceCost: undefined,
+      taxExempt: false,
     },
   });
 
@@ -119,7 +127,7 @@ export function EnhancedWorkOrderWizard({
       const workOrderData = {
         ...data,
         // Convert dollar amounts to cents for storage
-        estimatedCost: data.estimatedCost ? Math.round(data.estimatedCost * 100) : undefined,
+
         laborCost: data.laborCost ? Math.round(data.laborCost * 100) : undefined,
         partsCost: data.partsCost ? Math.round(data.partsCost * 100) : undefined,
         externalServiceCost: data.externalServiceCost ? Math.round(data.externalServiceCost * 100) : undefined,
@@ -179,10 +187,21 @@ export function EnhancedWorkOrderWizard({
     const labor = values.laborCost || 0;
     const parts = values.partsCost || 0;
     const external = values.externalServiceCost || 0;
-    const total = labor + parts + external;
-    setTotalCost(total);
-    setApprovalRequired(total > 1000); // Require approval for costs over $1000
-    return total;
+    const subtotal = labor + parts + external;
+    
+    // Texas sales tax: 8.25% on parts only (not on labor)
+    const taxableAmount = parts; // Only parts are taxable in Texas
+    const taxRate = 0.0825; // 8.25% Texas sales tax rate
+    const tax = values.taxExempt ? 0 : (taxableAmount * taxRate);
+    
+    const finalTotal = subtotal + tax;
+    
+    setTotalCost(subtotal);
+    setTaxAmount(tax);
+    setFinalCost(finalTotal);
+    setApprovalRequired(finalTotal > 1000); // Require approval for final costs over $1000
+    
+    return finalTotal;
   };
 
   const handleGetUploadParameters = async () => {
@@ -208,11 +227,13 @@ export function EnhancedWorkOrderWizard({
         workOrderTitle: formData.title || "Work Order",
         equipmentName,
         dateCreated: new Date().toISOString().split('T')[0],
-        estimatedCost: formData.estimatedCost || 0,
         laborCost: formData.laborCost || 0,
         partsCost: formData.partsCost || 0,
         externalServiceCost: formData.externalServiceCost || 0,
         totalCost,
+        taxAmount,
+        finalCost,
+        taxExempt: formData.taxExempt || false,
         assignedTo: formData.assignedTo,
         notes: formData.notes,
       };
@@ -441,16 +462,39 @@ export function EnhancedWorkOrderWizard({
               </div>
             </div>
 
-            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold text-gray-200">Total Estimated Cost:</span>
-                <span className="text-2xl font-bold text-blue-400" data-testid="text-total-cost">
-                  ${totalCost.toFixed(2)}
-                </span>
+            {/* Tax Exempt Checkbox */}
+            <div className="flex items-center space-x-2 mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+              <Checkbox
+                id="taxExempt"
+                {...form.register("taxExempt", { onChange: () => calculateTotalCost(form.getValues()) })}
+                data-testid="checkbox-tax-exempt"
+              />
+              <Label htmlFor="taxExempt" className="text-sm font-medium text-gray-200 cursor-pointer">
+                Tax Exempt (No sales tax on parts)
+              </Label>
+            </div>
+
+            {/* Cost Summary */}
+            <div className="mt-6 p-4 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-600 space-y-3">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-300">Subtotal (Labor + Parts + External):</span>
+                  <span className="text-gray-200">${totalCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-300">Sales Tax (8.25% on parts only):</span>
+                  <span className="text-gray-200">${taxAmount.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-gray-600 pt-2">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-gray-200">Total Cost:</h3>
+                    <span className="text-2xl font-bold text-blue-400">${finalCost.toFixed(2)}</span>
+                  </div>
+                </div>
               </div>
               {approvalRequired && (
-                <div className="flex items-center mt-2 text-yellow-400">
-                  <AlertCircle className="h-4 w-4 mr-2" />
+                <div className="mt-2 flex items-center text-amber-400">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
                   <span className="text-sm">Management approval required for costs over $1,000</span>
                 </div>
               )}

@@ -349,6 +349,7 @@ export const workOrders = pgTable("work_orders", {
   warrantyInfo: text("warranty_info"), // Warranty information
   completionNotes: text("completion_notes"), // Notes added upon completion
   technicianNotes: text("technician_notes"), // Private technician notes
+  taxExempt: boolean("tax_exempt").default(false), // Tax exempt status
 });
 
 // Work Order Documents table for PDF attachments
