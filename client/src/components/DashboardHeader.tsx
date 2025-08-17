@@ -68,7 +68,7 @@ export function DashboardHeader() {
       >
         <Flex justify="space-between" align="center">
           <Text fontSize="xl" fontWeight="bold" color="white">
-            StaffTrak Dashboard
+            OpsSync.ai Dashboard
           </Text>
           <Flex align="center" gap={4}>
             <Spinner size="sm" color="blue.400" />
@@ -92,7 +92,7 @@ export function DashboardHeader() {
       <Flex justify="space-between" align="center">
         <Box>
           <Text fontSize="xl" fontWeight="bold" color="white">
-            {user?.brandConfig?.appName || "StaffTrak"} Dashboard
+            {user?.brandConfig?.appName || "OpsSync.ai"} Dashboard
           </Text>
           <Text fontSize="sm" color="gray.400">
             {formatDate(currentTime)}
