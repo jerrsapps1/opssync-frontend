@@ -49,53 +49,58 @@ export function SearchBar({ onClose }: SearchBarProps) {
       return;
     }
 
-    const searchQuery = query.toLowerCase();
-    const searchResults: SearchResult[] = [];
+    // Use a timeout to debounce the search and prevent infinite loops
+    const timeoutId = setTimeout(() => {
+      const searchQuery = query.toLowerCase();
+      const searchResults: SearchResult[] = [];
 
-    // Search employees
-    (employees as Employee[]).forEach((emp: Employee) => {
-      if (emp.name.toLowerCase().includes(searchQuery)) {
-        const projectName = emp.currentProjectId === "repair-shop" 
-          ? "Repair Shop" 
-          : emp.currentProjectId 
-            ? projectMap[emp.currentProjectId] || "Unknown Project"
-            : "Unassigned";
+      // Search employees
+      employees.forEach((emp: Employee) => {
+        if (emp.name.toLowerCase().includes(searchQuery)) {
+          const projectName = emp.currentProjectId === "repair-shop" 
+            ? "Repair Shop" 
+            : emp.currentProjectId 
+              ? projectMap[emp.currentProjectId] || "Unknown Project"
+              : "Unassigned";
 
-        searchResults.push({
-          id: emp.id,
-          name: emp.name,
-          type: 'employee',
-          currentProject: emp.currentProjectId ?? undefined,
-          projectName,
-          role: emp.role,
-          status: emp.status
-        });
-      }
-    });
+          searchResults.push({
+            id: emp.id,
+            name: emp.name,
+            type: 'employee',
+            currentProject: emp.currentProjectId ?? undefined,
+            projectName,
+            role: emp.role,
+            status: emp.status
+          });
+        }
+      });
 
-    // Search equipment
-    (equipment as Equipment[]).forEach((eq: Equipment) => {
-      if (eq.name.toLowerCase().includes(searchQuery)) {
-        const projectName = eq.currentProjectId === "repair-shop" 
-          ? "Repair Shop" 
-          : eq.currentProjectId 
-            ? projectMap[eq.currentProjectId] || "Unknown Project"
-            : "Unassigned";
+      // Search equipment
+      equipment.forEach((eq: Equipment) => {
+        if (eq.name.toLowerCase().includes(searchQuery)) {
+          const projectName = eq.currentProjectId === "repair-shop" 
+            ? "Repair Shop" 
+            : eq.currentProjectId 
+              ? projectMap[eq.currentProjectId] || "Unknown Project"
+              : "Unassigned";
 
-        searchResults.push({
-          id: eq.id,
-          name: eq.name,
-          type: 'equipment',
-          currentProject: eq.currentProjectId ?? undefined,
-          projectName,
-          status: eq.status,
-          assetNumber: eq.assetNumber ?? undefined
-        });
-      }
-    });
+          searchResults.push({
+            id: eq.id,
+            name: eq.name,
+            type: 'equipment',
+            currentProject: eq.currentProjectId ?? undefined,
+            projectName,
+            status: eq.status,
+            assetNumber: eq.assetNumber ?? undefined
+          });
+        }
+      });
 
-    setResults(searchResults.slice(0, 10)); // Limit to 10 results
-  }, [query, employees.length, equipment.length, projects.length]);
+      setResults(searchResults.slice(0, 10)); // Limit to 10 results
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [query, employees, equipment, projectMap]);
 
   // Handle click outside to close
   useEffect(() => {
