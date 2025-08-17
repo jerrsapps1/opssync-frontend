@@ -10,6 +10,8 @@ export function onDragEndFactory(fns: Fns) {
   return async function onDragEnd(result: DropResult) {
     const { destination, source, draggableId } = result;
     
+    console.log("🎯 Drag end:", { destination, source, draggableId });
+    
     if (!destination) return;
 
     // Ignore if dropped back in same location

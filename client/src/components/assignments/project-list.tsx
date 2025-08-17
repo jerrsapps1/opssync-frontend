@@ -33,7 +33,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
         {projects.map((project) => (
-          <Droppable key={project.id} droppableId={project.id} type="MIXED">
+          <Droppable key={project.id} droppableId={project.id}>
             {(provided, snapshot) => (
               <Box
                 ref={provided.innerRef}

@@ -72,7 +72,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
         Available Equipment ({visible.length})
       </h2>
 
-      <Droppable droppableId="equipment-unassigned" type="EQUIPMENT">
+      <Droppable droppableId="equipment-unassigned">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}

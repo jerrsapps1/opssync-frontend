@@ -135,7 +135,7 @@ export default function Dashboard() {
               </span>
               
               {/* Repair Shop Drop Zone */}
-              <Droppable droppableId="repair-shop" type="EQUIPMENT">
+              <Droppable droppableId="repair-shop">
               {(provided, snapshot) => (
                 <div
                   ref={provided.innerRef}
