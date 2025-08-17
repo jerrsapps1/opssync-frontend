@@ -77,7 +77,11 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`space-y-1 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
+            className={`space-y-1 transition-all duration-300 ${
+              snapshot.isDraggingOver 
+                ? "bg-[color:var(--brand-primary)]/20 rounded-lg p-2 ring-2 ring-[color:var(--brand-primary)]/30 scale-[1.01]" 
+                : ""
+            }`}
           >
             {visible.map((eq, index) => {
               const IconComponent = getEquipmentIcon(eq.type);
@@ -89,8 +93,10 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                       ref={dragProvided.innerRef}
                       {...dragProvided.draggableProps}
                       {...dragProvided.dragHandleProps}
-                      className={`p-2 transition-all select-none cursor-move border-gray-600 ${
-                        dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
+                      className={`p-2 transition-all duration-200 select-none cursor-move border-gray-600 ${
+                        dragSnapshot.isDragging 
+                          ? "bg-[color:var(--brand-accent)] shadow-2xl scale-105 rotate-2 z-50 ring-2 ring-[color:var(--brand-accent)]/50" 
+                          : "bg-[color:var(--brand-primary)] hover:brightness-110 hover:scale-[1.02] hover:shadow-lg"
                       }`}
                       data-testid={`equipment-${eq.id}`}
                       onDoubleClick={() => nav(`/directory`)}

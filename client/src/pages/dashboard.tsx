@@ -136,10 +136,10 @@ export default function Dashboard() {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer min-h-12 ${
+                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-all duration-300 cursor-pointer min-h-12 ${
                     snapshot.isDraggingOver
-                      ? "border-orange-400 bg-orange-900/30 scale-105"
-                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
+                      ? "border-orange-400 bg-orange-900/40 scale-110 shadow-2xl ring-4 ring-orange-400/30 animate-pulse"
+                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20 hover:border-orange-500 hover:scale-[1.02]"
                   }`}
                   onClick={() => navigate('/repair-shop')}
                   data-testid="repair-shop-drop-zone"
