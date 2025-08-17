@@ -10,6 +10,7 @@ import {
 } from "@shared/schema";
 import { storage } from "../storage";
 import { ObjectStorageService, ObjectNotFoundError } from "../objectStorage";
+import PDFDocument from "pdfkit";
 
 export function registerWorkOrderRoutes(app: Express) {
   const objectStorageService = new ObjectStorageService();
@@ -233,6 +234,108 @@ export function registerWorkOrderRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching work order activities:", error);
       res.status(500).json({ error: "Failed to fetch activities" });
+    }
+  });
+
+  // Invoice Generation
+  app.post("/api/work-orders/generate-invoice", async (req, res) => {
+    try {
+      const invoiceData = req.body;
+      
+      // Create PDF document
+      const doc = new PDFDocument({ margin: 50 });
+      let buffers: Buffer[] = [];
+      
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoiceData.workOrderTitle.replace(/\s+/g, '-')}-${invoiceData.dateCreated}.pdf"`);
+        res.send(pdfData);
+      });
+
+      // Header
+      doc.fontSize(20).font('Helvetica-Bold')
+         .text('REPAIR INVOICE', 50, 50);
+      
+      doc.fontSize(12).font('Helvetica')
+         .text(`Invoice Date: ${invoiceData.dateCreated}`, 50, 80)
+         .text(`Work Order: ${invoiceData.workOrderTitle}`, 50, 100)
+         .text(`Equipment: ${invoiceData.equipmentName}`, 50, 120);
+
+      if (invoiceData.workOrderId) {
+        doc.text(`Work Order ID: ${invoiceData.workOrderId}`, 50, 140);
+      }
+
+      // Line separator
+      doc.moveTo(50, 170).lineTo(550, 170).stroke();
+
+      // Cost breakdown
+      let y = 200;
+      doc.fontSize(14).font('Helvetica-Bold')
+         .text('Cost Breakdown:', 50, y);
+      
+      y += 30;
+      doc.fontSize(12).font('Helvetica');
+      
+      if (invoiceData.laborCost > 0) {
+        doc.text(`Labor Cost:`, 50, y)
+           .text(`$${invoiceData.laborCost.toFixed(2)}`, 450, y);
+        y += 20;
+      }
+      
+      if (invoiceData.partsCost > 0) {
+        doc.text(`Parts Cost:`, 50, y)
+           .text(`$${invoiceData.partsCost.toFixed(2)}`, 450, y);
+        y += 20;
+      }
+      
+      if (invoiceData.externalServiceCost > 0) {
+        doc.text(`External Service Cost:`, 50, y)
+           .text(`$${invoiceData.externalServiceCost.toFixed(2)}`, 450, y);
+        y += 20;
+      }
+
+      // Total
+      y += 20;
+      doc.moveTo(50, y).lineTo(550, y).stroke();
+      y += 20;
+      
+      doc.fontSize(16).font('Helvetica-Bold')
+         .text('Total Amount:', 50, y)
+         .text(`$${invoiceData.totalCost.toFixed(2)}`, 450, y);
+
+      // Additional information
+      if (invoiceData.assignedTo) {
+        y += 40;
+        doc.fontSize(12).font('Helvetica')
+           .text(`Technician: ${invoiceData.assignedTo}`, 50, y);
+      }
+
+      if (invoiceData.notes) {
+        y += 40;
+        doc.fontSize(12).font('Helvetica-Bold')
+           .text('Notes:', 50, y);
+        y += 20;
+        doc.fontSize(10).font('Helvetica')
+           .text(invoiceData.notes, 50, y, { width: 500 });
+      }
+
+      doc.end();
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      res.status(500).json({ error: "Failed to generate invoice" });
+    }
+  });
+
+  // Invoice Upload URL
+  app.post("/api/work-orders/invoice-upload-url", async (req, res) => {
+    try {
+      const uploadURL = await objectStorageService.getWorkOrderDocumentUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting invoice upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
     }
   });
 

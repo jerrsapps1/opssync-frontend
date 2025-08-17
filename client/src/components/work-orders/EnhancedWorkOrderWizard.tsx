@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Upload, DollarSign, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { FileText, Upload, DollarSign, AlertCircle, CheckCircle, Clock, Download, Receipt, Printer } from "lucide-react";
 import { ObjectUploader } from "./ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -56,6 +56,20 @@ interface DocumentUpload {
   uploadUrl?: string;
 }
 
+interface InvoiceData {
+  workOrderId?: string;
+  workOrderTitle: string;
+  equipmentName: string;
+  dateCreated: string;
+  estimatedCost: number;
+  laborCost: number;
+  partsCost: number;
+  externalServiceCost: number;
+  totalCost: number;
+  assignedTo?: string;
+  notes?: string;
+}
+
 export function EnhancedWorkOrderWizard({ 
   equipmentId, 
   equipmentName, 
@@ -67,6 +81,7 @@ export function EnhancedWorkOrderWizard({
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [totalCost, setTotalCost] = useState(0);
   const [approvalRequired, setApprovalRequired] = useState(false);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -183,6 +198,87 @@ export function EnhancedWorkOrderWizard({
     } catch (error) {
       console.error("Failed to get upload parameters:", error);
       throw error;
+    }
+  };
+
+  const generateInvoice = async () => {
+    setIsGeneratingInvoice(true);
+    try {
+      const formData = form.getValues();
+      const invoiceData: InvoiceData = {
+        workOrderId: editingWorkOrder?.id,
+        workOrderTitle: formData.title || "Work Order",
+        equipmentName,
+        dateCreated: new Date().toISOString().split('T')[0],
+        estimatedCost: formData.estimatedCost || 0,
+        laborCost: formData.laborCost || 0,
+        partsCost: formData.partsCost || 0,
+        externalServiceCost: formData.externalServiceCost || 0,
+        totalCost,
+        assignedTo: formData.assignedTo,
+        notes: formData.notes,
+      };
+
+      const response = await apiRequest("POST", "/api/work-orders/generate-invoice", invoiceData);
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `invoice-${invoiceData.workOrderTitle.replace(/\s+/g, '-')}-${invoiceData.dateCreated}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Invoice Generated",
+        description: "Invoice has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate invoice. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
+
+  const handleInvoiceUpload = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/work-orders/invoice-upload-url");
+      const { uploadURL } = await response.json();
+      return {
+        method: 'PUT' as const,
+        url: uploadURL,
+      };
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      throw error;
+    }
+  };
+
+  const handleInvoiceUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      const newDocument: DocumentUpload = {
+        id: Date.now().toString(),
+        filename: uploadedFile.name || "invoice.pdf",
+        documentType: "Invoice",
+        uploadUrl: uploadedFile.uploadURL,
+      };
+      
+      setDocuments(prev => [...prev, newDocument]);
+      
+      toast({
+        title: "Invoice Uploaded",
+        description: "Invoice has been uploaded successfully.",
+      });
     }
   };
 
@@ -422,24 +518,60 @@ export function EnhancedWorkOrderWizard({
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-200 mb-4">Document Uploads</h3>
+              <h3 className="text-lg font-semibold text-gray-200 mb-4">Invoice Management</h3>
               <p className="text-sm text-gray-400 mb-4">
-                Upload receipts, invoices, photos, warranties, or other relevant documents
+                Generate, upload, or manage invoices for this repair work order
               </p>
 
-              <ObjectUploader
-                maxNumberOfFiles={5}
-                maxFileSize={10485760} // 10MB
-                onGetUploadParameters={handleGetUploadParameters}
-                onComplete={handleUploadComplete}
-                buttonClassName="w-full mb-4"
-                acceptedFileTypes={['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xlsx', '.txt']}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <Upload className="h-4 w-4" />
-                  <span>Upload Documents</span>
-                </div>
-              </ObjectUploader>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <Button
+                  type="button"
+                  onClick={generateInvoice}
+                  disabled={isGeneratingInvoice || !totalCost}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  data-testid="button-generate-invoice"
+                >
+                  <Receipt className="h-4 w-4 mr-2" />
+                  {isGeneratingInvoice ? "Generating..." : "Generate Invoice"}
+                </Button>
+
+                <ObjectUploader
+                  maxNumberOfFiles={1}
+                  maxFileSize={10485760} // 10MB
+                  onGetUploadParameters={handleInvoiceUpload}
+                  onComplete={handleInvoiceUploadComplete}
+                  buttonClassName="w-full"
+                  acceptedFileTypes={['.pdf']}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Upload className="h-4 w-4" />
+                    <span>Upload Invoice</span>
+                  </div>
+                </ObjectUploader>
+              </div>
+
+              <Separator className="my-6" />
+
+              <div>
+                <h4 className="text-lg font-semibold text-gray-200 mb-4">Other Documents</h4>
+                <p className="text-sm text-gray-400 mb-4">
+                  Upload receipts, photos, warranties, or other relevant documents
+                </p>
+
+                <ObjectUploader
+                  maxNumberOfFiles={5}
+                  maxFileSize={10485760} // 10MB
+                  onGetUploadParameters={handleGetUploadParameters}
+                  onComplete={handleUploadComplete}
+                  buttonClassName="w-full mb-4"
+                  acceptedFileTypes={['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xlsx', '.txt']}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Upload className="h-4 w-4" />
+                    <span>Upload Documents</span>
+                  </div>
+                </ObjectUploader>
+              </div>
 
               {documents.length > 0 && (
                 <div className="space-y-2">
