@@ -32,6 +32,7 @@ export function Sidebar() {
         <Item to="/white-label">White Label Config</Item>
         <Item to="/org/branding">Branding Settings</Item>
         <Item to="/billing">Billing Management</Item>
+        <div className="mt-3 pt-3 border-t border-gray-800"></div>
         <Item to="/repair-shop">Repair Shop</Item>
       </nav>
 
