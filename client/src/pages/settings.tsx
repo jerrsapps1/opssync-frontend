@@ -31,7 +31,7 @@ export default function Settings() {
           <div>
             <h1 className="text-2xl font-semibold text-white">Settings</h1>
             <p className="text-sm text-gray-400">
-              Configure {brandConfig?.companyName || 'your organization'} preferences
+              Configure {brandConfig?.companyName || 'OpsSync.ai'} preferences
             </p>
           </div>
         </div>

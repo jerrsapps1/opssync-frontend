@@ -177,7 +177,7 @@ export default function Login({ brandConfig }: LoginProps) {
                 )}
                 
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-2 tracking-tight">
-                  {brandConfig?.appName || "StaffTrak"}
+                  {brandConfig?.appName || "OpsSync.ai"}
                 </h1>
                 <p className="text-gray-300 text-sm font-medium">
                   {isLogin ? "Welcome back to your workspace" : "Join our professional platform"}

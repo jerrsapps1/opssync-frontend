@@ -63,7 +63,7 @@ import { queryClient } from "./lib/queryClient";
 
 /** ======= Brand Configuration ======= **/
 const defaultBrandConfig = {
-  appName: "StaffTrak",
+  appName: "OpsSync.ai",
   primaryColor: "#4A90E2",
   secondaryColor: "#BB86FC",
   logoUrl: "https://cdn-icons-png.flaticon.com/512/2920/2920579.png",

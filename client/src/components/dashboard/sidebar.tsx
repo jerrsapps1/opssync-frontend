@@ -16,7 +16,7 @@ export function Sidebar() {
   return (
     <aside className="w-56 bg-[#111827] border-r border-gray-800 text-gray-200 flex flex-col">
       <div className="h-14 flex items-center px-4 text-lg font-semibold border-b border-gray-800">
-        StaffTrak
+        OpsSync.ai
       </div>
 
       <nav className="p-3 space-y-1">

@@ -21,10 +21,10 @@ export default function AppLayout() {
           {/* App branding */}
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <div className="text-white font-bold text-sm">S</div>
+              <div className="text-white font-bold text-sm">O</div>
             </div>
             <div className="font-bold text-lg bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              StaffTrak
+              OpsSync.ai
             </div>
           </div>
 

@@ -20,7 +20,7 @@ router.get("/config", async (req, res) => {
     if (result.rows.length === 0) {
       // Return default branding
       const defaultBranding = {
-        app_name: "StaffTrak",
+        app_name: "OpsSync.ai",
         primary_color: "#4A90E2",
         secondary_color: "#BB86FC",
         logo_url: null,
