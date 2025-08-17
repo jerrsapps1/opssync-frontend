@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EnhancedWorkOrderWizard } from "@/components/work-orders/EnhancedWorkOrderWizard";
-import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
 
@@ -46,6 +46,7 @@ export default function RepairShop() {
   
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [showWorkOrderWizard, setShowWorkOrderWizard] = useState(false);
+  const [editingWorkOrder, setEditingWorkOrder] = useState<WorkOrder | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const previousEquipmentCount = useRef(0);
   
@@ -149,6 +150,16 @@ export default function RepairShop() {
     queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
     setShowWorkOrderWizard(false);
     setSelectedEquipment(null);
+    setEditingWorkOrder(null);
+  };
+
+  const handleEditWorkOrder = (workOrder: WorkOrder) => {
+    const equipment = repairEquipment.find(eq => eq.id === workOrder.equipmentId);
+    if (equipment) {
+      setEditingWorkOrder(workOrder);
+      setSelectedEquipment(equipment);
+      setShowWorkOrderWizard(true);
+    }
   };
 
   const handleCompleteRepair = (equipmentId: string) => {
@@ -622,12 +633,32 @@ export default function RepairShop() {
                       {/* Expanded Details */}
                       {isExpanded && (
                         <div className="bg-gray-750 p-4 border-t border-gray-600">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-white font-medium flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
+                              Work Order Details
+                            </h4>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditWorkOrder(workOrder);
+                              }}
+                              size="sm"
+                              variant="outline"
+                              className="border-blue-600 text-blue-400 hover:bg-blue-900 flex items-center gap-2"
+                              data-testid={`button-edit-workorder-${workOrder.id}`}
+                            >
+                              <Edit3 className="h-3 w-3" />
+                              Edit Work Order
+                            </Button>
+                          </div>
+                          
                           <div className="grid grid-cols-2 gap-6">
                             <div>
-                              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                              <h5 className="text-white font-medium mb-3 flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
                                 Timeline & Details
-                              </h4>
+                              </h5>
                               <div className="space-y-2 text-sm">
                                 <div>
                                   <span className="text-gray-400">Reason:</span>
@@ -700,9 +731,11 @@ export default function RepairShop() {
         <EnhancedWorkOrderWizard
           equipmentId={selectedEquipment.id}
           equipmentName={selectedEquipment.name}
+          editingWorkOrder={editingWorkOrder}
           onClose={() => {
             setShowWorkOrderWizard(false);
             setSelectedEquipment(null);
+            setEditingWorkOrder(null);
           }}
           onSuccess={handleWorkOrderCreated}
         />

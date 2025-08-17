@@ -16,6 +16,7 @@ import { ObjectUploader } from "./ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { UploadResult } from "@uppy/core";
+import type { WorkOrder } from "@shared/schema";
 
 const workOrderSchema = z.object({
   equipmentId: z.string().min(1, "Equipment selection is required"),
@@ -44,6 +45,7 @@ interface EnhancedWorkOrderWizardProps {
   equipmentName: string;
   onClose: () => void;
   onSuccess?: () => void;
+  editingWorkOrder?: WorkOrder | null;
 }
 
 interface DocumentUpload {
@@ -58,7 +60,8 @@ export function EnhancedWorkOrderWizard({
   equipmentId, 
   equipmentName, 
   onClose, 
-  onSuccess 
+  onSuccess,
+  editingWorkOrder 
 }: EnhancedWorkOrderWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
@@ -69,7 +72,25 @@ export function EnhancedWorkOrderWizard({
 
   const form = useForm<WorkOrderFormData>({
     resolver: zodResolver(workOrderSchema),
-    defaultValues: {
+    defaultValues: editingWorkOrder ? {
+      equipmentId,
+      title: editingWorkOrder.title,
+      description: editingWorkOrder.description,
+      reason: editingWorkOrder.reason,
+      priority: editingWorkOrder.priority as "low" | "medium" | "high" | "urgent",
+      assignedTo: editingWorkOrder.assignedTo || "",
+      estimatedCost: editingWorkOrder.estimatedCost ? editingWorkOrder.estimatedCost / 100 : 0,
+      laborCost: editingWorkOrder.laborCost ? editingWorkOrder.laborCost / 100 : 0,
+      partsCost: editingWorkOrder.partsCost ? editingWorkOrder.partsCost / 100 : 0,
+      externalServiceCost: editingWorkOrder.externalServiceCost ? editingWorkOrder.externalServiceCost / 100 : 0,
+      jobNumber: editingWorkOrder.jobNumber || "",
+      poNumber: editingWorkOrder.poNumber || "",
+      vendorInvoiceNumber: editingWorkOrder.vendorInvoiceNumber || "",
+      costCenter: editingWorkOrder.costCenter || "",
+      warrantyInfo: editingWorkOrder.warrantyInfo || "",
+      notes: editingWorkOrder.notes || "",
+      technicianNotes: editingWorkOrder.technicianNotes || "",
+    } : {
       equipmentId,
       priority: "medium",
       estimatedCost: 0,
@@ -91,8 +112,16 @@ export function EnhancedWorkOrderWizard({
         approvalRequired,
       };
 
-      const response = await apiRequest("POST", "/api/work-orders", workOrderData);
-      const workOrderResult = await response.json();
+      let workOrderResult;
+      if (editingWorkOrder) {
+        // Update existing work order
+        const response = await apiRequest("PATCH", `/api/work-orders/${editingWorkOrder.id}`, workOrderData);
+        workOrderResult = await response.json();
+      } else {
+        // Create new work order
+        const response = await apiRequest("POST", "/api/work-orders", workOrderData);
+        workOrderResult = await response.json();
+      }
 
       // If there are documents, upload them
       if (data.documents.length > 0) {
@@ -113,11 +142,11 @@ export function EnhancedWorkOrderWizard({
       return workOrderResult;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/work-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
       toast({
         title: "Success",
-        description: "Work order created successfully",
+        description: editingWorkOrder ? "Work order updated successfully" : "Work order created successfully",
       });
       onSuccess?.();
       onClose();
@@ -125,10 +154,10 @@ export function EnhancedWorkOrderWizard({
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create work order",
+        description: editingWorkOrder ? "Failed to update work order" : "Failed to create work order",
         variant: "destructive",
       });
-      console.error("Failed to create work order:", error);
+      console.error(editingWorkOrder ? "Failed to update work order:" : "Failed to create work order:", error);
     },
   });
 
@@ -558,7 +587,7 @@ export function EnhancedWorkOrderWizard({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Create Work Order
+                {editingWorkOrder ? "Edit Work Order" : "Create Work Order"}
               </h2>
               <p className="text-gray-400 mt-1">Equipment: {equipmentName}</p>
             </div>
@@ -652,10 +681,10 @@ export function EnhancedWorkOrderWizard({
                 {createWorkOrderMutation.isPending ? (
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 animate-spin" />
-                    <span>Creating...</span>
+                    <span>{editingWorkOrder ? "Updating..." : "Creating..."}</span>
                   </div>
                 ) : (
-                  "Create Work Order"
+                  editingWorkOrder ? "Update Work Order" : "Create Work Order"
                 )}
               </Button>
             )}
