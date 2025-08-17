@@ -54,6 +54,7 @@ import OwnerBrandingControls from "./pages/OwnerBrandingControls";
 import WhiteLabelSettings from "./pages/WhiteLabelSettings";
 import RepairShop from "./pages/repair-shop";
 import Login from "./pages/Login";
+import SystemSettings from "./pages/system-settings";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -321,6 +322,11 @@ function AppRoutes() {
         <Route path="/repair-shop" element={
           <ProtectedRoute>
             <RepairShop />
+          </ProtectedRoute>
+        } />
+        <Route path="/system-settings" element={
+          <ProtectedRoute>
+            <SystemSettings />
           </ProtectedRoute>
         } />
         <Route path="/project/:id" element={

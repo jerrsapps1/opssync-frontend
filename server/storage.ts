@@ -1,6 +1,7 @@
 import { 
   projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, workOrders,
-  workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds,
+  workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds, systemSettings,
+  notifications, notificationRecipients,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
   type Equipment, type InsertEquipment, type UpdateEquipment,
@@ -26,7 +27,16 @@ import {
   type UpdateWorkOrderActivity,
   type CostApprovalThreshold,
   type InsertCostApprovalThreshold,
-  type UpdateCostApprovalThreshold
+  type UpdateCostApprovalThreshold,
+  type SystemSetting,
+  type InsertSystemSetting,
+  type UpdateSystemSetting,
+  type Notification,
+  type InsertNotification,
+  type UpdateNotification,
+  type NotificationRecipient,
+  type InsertNotificationRecipient,
+  type UpdateNotificationRecipient
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -111,6 +121,28 @@ export interface IStorage {
   createCostApprovalThreshold(threshold: InsertCostApprovalThreshold): Promise<CostApprovalThreshold>;
   updateCostApprovalThreshold(id: string, updates: UpdateCostApprovalThreshold): Promise<CostApprovalThreshold>;
   deleteCostApprovalThreshold(id: string): Promise<void>;
+  
+  // System Settings
+  getSystemSettings(): Promise<SystemSetting[]>;
+  getSystemSetting(key: string): Promise<SystemSetting | undefined>;
+  createSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
+  updateSystemSetting(key: string, updates: UpdateSystemSetting): Promise<SystemSetting>;
+  deleteSystemSetting(key: string): Promise<void>;
+  
+  // Notifications
+  getNotifications(userId?: string): Promise<Notification[]>;
+  getNotification(id: string): Promise<Notification | undefined>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  updateNotification(id: string, updates: UpdateNotification): Promise<Notification>;
+  deleteNotification(id: string): Promise<void>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
+  
+  // Notification Recipients
+  getNotificationRecipients(): Promise<NotificationRecipient[]>;
+  getNotificationRecipient(id: string): Promise<NotificationRecipient | undefined>;
+  createNotificationRecipient(recipient: InsertNotificationRecipient): Promise<NotificationRecipient>;
+  updateNotificationRecipient(id: string, updates: UpdateNotificationRecipient): Promise<NotificationRecipient>;
+  deleteNotificationRecipient(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -2029,6 +2061,115 @@ export class PostgreSQLStorage extends MemStorage {
 
   async deleteWorkOrder(id: string): Promise<void> {
     await db.delete(workOrders).where(eq(workOrders.id, id));
+  }
+
+  // System Settings implementation
+  async getSystemSettings(): Promise<SystemSetting[]> {
+    return await db.select().from(systemSettings).orderBy(systemSettings.key);
+  }
+
+  async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
+    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+    return setting;
+  }
+
+  async createSystemSetting(setting: InsertSystemSetting): Promise<SystemSetting> {
+    const [newSetting] = await db.insert(systemSettings).values(setting).returning();
+    return newSetting;
+  }
+
+  async updateSystemSetting(key: string, updates: UpdateSystemSetting): Promise<SystemSetting> {
+    const [updatedSetting] = await db
+      .update(systemSettings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(systemSettings.key, key))
+      .returning();
+    
+    if (!updatedSetting) {
+      throw new Error(`System setting with key ${key} not found`);
+    }
+    
+    return updatedSetting;
+  }
+
+  async deleteSystemSetting(key: string): Promise<void> {
+    await db.delete(systemSettings).where(eq(systemSettings.key, key));
+  }
+
+  // Notifications implementation
+  async getNotifications(userId?: string): Promise<Notification[]> {
+    if (userId) {
+      return await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+    }
+    return await db.select().from(notifications).orderBy(desc(notifications.createdAt));
+  }
+
+  async getNotification(id: string): Promise<Notification | undefined> {
+    const [notification] = await db.select().from(notifications).where(eq(notifications.id, id));
+    return notification;
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db.insert(notifications).values(notification).returning();
+    return newNotification;
+  }
+
+  async updateNotification(id: string, updates: UpdateNotification): Promise<Notification> {
+    const [updatedNotification] = await db
+      .update(notifications)
+      .set(updates)
+      .where(eq(notifications.id, id))
+      .returning();
+    
+    if (!updatedNotification) {
+      throw new Error(`Notification with id ${id} not found`);
+    }
+    
+    return updatedNotification;
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    await db.delete(notifications).where(eq(notifications.id, id));
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.userId, userId));
+  }
+
+  // Notification Recipients implementation
+  async getNotificationRecipients(): Promise<NotificationRecipient[]> {
+    return await db.select().from(notificationRecipients).orderBy(notificationRecipients.email);
+  }
+
+  async getNotificationRecipient(id: string): Promise<NotificationRecipient | undefined> {
+    const [recipient] = await db.select().from(notificationRecipients).where(eq(notificationRecipients.id, id));
+    return recipient;
+  }
+
+  async createNotificationRecipient(recipient: InsertNotificationRecipient): Promise<NotificationRecipient> {
+    const [newRecipient] = await db.insert(notificationRecipients).values(recipient).returning();
+    return newRecipient;
+  }
+
+  async updateNotificationRecipient(id: string, updates: UpdateNotificationRecipient): Promise<NotificationRecipient> {
+    const [updatedRecipient] = await db
+      .update(notificationRecipients)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(notificationRecipients.id, id))
+      .returning();
+    
+    if (!updatedRecipient) {
+      throw new Error(`Notification recipient with id ${id} not found`);
+    }
+    
+    return updatedRecipient;
+  }
+
+  async deleteNotificationRecipient(id: string): Promise<void> {
+    await db.delete(notificationRecipients).where(eq(notificationRecipients.id, id));
   }
 }
 

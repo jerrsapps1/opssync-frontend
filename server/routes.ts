@@ -1716,6 +1716,10 @@ Rules:
   app.use("/api/org-admin/entitlements", orgEntitlementsRouter);        // org feature status
   app.use("/api/white-label", whiteLabelRouter);                         // org white-label settings
 
+  // Import and register notification routes synchronously
+  const { registerNotificationRoutes } = await import("./routes/notification-routes");
+  registerNotificationRoutes(app);
+
   const httpServer = createServer(app);
   return httpServer;
 }

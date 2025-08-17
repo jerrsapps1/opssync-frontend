@@ -90,6 +90,21 @@ export function EnhancedWorkOrderWizard({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Fetch approval threshold from system settings
+  const { data: approvalThreshold = 1000 } = useQuery({
+    queryKey: ["/api/system-settings", "approval_threshold"],
+    select: (data: any) => {
+      if (data?.value) {
+        try {
+          return parseFloat(JSON.parse(data.value));
+        } catch {
+          return parseFloat(data.value);
+        }
+      }
+      return 1000;
+    }
+  });
+
   const form = useForm<WorkOrderFormData>({
     resolver: zodResolver(workOrderSchema),
     defaultValues: editingWorkOrder ? {
@@ -143,6 +158,23 @@ export function EnhancedWorkOrderWizard({
         // Create new work order
         const response = await apiRequest("POST", "/api/work-orders", workOrderData);
         workOrderResult = await response.json();
+        
+        // Send notifications if approval is required
+        if (approvalRequired) {
+          try {
+            await apiRequest("POST", "/api/notifications", {
+              type: "work_order_approval",
+              title: `Work Order Approval Required - $${finalCost.toFixed(2)}`,
+              message: `Work order "${data.title}" for ${equipmentName} requires approval. Total cost: $${finalCost.toFixed(2)} (exceeds threshold of $${approvalThreshold.toFixed(2)})`,
+              relatedId: workOrderResult.id,
+              relatedType: "work_order",
+              priority: finalCost > approvalThreshold * 2 ? "high" : "normal",
+            });
+          } catch (notificationError) {
+            console.error("Failed to send notification:", notificationError);
+            // Don't fail the work order creation if notification fails
+          }
+        }
       }
 
       // If there are documents, upload them
@@ -166,9 +198,17 @@ export function EnhancedWorkOrderWizard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      
+      const successMessage = editingWorkOrder 
+        ? "Work order updated successfully" 
+        : approvalRequired 
+          ? `Work order created and sent for approval (cost exceeds $${approvalThreshold.toFixed(2)} threshold)`
+          : "Work order created successfully";
+          
       toast({
         title: "Success",
-        description: editingWorkOrder ? "Work order updated successfully" : "Work order created successfully",
+        description: successMessage,
       });
       onSuccess?.();
       onClose();
@@ -199,7 +239,7 @@ export function EnhancedWorkOrderWizard({
     setTotalCost(subtotal);
     setTaxAmount(tax);
     setFinalCost(finalTotal);
-    setApprovalRequired(finalTotal > 1000); // Require approval for final costs over $1000
+    setApprovalRequired(finalTotal > approvalThreshold); // Use dynamic approval threshold
     
     return finalTotal;
   };
@@ -493,9 +533,31 @@ export function EnhancedWorkOrderWizard({
                 </div>
               </div>
               {approvalRequired && (
-                <div className="mt-2 flex items-center text-amber-400">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  <span className="text-sm">Management approval required for costs over $1,000</span>
+                <div className="mt-4 p-4 bg-yellow-900/50 border border-yellow-500/50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                    <p className="text-yellow-200 font-medium">Approval Required</p>
+                  </div>
+                  <p className="text-yellow-300 text-sm mt-2">
+                    This work order requires approval before work can begin (cost of ${finalCost.toFixed(2)} exceeds ${approvalThreshold.toFixed(2)} threshold). 
+                    Designated approvers will be notified via email and in-app notifications.
+                  </p>
+                  <div className="mt-3 flex items-center space-x-2">
+                    <Checkbox
+                      id="preAuthorized"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setApprovalRequired(false);
+                        } else {
+                          setApprovalRequired(finalCost > approvalThreshold);
+                        }
+                      }}
+                      data-testid="checkbox-pre-authorized"
+                    />
+                    <Label htmlFor="preAuthorized" className="text-sm text-yellow-200 cursor-pointer">
+                      Pre-authorized by supervisor (skip approval process)
+                    </Label>
+                  </div>
                 </div>
               )}
             </div>

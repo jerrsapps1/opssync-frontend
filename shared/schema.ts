@@ -400,6 +400,42 @@ export const costApprovalThresholds = pgTable("cost_approval_thresholds", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// System Settings table for configurable thresholds and notification preferences
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(), // work_order_approval_threshold, notification_emails, etc.
+  value: text("value").notNull(), // JSON stringified value
+  description: text("description"),
+  updatedBy: varchar("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Notifications table for in-app notifications
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  type: text("type").notNull(), // work-order-approval, work-order-created, work-order-completed, etc.
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  relatedId: text("related_id"), // ID of the related entity (work order, project, etc.)
+  relatedType: text("related_type"), // work_order, project, equipment, etc.
+  isRead: boolean("is_read").default(false),
+  priority: text("priority").default("normal"), // low, normal, high, urgent
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Notification Recipients table for email notifications
+export const notificationRecipients = pgTable("notification_recipients", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  name: text("name"),
+  role: text("role"), // approver, manager, supervisor, etc.
+  isActive: boolean("is_active").default(true),
+  notificationTypes: text("notification_types"), // JSON array of notification types they want to receive
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Work Order schema
 export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   id: true,
@@ -442,6 +478,31 @@ export const insertCostApprovalThresholdSchema = createInsertSchema(costApproval
 
 export const updateCostApprovalThresholdSchema = insertCostApprovalThresholdSchema.partial();
 
+// System Settings schemas
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const updateSystemSettingSchema = insertSystemSettingSchema.partial();
+
+// Notifications schemas
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateNotificationSchema = insertNotificationSchema.partial();
+
+// Notification Recipients schemas
+export const insertNotificationRecipientSchema = createInsertSchema(notificationRecipients).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateNotificationRecipientSchema = insertNotificationRecipientSchema.partial();
+
 // Project Activity Log schema
 export const insertProjectActivityLogSchema = z.object({
   date: z.string(),
@@ -476,6 +537,22 @@ export type UpdateWorkOrderApproval = z.infer<typeof updateWorkOrderApprovalSche
 export type WorkOrderActivity = typeof workOrderActivities.$inferSelect;
 export type InsertWorkOrderActivity = z.infer<typeof insertWorkOrderActivitySchema>;
 export type UpdateWorkOrderActivity = z.infer<typeof updateWorkOrderActivitySchema>;
+
+export type CostApprovalThreshold = typeof costApprovalThresholds.$inferSelect;
+export type InsertCostApprovalThreshold = z.infer<typeof insertCostApprovalThresholdSchema>;
+export type UpdateCostApprovalThreshold = z.infer<typeof updateCostApprovalThresholdSchema>;
+
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+export type UpdateSystemSetting = z.infer<typeof updateSystemSettingSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
+
+export type NotificationRecipient = typeof notificationRecipients.$inferSelect;
+export type InsertNotificationRecipient = z.infer<typeof insertNotificationRecipientSchema>;
+export type UpdateNotificationRecipient = z.infer<typeof updateNotificationRecipientSchema>;
 
 export type CostApprovalThreshold = typeof costApprovalThresholds.$inferSelect;
 export type InsertCostApprovalThreshold = z.infer<typeof insertCostApprovalThresholdSchema>;

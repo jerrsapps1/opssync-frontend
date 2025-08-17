@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Box, Flex, Text, Avatar, Badge, Spinner } from "@chakra-ui/react";
 import { User, Clock } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 import { useState, useEffect } from "react";
 
 interface User {
@@ -105,6 +106,8 @@ export function DashboardHeader() {
               {formatTime(currentTime)}
             </Text>
           </Flex>
+
+          <NotificationBell />
 
           <Flex align="center" gap={3}>
             <Avatar
