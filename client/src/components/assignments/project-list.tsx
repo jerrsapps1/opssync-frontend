@@ -68,6 +68,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   transform: "translateY(-1px)",
                 }}
                 onClick={() => {
+                  console.log("Project clicked:", project.id, project.name);
                   if (project.id === "repair-shop") {
                     navigate("/repair-shop");
                   } else {

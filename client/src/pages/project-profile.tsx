@@ -50,11 +50,13 @@ export default function ProjectProfile() {
   const [selectedEmployees, setSelectedEmployees] = useState<Set<string>>(new Set());
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
 
-  const { data: project } = useQuery({ 
+  const { data: project, isLoading: projectLoading, error: projectError } = useQuery({ 
     queryKey: ["projects", id], 
     queryFn: () => getProject(id), 
     enabled: !!id 
   });
+
+  console.log("ProjectProfile render:", { id, project, projectLoading, projectError });
   const { data: employees = [] } = useQuery({ 
     queryKey: ["/api", "employees"], 
     queryFn: getEmployees
@@ -108,7 +110,9 @@ export default function ProjectProfile() {
     }
   });
 
-  if (!project) return <div className="p-4 text-gray-400">Loading…</div>;
+  if (projectLoading) return <div className="p-4 text-gray-400">Loading project {id}...</div>;
+  if (projectError) return <div className="p-4 text-red-400">Error loading project: {(projectError as any)?.message}</div>;
+  if (!project) return <div className="p-4 text-gray-400">Project not found</div>;
 
   const assignedEmp = employees.filter(e => e.currentProjectId === id);
   const assignedEq = equipment.filter(e => e.currentProjectId === id);
