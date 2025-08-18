@@ -301,7 +301,7 @@ export default function ProjectProfile() {
                 className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
                 data-testid="input-start-date"
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-sm text-gray-400 font-medium">
                 {project.startDate ? new Date(project.startDate).toLocaleDateString() : ''}
               </span>
             </div>
@@ -314,12 +314,12 @@ export default function ProjectProfile() {
                 className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
                 data-testid="input-end-date"
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-sm text-gray-400 font-medium">
                 {project.endDate ? new Date(project.endDate).toLocaleDateString() : ''}
               </span>
             </div>
           </div>
-          <div className="text-xs text-gray-400 mt-2 font-medium">
+          <div className="text-sm text-gray-300 mt-2 font-medium">
             {durationDays !== null ? `${durationDays} days` : "Set both dates to compute duration"}
           </div>
         </div>
