@@ -70,6 +70,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Equipment ({visible.length})
+        {visible.length === 0 && <span className="text-orange-400"> - No unassigned equipment</span>}
       </h2>
 
       <Droppable droppableId="equipment-unassigned">

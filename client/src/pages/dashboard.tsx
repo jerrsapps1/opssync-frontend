@@ -85,7 +85,9 @@ export default function Dashboard() {
     totalEmployees: employees.length,
     totalEquipment: equipment.length,
     isLoading,
-    errors: { projectsError, employeesError, equipmentError }
+    errors: { projectsError, employeesError, equipmentError },
+    projectsData: projects.slice(0, 2),
+    employeesData: employees.slice(0, 2)
   });
 
 

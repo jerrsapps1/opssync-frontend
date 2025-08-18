@@ -17,6 +17,7 @@ interface EmployeeListProps {
 }
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
+  console.log("EmployeeList render:", { employees: employees?.length, isLoading });
   const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("employees");
   const { projectId } = useSelection();
@@ -65,6 +66,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     <div className="flex-1 p-3 overflow-y-auto">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Employees ({filteredEmployees.length})
+        {filteredEmployees.length === 0 && <span className="text-orange-400"> - No unassigned employees</span>}
       </h2>
 
       

@@ -13,6 +13,7 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ projects, employees = [], equipment = [] }: ProjectListProps) {
+  console.log("ProjectList render:", { projects: projects?.length, employees: employees?.length });
   const { projectId, setProjectId } = useSelection();
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
@@ -28,7 +29,10 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       overflowY="auto"
       bg="gray.800"
     >
-      <Heading size="md" mb={4} color="white">Projects</Heading>
+      <Heading size="md" mb={4} color="white">
+        Projects ({projects.length})
+        {projects.length === 0 && <Text color="orange.400" fontSize="sm"> - No projects found</Text>}
+      </Heading>
       
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
