@@ -43,6 +43,31 @@ export default function Login({ brandConfig }: LoginProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    console.log("Login form submitted:", { isLogin, formData: { ...formData, password: '[REDACTED]' } });
+    
+    // TEMPORARY: Since backend is not available, simulate successful login for testing
+    if (formData.username === "demo" && formData.password === "demo123") {
+      const mockResult = {
+        user: { id: "test-user-001", username: "demo", brandConfig: "{}" },
+        token: "mock-jwt-token"
+      };
+      
+      console.log("Using mock authentication:", mockResult);
+      login(mockResult.user, mockResult.token);
+      
+      toast({
+        title: "Welcome back!",
+        description: `Logged in as ${mockResult.user.username}`,
+      });
+      
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 100);
+      
+      setIsLoading(false);
+      return;
+    }
 
     try {
       if (!isLogin) {
@@ -53,6 +78,7 @@ export default function Login({ brandConfig }: LoginProps) {
             description: "Please make sure your passwords match.",
             variant: "destructive",
           });
+          setIsLoading(false);
           return;
         }
         
@@ -76,6 +102,7 @@ export default function Login({ brandConfig }: LoginProps) {
         
         setIsLogin(true);
         setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
+        setIsLoading(false);
         return;
       }
 

@@ -50,6 +50,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
+      // TEMPORARY: Mock validation while backend is not available
+      if (token === "mock-jwt-token") {
+        const mockUserData = { id: "test-user-001", username: "demo", brandConfig: "{}" };
+        setUser(mockUserData);
+        return;
+      }
+      
       // Validate token with backend
       const response = await fetch("/api/auth/validate", {
         headers: {
