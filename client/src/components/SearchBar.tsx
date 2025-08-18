@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Users, Wrench, X } from "lucide-react";
 import type { Employee, Equipment, Project } from "@shared/schema";
@@ -37,11 +37,13 @@ export function SearchBar({ onClose }: SearchBarProps) {
     queryKey: ["/api", "projects"]
   });
 
-  // Create project lookup map
-  const projectMap = (projects as Project[]).reduce((map, project) => {
-    map[project.id] = project.name;
-    return map;
-  }, {} as Record<string, string>);
+  // Create project lookup map - memoized to prevent infinite re-renders
+  const projectMap = useMemo(() => {
+    return (projects as Project[]).reduce((map, project) => {
+      map[project.id] = project.name;
+      return map;
+    }, {} as Record<string, string>);
+  }, [projects]);
 
   useEffect(() => {
     if (query.length < 2) {
