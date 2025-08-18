@@ -1,7 +1,7 @@
 import { Box, VStack, Text, Heading, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useSelection } from "@/state/selection";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 import type { Project } from "@shared/schema";
@@ -16,6 +16,9 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
   console.log("ProjectList render:", { projects: projects?.length, employees: employees?.length });
   const { projectId, setProjectId } = useSelection();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  console.log("Current location:", location.pathname);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
   // Remove repair shop code - moved to equipment section
@@ -67,13 +70,18 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   borderColor: "blue.500",
                   transform: "translateY(-1px)",
                 }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   console.log("Project clicked:", project.id, project.name);
+                  console.log("Attempting navigation to:", `/projects/${project.id}`);
+                  
+                  // Try direct window navigation as a fallback
                   if (project.id === "repair-shop") {
-                    navigate("/repair-shop");
+                    window.location.href = "/repair-shop";
                   } else {
-                    navigate(`/projects/${project.id}`);
+                    window.location.href = `/projects/${project.id}`;
                   }
+                  console.log("Direct navigation triggered for project:", project.id);
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
