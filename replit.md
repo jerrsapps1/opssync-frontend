@@ -23,6 +23,13 @@ Focus on efficient, immediate solutions without unnecessary back-and-forth.
 - Implemented dual access method: sidebar navigation for page visits + drag-and-drop zone for equipment assignment
 - Equipment assignment to repair shop properly updates status to "maintenance" and triggers work order creation
 
+**January 18, 2025**: UI improvements and authentication system fixes
+- Enhanced project profile date display: Increased font sizes from text-xs to text-sm for start/end dates and duration display
+- Added font-medium weight and improved color contrast (text-gray-400/300) for better readability
+- Implemented temporary mock authentication system to resolve signin/signup button issues while backend server configuration is addressed
+- Added mock login functionality for "demo/demo123" credentials to allow immediate testing
+- Identified backend server startup issues preventing Express authentication endpoints from running properly
+
 # System Architecture
 
 ## Frontend Architecture
