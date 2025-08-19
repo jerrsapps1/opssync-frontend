@@ -1,24 +1,17 @@
+import React from "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App";
-import { ToastProvider } from "./ui/toast";
-import RealtimeBridge from "./realtime/RealtimeBridge";
-import "./index.css";
-import "./styles/dnd.css";
-import "./styles/mobile.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
-});
+function App() {
+  return (
+    <div style={{ padding: "20px", fontFamily: "Inter, sans-serif" }}>
+      <h1>OpsSync.ai - System Test</h1>
+      <p>React is working correctly</p>
+      <p>Vite dev server is operational</p>
+    </div>
+  );
+}
 
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <ToastProvider />
-    <RealtimeBridge />
-    <App />
-  </QueryClientProvider>
-);
+const root = document.getElementById("root");
+if (root) {
+  createRoot(root).render(<App />);
+}
