@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Wrench, Truck, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContextMenu from "@/components/common/ContextMenu";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { Equipment, Project } from "@shared/schema";
 
@@ -16,7 +16,7 @@ interface EquipmentListProps {
 }
 
 export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
-  const nav = useNavigate();
+  const [, setLocation] = useLocation();
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
   async function unassign(id: string) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +24,9 @@ export default function Login({ brandConfig }: LoginProps) {
     confirmPassword: ""
   });
   
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
-  
-  // Get redirect path from location state or default to dashboard
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   useEffect(() => {
     // Apply brand colors to login page
@@ -62,7 +58,7 @@ export default function Login({ brandConfig }: LoginProps) {
       });
       
       setTimeout(() => {
-        navigate(from, { replace: true });
+        setLocation("/dashboard");
       }, 100);
       
       setIsLoading(false);
@@ -130,7 +126,7 @@ export default function Login({ brandConfig }: LoginProps) {
 
       // Small delay to ensure state is updated before navigation
       setTimeout(() => {
-        navigate(from, { replace: true });
+        setLocation("/dashboard");
       }, 100);
       
     } catch (error: any) {

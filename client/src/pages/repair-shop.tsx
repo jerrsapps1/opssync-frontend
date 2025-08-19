@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -247,7 +247,7 @@ export default function RepairShop() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => setLocation('/dashboard')}
                 variant="outline"
                 className="text-gray-300 border-gray-600 hover:bg-gray-800"
               >

@@ -5,7 +5,7 @@ import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import CompletenessBadge from "@/components/common/CompletenessBadge";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import type { Project } from "@shared/schema";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ function projectCompleteness(p: ProjectRow) {
 }
 
 export default function DirectoryPage({ projects: projectsProp }: { projects?: Project[] }) {
-  const nav = useNavigate();
+  const [, setLocation] = useLocation();
   const [tab, setTab] = React.useState<"employees"|"equipment"|"projects">("employees");
   const { data: employees = [] } = useQuery({ queryKey: ["dir-employees"], queryFn: getEmployees });
   const { data: equipment = [] } = useQuery({ queryKey: ["dir-equipment"], queryFn: getEquipment });
@@ -164,7 +164,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
             <TBody>
               {employees.map(e => (
                 <TR key={e.id}
-                  onDoubleClick={()=>nav(`/employees/${e.id}`)}
+                  onDoubleClick={()=>setLocation(`/employees/${e.id}`)}
                   onContextMenu={(ev)=>{ev.preventDefault(); setMenu({kind:"emp", id:e.id, x:ev.clientX, y:ev.clientY});}}
                   className="cursor-default"
                 >
@@ -193,7 +193,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
             <TBody>
               {equipment.map(e => (
                 <TR key={e.id}
-                  onDoubleClick={()=>nav(`/equipment/${e.id}`)}
+                  onDoubleClick={()=>setLocation(`/equipment/${e.id}`)}
                   onContextMenu={(ev)=>{ev.preventDefault(); setMenu({kind:"eq", id:e.id, x:ev.clientX, y:ev.clientY});}}
                   className="cursor-default"
                 >
@@ -235,7 +235,7 @@ export default function DirectoryPage({ projects: projectsProp }: { projects?: P
           pos={{ x: menu.x, y: menu.y }}
           onClose={()=>setMenu(null)}
           items={[
-            { label: "Open profile", onClick: ()=>{ nav(menu.kind==="emp"?`/employees/${menu.id}`:`/equipment/${menu.id}`); setMenu(null);} },
+            { label: "Open profile", onClick: ()=>{ setLocation(menu.kind==="emp"?`/employees/${menu.id}`:`/equipment/${menu.id}`); setMenu(null);} },
             { label: "Assign…", onClick: ()=>{ setAssignPos({ id: menu.id, x: menu.x, y: menu.y }); setMenu(null);} },
             { label: "Unassign", onClick: async ()=>{ await assign(menu.kind, menu.id, null); setMenu(null);} },
           ]}

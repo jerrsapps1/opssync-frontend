@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Wrench, Truck, Hammer } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
@@ -18,7 +18,7 @@ interface EquipmentListProps {
 }
 
 export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
-  const nav = useNavigate();
+  const [, setLocation] = useLocation();
   const { setAssignment } = useAssignmentSync("equipment");
   const { projectId } = useSelection();
 
@@ -100,7 +100,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                           : "bg-[color:var(--brand-primary)] hover:brightness-110 hover:scale-[1.02] hover:shadow-lg"
                       }`}
                       data-testid={`equipment-${eq.id}`}
-                      onDoubleClick={() => nav(`/directory`)}
+                      onDoubleClick={() => setLocation(`/directory`)}
                       onContextMenu={(e) => openContext(e, eq.id)}
                     >
                       <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { label: "View in Directory", onClick: () => { nav(`/directory`); setMenu(null); } },
+            { label: "View in Directory", onClick: () => { setLocation(`/directory`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
             { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}

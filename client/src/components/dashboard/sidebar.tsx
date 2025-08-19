@@ -1,17 +1,19 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 
 export function Sidebar() {
-  const Item = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `block px-3 py-2 rounded text-sm ${isActive ? "bg-gray-800 text-white" : "text-gray-300 hover:bg-gray-800"}`
-      }
-    >
-      {children}
-    </NavLink>
-  );
+  const [location] = useLocation();
+  
+  const Item = ({ to, children }: { to: string; children: React.ReactNode }) => {
+    const isActive = location === to;
+    return (
+      <Link href={to}>
+        <a className={`block px-3 py-2 rounded text-sm ${isActive ? "bg-gray-800 text-white" : "text-gray-300 hover:bg-gray-800"}`}>
+          {children}
+        </a>
+      </Link>
+    );
+  };
 
   return (
     <aside className="w-56 bg-[#111827] border-r border-gray-800 text-gray-200 flex flex-col">

@@ -1,7 +1,7 @@
 import { Box, VStack, Text, Heading, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useSelection } from "@/state/selection";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "wouter";
 import { useState } from "react";
 
 import type { Project } from "@shared/schema";
@@ -15,10 +15,9 @@ interface ProjectListProps {
 export function ProjectList({ projects, employees = [], equipment = [] }: ProjectListProps) {
   console.log("ProjectList render:", { projects: projects?.length, employees: employees?.length });
   const { projectId, setProjectId } = useSelection();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [location, setLocation] = useLocation();
   
-  console.log("Current location:", location.pathname);
+  console.log("Current location:", location);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
   // Remove repair shop code - moved to equipment section
@@ -194,7 +193,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
               _hover={{ bg: "gray.700" }}
               cursor="pointer"
               onClick={() => {
-                navigate(`/projects/${contextMenu.project.id}`);
+                setLocation(`/projects/${contextMenu.project.id}`);
                 setContextMenu(null);
               }}
             >

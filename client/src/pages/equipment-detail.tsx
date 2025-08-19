@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ async function updateEquipment(e: Equipment) {
 
 export default function EquipmentDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["equipment", id], queryFn: () => fetchEquipment(id!), enabled: !!id });
   const [form, setForm] = React.useState<Equipment | null>(null);
@@ -43,7 +43,7 @@ export default function EquipmentDetail() {
       {/* Page Header with Brand Logo Placeholder */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-[color:var(--card)]">
+          <Button variant="ghost" onClick={() => setLocation('/dashboard')} className="text-white hover:bg-[color:var(--card)]">
             ← Back
           </Button>
           {brandConfig?.logoUrl && (

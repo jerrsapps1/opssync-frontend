@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
 export default function SettingsIndex() {
@@ -13,15 +13,14 @@ export default function SettingsIndex() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const [location] = useLocation();
   const Item = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <NavLink
+    <Link
       to={to}
-      className={({ isActive }) =>
-        `px-3 py-2 rounded-[var(--brand-radius)] text-sm mr-2 ${isActive ? "bg-[color:var(--brand-primary)] text-white" : "bg-gray-800 text-gray-200 hover:brightness-110"}`
-      }
+      className={`px-3 py-2 rounded-[var(--brand-radius)] text-sm mr-2 ${location === to ? "bg-[color:var(--brand-primary)] text-white" : "bg-gray-800 text-gray-200 hover:brightness-110"}`}
     >
       {children}
-    </NavLink>
+    </Link>
   );
 
   return (
@@ -55,7 +54,7 @@ export default function SettingsIndex() {
       
       {/* Content Area */}
       <div className="rounded border border-gray-800 bg-[#0b1220]">
-        <Outlet />
+        {/* Settings content placeholder - settings routes would be handled by parent App component */}
       </div>
 
       {/* Company Footer */}

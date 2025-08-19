@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDragDrop } from "@/hooks/use-drag-drop";
@@ -41,7 +41,7 @@ function elapsedPct(start?: string | Date | null, end?: string | Date | null) {
 
 export default function ProjectProfile() {
   const { id = "" } = useParams();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const qc = useQueryClient();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const { toast } = useToast();
@@ -271,12 +271,14 @@ export default function ProjectProfile() {
       <ProjectTemplate 
         project={{
           ...project,
-          description: project.description || undefined
+          description: project.description || undefined,
+          priority: project.priority || undefined,
+          riskLevel: project.riskLevel || undefined
         }}
         assignedEmployees={assignedEmp}
         assignedEquipment={assignedEq}
         onExport={exportToExcel}
-        onBack={() => navigate('/dashboard')}
+        onBack={() => setLocation('/dashboard')}
       />
 
       {/* Interactive Assignment Sections */}

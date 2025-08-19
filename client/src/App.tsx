@@ -19,7 +19,7 @@ import {
   CloseButton,
 } from "@chakra-ui/react";
 // Removed unused icon imports
-import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
+import { Route, Switch, Router, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import pages
@@ -251,166 +251,316 @@ function AppRoutes() {
   const { user } = useAuth();
   
   return (
-    <Routes>
+    <Switch>
       {/* Public login route */}
-      <Route 
-        path="/login" 
-        element={
-          <Login 
-            brandConfig={user?.brandConfig || defaultBrandConfig}
-          />
-        } 
-      />
+      <Route path="/login">
+        {() => <Login brandConfig={user?.brandConfig || defaultBrandConfig} />}
+      </Route>
+      
+      {/* Root redirect */}
+      <Route path="/">
+        {() => <ProtectedRoute><Redirect to="/dashboard" /></ProtectedRoute>}
+      </Route>
       
       {/* Protected routes */}
-      <Route element={<AppLayout />}>
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Navigate to="/dashboard" replace />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/employees" element={
-          <ProtectedRoute>
-            <EmployeesPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/equipment" element={
-          <ProtectedRoute>
-            <EquipmentPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/projects" element={
-          <ProtectedRoute>
-            <ProjectsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/analytics" element={
-          <ProtectedRoute>
-            <AnalyticsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <SettingsIndex />
-          </ProtectedRoute>
-        }>
-          <Route path="projects" element={<ProjectSettings />} />
-          <Route path="equipment" element={<SettingsEquipment />} />
-          <Route path="employees" element={<SettingsEmployees />} />
-          <Route path="privacy" element={<PrivacySettings />} />
-        </Route>
-        <Route path="/equipment/:id" element={
-          <ProtectedRoute>
-            <EquipmentDetail />
-          </ProtectedRoute>
-        } />
-        <Route path="/employees/:id" element={
-          <ProtectedRoute>
-            <EmployeeDetail />
-          </ProtectedRoute>
-        } />
-        <Route path="/projects/:id" element={
-          <ProtectedRoute>
-            <ProjectProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/repair-shop" element={
-          <ProtectedRoute>
-            <RepairShop />
-          </ProtectedRoute>
-        } />
-        <Route path="/system-settings" element={
-          <ProtectedRoute>
-            <SystemSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/project/:id" element={
-          <ProtectedRoute>
-            <ProjectProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/directory" element={
-          <ProtectedRoute>
-            <DirectoryPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/history" element={
-          <ProtectedRoute>
-            <HistoryPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/supervisor" element={
-          <ProtectedRoute>
-            <SupervisorPortal />
-          </ProtectedRoute>
-        } />
-        <Route path="/manager" element={
-          <ProtectedRoute>
-            <ManagerDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/org/settings" element={
-          <ProtectedRoute>
-            <OrgSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/owner/settings" element={
-          <ProtectedRoute>
-            <OwnerSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/owner/branding" element={
-          <ProtectedRoute>
-            <OwnerBrandingControls />
-          </ProtectedRoute>
-        } />
-        <Route path="/org/branding" element={
-          <ProtectedRoute>
-            <BrandingSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/org/white-label" element={
-          <ProtectedRoute>
-            <WhiteLabelSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/billing" element={
-          <ProtectedRoute>
-            <BillingSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/analytics" element={
-          <ProtectedRoute>
-            <AdvancedAnalytics />
-          </ProtectedRoute>
-        } />
-        <Route path="/pricing" element={
-          <ProtectedRoute>
-            <PricingPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/assignments" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/builder" element={
-          <ProtectedRoute>
-            <Navigate to="/employees" replace />
-          </ProtectedRoute>
-        } />
-        <Route path="/white-label" element={
-          <ProtectedRoute>
-            <WhiteLabelPage />
-          </ProtectedRoute>
-        } />
+      <Route path="/dashboard">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
       </Route>
-    </Routes>
+      
+      <Route path="/employees">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <EmployeesPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/equipment">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <EquipmentPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/projects">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/analytics">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <AdvancedAnalytics />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/settings">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <SettingsIndex />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/settings/projects">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <ProjectSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/settings/equipment">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <SettingsEquipment />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/settings/employees">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <SettingsEmployees />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/settings/privacy">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <PrivacySettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/equipment/:id">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <EquipmentDetail />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/employees/:id">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <EmployeeDetail />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/projects/:id">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <ProjectProfile />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/project/:id">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <ProjectProfile />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/repair-shop">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <RepairShop />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/system-settings">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <SystemSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/directory">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <DirectoryPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/history">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <HistoryPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/supervisor">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <SupervisorPortal />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/manager">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <ManagerDashboard />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/org/settings">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <OrgSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/owner/settings">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <OwnerSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/owner/branding">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <OwnerBrandingControls />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/org/branding">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <BrandingSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/org/white-label">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <WhiteLabelSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/billing">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <BillingSettings />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/pricing">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <PricingPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/assignments">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+      
+      <Route path="/builder">
+        {() => (
+          <ProtectedRoute>
+            <Redirect to="/employees" />
+          </ProtectedRoute>
+        )}
+      </Route>
+      
+      <Route path="/white-label">
+        {() => (
+          <AppLayout>
+            <ProtectedRoute>
+              <WhiteLabelPage />
+            </ProtectedRoute>
+          </AppLayout>
+        )}
+      </Route>
+    </Switch>
   );
 }
 
@@ -421,9 +571,7 @@ export default function App() {
       <ChakraProvider theme={createTheme(defaultBrandConfig)}>
         <AuthProvider>
           <AppProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
+            <AppRoutes />
           </AppProvider>
         </AuthProvider>
       </ChakraProvider>
