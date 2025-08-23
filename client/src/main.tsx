@@ -1,9 +1,8 @@
-// Simple working version
-document.getElementById("root")!.innerHTML = `
-  <div style="padding: 20px; font-family: Inter">
-    <h1>OpsSync.ai</h1>
-    <p>Repair Shop Management System</p>
-    <p>✓ Basic version is working!</p>
-    <p>Backend server operational on port 5000</p>
-  </div>
-`;
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+const el = document.getElementById("root");
+if (!el) throw new Error("#root not found");
+
+createRoot(el).render(<App />);
