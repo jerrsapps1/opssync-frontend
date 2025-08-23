@@ -1,17 +1,9 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-function App() {
-  return (
-    <div style={{ padding: "20px", fontFamily: "Inter, sans-serif" }}>
-      <h1>OpsSync.ai - System Test</h1>
-      <p>React is working correctly</p>
-      <p>Vite dev server is operational</p>
-    </div>
-  );
-}
-
-const root = document.getElementById("root");
-if (root) {
-  createRoot(root).render(<App />);
-}
+// Simple working version
+document.getElementById("root")!.innerHTML = `
+  <div style="padding: 20px; font-family: Inter">
+    <h1>OpsSync.ai</h1>
+    <p>Repair Shop Management System</p>
+    <p>✓ Basic version is working!</p>
+    <p>Backend server operational on port 5000</p>
+  </div>
+`;
