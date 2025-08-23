@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useLocation } from "wouter";
+const useNavigate = () => {
+  const [, setLocation] = useLocation();
+  return setLocation;
+};
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +43,7 @@ async function getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
 }
 
 export default function RepairShop() {
+  const [, setLocation] = useLocation();
   const navigate = useNavigate();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const { toast } = useToast();
