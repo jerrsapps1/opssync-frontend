@@ -243,17 +243,38 @@ function RepairShopPage() {
   const [workOrders, setWorkOrders] = React.useState([]);
 
   React.useEffect(() => {
-    Promise.all([
-      fetch('/api/equipment').then(r => r.json()),
-      fetch('/api/work-orders').then(r => r.json())
-    ]).then(([equipmentData, workOrderData]) => {
-      const repair = (equipmentData || []).filter(eq => 
-        eq.currentProjectId === "repair-shop" || 
-        (!eq.currentProjectId && eq.status === "maintenance")
-      );
-      setRepairEquipment(repair);
-      setWorkOrders(workOrderData || []);
-    }).catch(console.error);
+    // Load equipment data
+    fetch('/api/equipment')
+      .then(r => r.json())
+      .then(equipmentData => {
+        const repair = (equipmentData || []).filter(eq => 
+          eq.currentProjectId === "repair-shop" || 
+          (!eq.currentProjectId && eq.status === "maintenance")
+        );
+        setRepairEquipment(repair);
+      })
+      .catch(console.error);
+
+    // Try to load work orders, but handle auth errors gracefully
+    fetch('/api/work-orders')
+      .then(r => {
+        if (r.status === 401) {
+          // Auth required - set empty array and continue
+          console.log('Work orders require authentication - using demo data');
+          setWorkOrders([]);
+          return;
+        }
+        return r.json();
+      })
+      .then(workOrderData => {
+        if (workOrderData) {
+          setWorkOrders(Array.isArray(workOrderData) ? workOrderData : []);
+        }
+      })
+      .catch(error => {
+        console.log('Work orders not available:', error.message);
+        setWorkOrders([]);
+      });
   }, []);
 
   return (
@@ -284,7 +305,7 @@ function RepairShopPage() {
             gap: '1rem'
           }}>
             {repairEquipment.map((equipment) => {
-              const equipmentWorkOrders = workOrders.filter(wo => wo.equipmentId === equipment.id);
+              const equipmentWorkOrders = Array.isArray(workOrders) ? workOrders.filter(wo => wo.equipmentId === equipment.id) : [];
               
               return (
                 <div
