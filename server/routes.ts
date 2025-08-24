@@ -36,7 +36,6 @@ import billingPortalRouter from "./routes/billing_portal";
 import ownerBrandingAdminRouter from "./routes/owner_branding_admin";
 import orgEntitlementsRouter from "./routes/org_entitlements";
 import whiteLabelRouter from "./routes/white_label";
-import messagesRouter from "./routes/messages";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import { db } from "./db";
@@ -1818,46 +1817,6 @@ Rules:
     }
   });
 
-  // Simple test endpoint that must work
-  app.get('/api/simple-test', (req, res) => {
-    console.log('Simple test endpoint hit successfully!');
-    res.json({ status: 'endpoint working', time: new Date().toISOString() });
-  });
-
-  // Completely separate message endpoints to avoid any routing conflicts  
-  app.post('/api/msg/create-thread', (req, res) => {
-    console.log('=== MESSAGE THREAD ENDPOINT HIT ===');
-    console.log('Request body:', req.body);
-    console.log('Request headers:', req.headers);
-    
-    // Simple response without database for now to test connectivity
-    res.status(201).json({ 
-      success: true, 
-      message: 'Endpoint reached successfully',
-      data: req.body 
-    });
-  });
-
-  app.get('/api/msg/threads', async (req, res) => {
-    console.log('=== GETTING MESSAGE THREADS ===');
-    try {
-      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
-      console.log('Found threads:', result.rows.length);
-      res.json(result.rows);
-    } catch (error) {
-      console.error('Get threads failed:', error);
-      res.status(500).json({ error: 'Failed to fetch message threads' });
-    }
-  });
-
-  // Test endpoint
-  app.get('/api/messages/test-direct', (req, res) => {
-    console.log('Test endpoint hit!');
-    res.json({ status: 'working', timestamp: new Date().toISOString() });
-  });
-
-  // Messages router (this will handle other routes like /api/messages/search)
-  app.use("/api/messages", messagesRouter);
 
   // StaffTrak: Branding & White Label controls
   app.use("/api/owner-admin", ownerBrandingAdminRouter);                 // owner toggles
