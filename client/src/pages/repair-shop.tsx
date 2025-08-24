@@ -555,21 +555,6 @@ export default function RepairShop() {
                           <p className="text-gray-400 text-xs mb-2">
                             {equipment.type}
                           </p>
-                          
-                          {/* Create Work Order Button - only show if no work orders exist */}
-                          {equipmentWorkOrders.length === 0 && (
-                            <div className="bg-gray-600 p-2 rounded text-xs text-center">
-                              <p className="text-gray-300 mb-2">No work orders yet</p>
-                              <Button 
-                                size="sm" 
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => setCreateWorkOrderEquipment(equipment)}
-                                data-testid={`button-create-workorder-${equipment.id}`}
-                              >
-                                + Create Work Order
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
