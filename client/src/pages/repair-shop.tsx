@@ -75,7 +75,7 @@ export default function RepairShop() {
   const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<Set<string>>(new Set());
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-  const [updateData, setUpdateData] = useState({ status: "" });
+  const [updateData, setUpdateData] = useState({ status: "", priority: "" });
   
   // Comments state for progressive commenting
   const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
@@ -227,7 +227,7 @@ export default function RepairShop() {
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
       setShowUpdateDialog(false);
       setSelectedWorkOrders(new Set());
-      setUpdateData({ status: "" });
+      setUpdateData({ status: "", priority: "" });
       toast({
         title: "Work Orders Updated",
         description: `Successfully updated ${selectedWorkOrders.size} work order(s).`,
@@ -331,31 +331,33 @@ export default function RepairShop() {
     if (selectedIds.length === 1) {
       const workOrder = workOrders.find(wo => wo.id === selectedIds[0]);
       setUpdateData({
-        status: workOrder?.status || ""
+        status: workOrder?.status || "",
+        priority: workOrder?.priority || ""
       });
     } else {
-      setUpdateData({ status: "" });
+      setUpdateData({ status: "", priority: "" });
     }
     
     setShowUpdateDialog(true);
   };
 
   const handleSaveUpdate = () => {
-    const { status } = updateData;
+    const { status, priority } = updateData;
     
-    if (!status || status === "no-change") {
+    if ((!status || status === "no-change") && (!priority || priority === "no-change")) {
       toast({
         title: "No Changes",
-        description: "Please select a status to update.",
+        description: "Please select a status or priority to update.",
         variant: "destructive",
       });
       return;
     }
     
     const selectedIds = Array.from(selectedWorkOrders);
-    const updates: { status?: string } = {};
+    const updates: { status?: string; priority?: string } = {};
     
     if (status && status !== "no-change") updates.status = status;
+    if (priority && priority !== "no-change") updates.priority = priority;
     
     updateWorkOrderMutation.mutate({
       workOrderIds: selectedIds,
@@ -970,9 +972,28 @@ export default function RepairShop() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Priority Update */}
+          <div>
+            <label className="text-sm font-medium text-gray-300 mb-2 block">
+              Priority (optional)
+            </label>
+            <Select value={updateData.priority} onValueChange={(value) => setUpdateData(prev => ({ ...prev, priority: value }))}>
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-update-priority">
+                <SelectValue placeholder="Select new priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no-change">No change</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
           <div className="text-xs text-gray-400 bg-gray-700 p-2 rounded">
-            💡 Status changes will be applied to all {selectedWorkOrders.size} selected work order(s). Use individual work order details for adding comments.
+            💡 Status and priority changes will be applied to all {selectedWorkOrders.size} selected work order(s). Use individual work order details for adding comments.
           </div>
         </div>
       </Dialog>
