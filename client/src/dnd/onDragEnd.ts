@@ -7,7 +7,7 @@ type Fns = {
 };
 
 export function onDragEndFactory(fns: Fns) {
-  return async function onDragEnd(result: DropResult) {
+  return function onDragEnd(result: DropResult) {
     const { destination, source, draggableId } = result;
     if (!destination) return;
 
@@ -22,11 +22,11 @@ export function onDragEndFactory(fns: Fns) {
     const dest = parseDroppableId(destination.droppableId);
     if (dest) {
       if (dest.kind === "employee" && isEmp) {
-        await fns.setEmployeeAssignment(id, dest.projectId);
+        fns.setEmployeeAssignment(id, dest.projectId);
         return;
       }
       if (dest.kind === "equipment" && !isEmp) {
-        await fns.setEquipmentAssignment(id, dest.projectId);
+        fns.setEquipmentAssignment(id, dest.projectId);
         return;
       }
       // If kinds differ, ignore
@@ -60,35 +60,33 @@ export function onDragEndFactory(fns: Fns) {
       isRepairShop
     });
 
-    try {
-      // Validate ID format before making assignment
-      if (isEmp && !id.startsWith("emp-") && !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        console.error(`❌ INVALID EMPLOYEE ID: ${id} - skipping assignment`);
-        return; // Skip invalid employee IDs
+    // Validate ID format before making assignment
+    if (isEmp && !id.startsWith("emp-") && !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.error(`❌ INVALID EMPLOYEE ID: ${id} - skipping assignment`);
+      return; // Skip invalid employee IDs
+    }
+    
+    // Execute assignment in background - don't await to allow drag completion
+    if (isEmp) {
+      console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
+      const result = fns.setEmployeeAssignment(id, projectId);
+      if (result && typeof result.then === 'function') {
+        result
+          .then(() => console.log(`✅ EMPLOYEE SUCCESS: ${id} assigned to ${projectId}`))
+          .catch((error: any) => {
+            console.error(`❌ EMPLOYEE DRAG FAILED: ${id}`, error.message);
+          });
       }
-      
-      if (isEmp) {
-        console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
-        await fns.setEmployeeAssignment(id, projectId);
-        console.log(`✅ EMPLOYEE SUCCESS: ${id} assigned to ${projectId}`);
-      } else {
-        console.log(`🔧 EQUIPMENT ASSIGNMENT: Starting for ${id}`);
-        await fns.setEquipmentAssignment(id, projectId);
-        console.log(`✅ EQUIPMENT SUCCESS: ${id} assigned to ${projectId}`);
+    } else {
+      console.log(`🔧 EQUIPMENT ASSIGNMENT: Starting for ${id}`);
+      const result = fns.setEquipmentAssignment(id, projectId);
+      if (result && typeof result.then === 'function') {
+        result
+          .then(() => console.log(`✅ EQUIPMENT SUCCESS: ${id} assigned to ${projectId}`))
+          .catch((error: any) => {
+            console.error(`❌ EQUIPMENT DRAG FAILED: ${id}`, error.message);
+          });
       }
-    } catch (error: any) {
-      console.error(`❌ DRAG FAILED: ${isEmp ? 'Employee' : 'Equipment'} ${id}`);
-      console.error(`❌ Error:`, error.message);
-      console.error(`❌ Target:`, projectId);
-      
-      // For invalid ID errors, don't re-throw to prevent UI disruption
-      if (error.message?.includes('not found')) {
-        console.warn(`⚠️ Skipping invalid ${isEmp ? 'employee' : 'equipment'} ID: ${id}`);
-        return;
-      }
-      
-      // Re-throw other errors to let higher level handlers deal with it
-      throw error;
     }
   };
 }
