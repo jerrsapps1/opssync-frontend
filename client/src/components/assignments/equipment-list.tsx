@@ -104,10 +104,10 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <div className="text-white text-sm font-medium leading-tight">{eq.name}</div>
-                            <StatusDot status={eq.status} type="equipment" />
+                            {eq.status !== "available" && <StatusDot status={eq.status} type="equipment" />}
                           </div>
                           <div className="text-xs text-[color:var(--muted-foreground)] font-medium leading-tight">{eq.type}</div>
-                          <StatusIndicator status={eq.status} type="equipment" size="sm" className="mt-1" />
+                          {eq.status !== "available" && <StatusIndicator status={eq.status} type="equipment" size="sm" className="mt-1" />}
                         </div>
                       </div>
                     </Card>

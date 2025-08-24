@@ -95,11 +95,11 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="text-white text-sm font-medium leading-tight">{emp.name}</div>
-                          <StatusDot status={emp.status} type="employee" />
+                          {emp.status !== "available" && <StatusDot status={emp.status} type="employee" />}
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <StatusIndicator status={(emp as any).role || "Employee"} type="role" size="sm" />
-                          <StatusIndicator status={emp.status} type="employee" size="sm" />
+                          {emp.status !== "available" && <StatusIndicator status={emp.status} type="employee" size="sm" />}
                         </div>
                         {emp.currentProjectId && (
                           <div className="text-[color:var(--brand-primary)] text-xs mt-1 font-medium">

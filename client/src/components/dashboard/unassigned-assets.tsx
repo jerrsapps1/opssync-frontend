@@ -60,11 +60,11 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="text-sm font-medium text-white">{employee.name}</p>
-                              <StatusDot status={employee.status} type="employee" />
+                              {employee.status !== "available" && <StatusDot status={employee.status} type="employee" />}
                             </div>
                             <div className="flex flex-wrap gap-1">
                               <StatusIndicator status={employee.role} type="role" size="sm" />
-                              <StatusIndicator status={employee.status} type="employee" size="sm" />
+                              {employee.status !== "available" && <StatusIndicator status={employee.status} type="employee" size="sm" />}
                             </div>
                           </div>
                         </div>
@@ -97,10 +97,10 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="text-sm font-medium text-white">{item.name}</p>
-                              <StatusDot status={item.status} type="equipment" />
+                              {item.status !== "available" && <StatusDot status={item.status} type="equipment" />}
                             </div>
                             <p className="text-xs text-gray-400 mb-1">{item.type}</p>
-                            <StatusIndicator status={item.status} type="equipment" size="sm" />
+                            {item.status !== "available" && <StatusIndicator status={item.status} type="equipment" size="sm" />}
                           </div>
                         </div>
                       )}
