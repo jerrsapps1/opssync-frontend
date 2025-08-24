@@ -54,10 +54,10 @@ export function AssetLocationSearch() {
   const searchResults = equipment
     .filter(eq => 
       searchTerm.length >= 2 && 
-      (eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       eq.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       eq.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       eq.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ((eq.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (eq.type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (eq.make || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (eq.model || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
        eq.id.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .map(eq => {
