@@ -22,6 +22,7 @@ export function Sidebar() {
       <nav className="p-3 space-y-1">
         <Item to="/dashboard">Dashboard</Item>
         <Item to="/repair-shop">Repair Shop</Item>
+        <Item to="/message-center">Message Center</Item>
         <Item to="/projects">Projects</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>

@@ -53,6 +53,7 @@ import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import OwnerBrandingControls from "./pages/OwnerBrandingControls";
 import WhiteLabelSettings from "./pages/WhiteLabelSettings";
 import RepairShop from "./pages/repair-shop";
+import MessageCenter from "./pages/message-center";
 import Login from "./pages/Login";
 import SystemSettings from "./pages/system-settings";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -322,6 +323,11 @@ function AppRoutes() {
         <Route path="/repair-shop" element={
           <ProtectedRoute>
             <RepairShop />
+          </ProtectedRoute>
+        } />
+        <Route path="/message-center" element={
+          <ProtectedRoute>
+            <MessageCenter />
           </ProtectedRoute>
         } />
         <Route path="/system-settings" element={
