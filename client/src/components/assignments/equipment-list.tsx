@@ -73,7 +73,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   const repairShopEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance");
 
   return (
-    <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
+    <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 bg-[color:var(--background)]">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Equipment ({visible.length})
       </h2>

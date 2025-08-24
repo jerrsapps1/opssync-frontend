@@ -30,7 +30,6 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       borderRight="1px solid"
       borderColor="gray.700"
       p={4}
-      overflowY="auto"
       bg="gray.800"
     >
       <Heading size="md" mb={4} color="white">Projects</Heading>

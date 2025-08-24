@@ -65,7 +65,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   }
 
   return (
-    <div className="flex-1 p-3 overflow-y-auto">
+    <div className="flex-1 p-3">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Employees ({filteredEmployees.length})
       </h2>
