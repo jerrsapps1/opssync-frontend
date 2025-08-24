@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Box, Flex, Text, Avatar, Badge, Spinner } from "@chakra-ui/react";
 import { User, Clock } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
+import { AssetLocationSearch } from "./AssetLocationSearch";
 import { useState, useEffect } from "react";
 
 interface User {
@@ -98,6 +99,8 @@ export function DashboardHeader() {
             {formatDate(currentTime)}
           </Text>
         </Box>
+
+        <AssetLocationSearch />
 
         <Flex align="center" gap={6}>
           <Flex align="center" gap={2} color="gray.300">
