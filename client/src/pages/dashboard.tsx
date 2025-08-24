@@ -72,9 +72,12 @@ export default function Dashboard() {
 
   const isLoading = projectsLoading || employeesLoading || equipmentLoading;
 
-  // Calculate filtered counts for dashboard display
+  // Calculate filtered counts for dashboard display  
   const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
   const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status !== "maintenance");
+  
+  // Force re-render when data changes
+  const renderKey = `${employees.length}-${equipment.length}-${unassignedEmployees.length}-${unassignedEquipment.length}`;
   
   // Debug logging
   console.log("Dashboard data:", { 
@@ -99,7 +102,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <div key={renderKey} className="min-h-screen bg-[#121212] text-white">
       <DashboardHeader />
       
       {/* Conflict Alerts */}

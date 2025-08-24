@@ -115,20 +115,10 @@ export function useDragDrop() {
         console.error("Failed to create employee audit log:", auditError);
       }
       
-      // Nuclear approach: force complete refresh
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api", "employees"],
-        type: 'all',
-        exact: false
-      });
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api", "projects"],
-        type: 'all',
-        exact: false  
-      });
+      // Simple, reliable approach from this morning
+      queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
       
       console.log("✅ EMPLOYEE SUCCESS:", variables.employeeId, "assigned to", variables.projectId);
-      console.log("🔄 FORCED REFETCH COMPLETE");
     },
     onError: (error) => {
       toast({
@@ -201,20 +191,10 @@ export function useDragDrop() {
         console.error("Failed to create equipment audit log:", auditError);
       }
       
-      // Nuclear approach: force complete refresh
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api", "equipment"],
-        type: 'all',
-        exact: false
-      });
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api", "projects"],
-        type: 'all',
-        exact: false
-      });
+      // Simple, reliable approach from this morning  
+      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
       
       console.log("✅ EQUIPMENT SUCCESS:", variables.equipmentId, "assigned to", variables.projectId);
-      console.log("🔄 FORCED REFETCH COMPLETE");
       
       // If equipment was assigned to repair shop, also invalidate repair shop queries
       if (variables.projectId === "repair-shop") {
