@@ -15,9 +15,6 @@ import limits from "./routes/limits";
 
 const app = express();
 
-// Stripe webhook needs raw body parser before JSON parser
-app.use("/api", stripeWebhook);  // NOTE: uses express.raw for signature verification
-
 // Stripe webhook requires raw body, must come before express.json()
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhookRouter);
 

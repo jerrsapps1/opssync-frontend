@@ -188,33 +188,23 @@ const upload = multer({
 
 // Auth middleware
 function authenticateToken(req: Request, res: Response, next: NextFunction) {
-  console.log("🔐 AUTH: authenticateToken called for", req.method, req.path);
-  
   // Check authorization header first
   const authHeader = req.headers['authorization'];
   let token = authHeader && authHeader.split(' ')[1];
   
-  console.log("🔐 AUTH: Authorization header:", !!authHeader);
-  console.log("🔐 AUTH: Token extracted:", !!token);
-  
   // For export routes, also check query parameter
   if (!token && req.query.token) {
     token = req.query.token as string;
-    console.log("🔐 AUTH: Token from query param:", !!token);
   }
 
   if (!token) {
-    console.log("❌ AUTH: No token provided");
     return res.status(401).json({ message: 'Access token required' });
   }
 
-  console.log("🔐 AUTH: Verifying token...");
   jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
     if (err) {
-      console.log("❌ AUTH: Token verification failed:", err.message);
       return res.status(403).json({ message: 'Invalid token' });
     }
-    console.log("✅ AUTH: Token verified for user:", decoded.id);
     req.user = decoded;
     next();
   });
@@ -1594,9 +1584,6 @@ Rules:
   });
 
   app.post("/api/work-orders", authenticateToken, async (req, res) => {
-    console.log("🔧 SERVER: Work order creation request received");
-    console.log("🔧 SERVER: Request body:", req.body);
-    console.log("🔧 SERVER: User:", req.user);
     try {
       const validatedData = insertWorkOrderSchema.parse(req.body);
       
