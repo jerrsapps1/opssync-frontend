@@ -284,6 +284,8 @@ export default function RepairShop() {
       const workOrderData = {
         ...data,
         equipmentId: createWorkOrderEquipment.id,
+        description: data.description || "Work order created from repair shop",
+        reason: data.reason || "Equipment requires maintenance/repair",
       };
       createWorkOrderMutation.mutate(workOrderData);
     }
