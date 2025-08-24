@@ -1651,11 +1651,17 @@ Rules:
       
       // Create comment for any changes
       if (changeLogs.length > 0) {
-        await storage.createWorkOrderComment({
-          workOrderId: req.params.id,
-          comment: changeLogs.join('. '),
-          createdBy: (req as any).user?.username || 'System',
-        });
+        console.log('🔄 Creating change log comment:', changeLogs.join('. '));
+        try {
+          const comment = await storage.createWorkOrderComment({
+            workOrderId: req.params.id,
+            comment: changeLogs.join('. '),
+            createdBy: (req as any).user?.username || 'System',
+          });
+          console.log('✅ Change log comment created:', comment.id);
+        } catch (commentError) {
+          console.error('❌ Failed to create change log comment:', commentError);
+        }
       }
       
       res.json(workOrder);

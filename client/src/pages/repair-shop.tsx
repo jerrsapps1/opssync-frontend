@@ -225,6 +225,10 @@ export default function RepairShop() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      // Also invalidate comments for all work orders to show new log entries
+      selectedWorkOrders.forEach(workOrderId => {
+        queryClient.invalidateQueries({ queryKey: ["/api", "work-orders", workOrderId, "comments"] });
+      });
       setShowUpdateDialog(false);
       setSelectedWorkOrders(new Set());
       setUpdateData({ status: "", priority: "" });
