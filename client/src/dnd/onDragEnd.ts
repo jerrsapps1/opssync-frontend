@@ -34,7 +34,9 @@ export function onDragEndFactory(fns: Fns) {
 
     // Handle legacy project IDs directly (for project cards that accept both)
     // Check if destination is an unassigned area or repair shop
-    const isUnassignedDestination = destination.droppableId.includes("unassigned");
+    const isUnassignedDestination = destination.droppableId.includes("unassigned") || 
+                                   destination.droppableId === "equipment" || 
+                                   destination.droppableId === "employees";
     const isRepairShop = destination.droppableId === "repair-shop";
     
     let projectId: string | null;
