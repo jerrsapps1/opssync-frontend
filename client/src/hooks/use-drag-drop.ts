@@ -46,11 +46,23 @@ export function useDragDrop() {
 
   // Create assignment functions for the onDragEndFactory
   const setEmployeeAssignment = async (id: string, projectId: string | null) => {
-    return assignEmployeeMutation.mutateAsync({ employeeId: id, projectId });
+    try {
+      const result = await assignEmployeeMutation.mutateAsync({ employeeId: id, projectId });
+      return result;
+    } catch (error) {
+      console.error("❌ Employee assignment failed:", error);
+      throw error;
+    }
   };
 
   const setEquipmentAssignment = async (id: string, projectId: string | null) => {
-    return await assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
+    try {
+      const result = await assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
+      return result;
+    } catch (error) {
+      console.error("❌ Equipment assignment failed:", error);
+      throw error;
+    }
   };
 
   const assignEmployeeMutation = useMutation({
@@ -61,20 +73,8 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: async (response, variables) => {
-      let employee;
-      try {
-        employee = await response.json();
-        console.log("Employee assignment success - parsed data:", employee);
-      } catch (parseError) {
-        console.error("Failed to parse employee response:", parseError);
-        // Fall back to forcing cache refresh without audit log
-        queryClient.removeQueries({ queryKey: ["/api", "employees"] });
-        queryClient.removeQueries({ queryKey: ["/api", "projects"] });
-        await queryClient.refetchQueries({ queryKey: ["/api", "employees"], type: 'all' });
-        await queryClient.refetchQueries({ queryKey: ["/api", "projects"], type: 'all' });
-        return;
-      }
+    onSuccess: async (employee, variables) => {
+      console.log("Employee assignment success - parsed data:", employee);
       
       // Create audit log
       try {
@@ -137,20 +137,8 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: async (response, variables) => {
-      let equipment;
-      try {
-        equipment = await response.json();
-        console.log("Equipment assignment success - parsed data:", equipment);
-      } catch (parseError) {
-        console.error("Failed to parse equipment response:", parseError);
-        // Fall back to forcing cache refresh without audit log
-        queryClient.removeQueries({ queryKey: ["/api", "equipment"] });
-        queryClient.removeQueries({ queryKey: ["/api", "projects"] });
-        await queryClient.refetchQueries({ queryKey: ["/api", "equipment"], type: 'all' });
-        await queryClient.refetchQueries({ queryKey: ["/api", "projects"], type: 'all' });
-        return;
-      }
+    onSuccess: async (equipment, variables) => {
+      console.log("Equipment assignment success - parsed data:", equipment);
       
       // Create audit log
       try {
