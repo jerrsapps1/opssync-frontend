@@ -7,6 +7,7 @@ import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as C
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
 import { EquipmentList } from "@/components/assignments/equipment-list";
+import { FourthColumn } from "@/components/assignments/fourth-column";
 import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
@@ -159,6 +160,7 @@ export default function Dashboard() {
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
+          <FourthColumn isLoading={isLoading} />
         </div>
       </DragDropContext>
     </div>
