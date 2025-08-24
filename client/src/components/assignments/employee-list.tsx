@@ -53,12 +53,8 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   const sortedEmployees = [...availableEmployees].sort((a, b) => {
     const nameA = (a.name || '').toLowerCase().trim();
     const nameB = (b.name || '').toLowerCase().trim();
-    const result = nameA.localeCompare(nameB);
-    return result;
+    return nameA.localeCompare(nameB);
   });
-
-  // Debug: Log the sorted employee names
-  console.log('📋 Employee sorting order:', sortedEmployees.map(emp => emp.name));
 
   // Use all sorted employees directly
   const filteredEmployees = sortedEmployees;
