@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useDragDrop } from "@/hooks/use-drag-drop";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +57,7 @@ export default function RepairShop() {
   const { handleDragEnd, isAssigning } = useDragDrop();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const previousEquipmentCount = useRef(0);
@@ -74,6 +76,7 @@ export default function RepairShop() {
   // Comments state for progressive commenting
   const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
   const [newComment, setNewComment] = useState("");
+  const [loadedComments, setLoadedComments] = useState<Set<string>>(new Set());
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -121,6 +124,7 @@ export default function RepairShop() {
     mutationFn: async (workOrderId: string) => {
       const comments = await getWorkOrderComments(workOrderId);
       setWorkOrderComments(prev => ({ ...prev, [workOrderId]: comments }));
+      setLoadedComments(prev => new Set(prev).add(workOrderId));
       return comments;
     }
   });
@@ -149,6 +153,13 @@ export default function RepairShop() {
       });
     }
   });
+
+  // Load comments when work order is expanded
+  useEffect(() => {
+    if (expandedWorkOrder && !loadedComments.has(expandedWorkOrder)) {
+      loadCommentsMutation.mutate(expandedWorkOrder);
+    }
+  }, [expandedWorkOrder]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -717,13 +728,7 @@ export default function RepairShop() {
                                 Comments Thread
                               </h4>
                               
-                              {/* Load comments when expanded */}
-                              {(() => {
-                                if (!workOrderComments[workOrder.id]) {
-                                  loadCommentsMutation.mutate(workOrder.id);
-                                }
-                                return null;
-                              })()}
+                              {/* Comments will load automatically via useEffect when expanded */}
                               
                               <div className="space-y-3">
                                 {/* Comment History */}
@@ -735,7 +740,7 @@ export default function RepairShop() {
                                           Comment #{workOrderComments[workOrder.id].length - index}
                                         </span>
                                         <span className="text-gray-400 text-xs">
-                                          {format(new Date(comment.createdAt || new Date()), "MMM dd, yyyy 'at' h:mm a")}
+                                          {format(new Date(comment.createdAt || new Date()), "MMM dd, yyyy 'at' h:mm a")} by {user?.username || comment.createdBy}
                                         </span>
                                       </div>
                                       <div className="text-gray-300 text-sm">

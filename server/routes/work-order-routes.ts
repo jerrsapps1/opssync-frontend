@@ -154,10 +154,14 @@ export function registerWorkOrderRoutes(app: Express) {
 
   app.post("/api/work-orders/:workOrderId/comments", async (req, res) => {
     try {
+      // Get user from session/auth - for now using test user
+      const userId = "test-user-001"; // TODO: Get from actual session
+      
       const validatedData = insertWorkOrderCommentSchema.parse({
         ...req.body,
         workOrderId: req.params.workOrderId,
-        createdBy: "test-user-001", // TODO: Get from auth
+        createdBy: userId,
+        createdAt: new Date(), // Ensure current timestamp
       });
       
       const comment = await storage.createWorkOrderComment(validatedData);

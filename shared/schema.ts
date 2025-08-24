@@ -358,8 +358,8 @@ export const workOrderComments = pgTable("work_order_comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   workOrderId: varchar("work_order_id").notNull().references(() => workOrders.id, { onDelete: "cascade" }),
   comment: text("comment").notNull(),
-  createdBy: varchar("created_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Work Order Documents table for PDF attachments
