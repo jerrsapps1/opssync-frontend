@@ -477,10 +477,10 @@ export default function RepairShop() {
                                   <div className="flex items-center justify-between mb-1">
                                     <span className="text-white font-medium">{workOrder.title}</span>
                                     <div className="flex gap-1">
-                                      <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-1 py-0`}>
+                                      <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-2 py-1 min-w-[80px] text-center`}>
                                         {workOrder.priority.toUpperCase()}
                                       </Badge>
-                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[90px] text-center`}>
+                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[80px] text-center`}>
                                         {workOrder.status.toUpperCase()}
                                       </Badge>
                                     </div>
