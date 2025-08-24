@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from "react";
+import React, { createContext, useContext } from "react";
 import {
   ChakraProvider,
   extendTheme,
@@ -65,34 +65,8 @@ function createTheme(brandConfig: any) {
 
 /** ======= App Provider ======= **/
 function AppProvider({ children }: { children: React.ReactNode }) {
-  const [conflicts, setConflicts] = useState<any>({ employeeConflicts: [], equipmentConflicts: [] });
-  const [alertDismissed, setAlertDismissed] = useState(false);
-
-  useEffect(() => {
-    const fetchConflicts = async () => {
-      try {
-        const res = await fetch('/api/conflicts');
-        if (res.ok) {
-          setConflicts(await res.json());
-        }
-      } catch (error) {
-        console.error('Failed to fetch conflicts:', error);
-      }
-    };
-
-    fetchConflicts().catch(console.error);
-    const intervalId = setInterval(() => {
-      fetchConflicts().catch(console.error);
-    }, 15000);
-    return () => clearInterval(intervalId);
-  }, []);
-
   return (
-    <AppContext.Provider value={{
-      conflicts,
-      alertDismissed,
-      setAlertDismissed
-    }}>
+    <AppContext.Provider value={{}}>
       {children}
     </AppContext.Provider>
   );
