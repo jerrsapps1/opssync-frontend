@@ -1,8 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-// Import your actual sophisticated OpsSync.ai app
-import App from "../client/src/App";
-import "../client/src/index.css";
+import App from "./src/App";
+import "./src/index.css";
 
 const el = document.getElementById("root");
 if (!el) throw new Error("#root not found");
