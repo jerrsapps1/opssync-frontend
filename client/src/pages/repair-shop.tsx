@@ -550,36 +550,8 @@ export default function RepairShop() {
                             {equipment.type}
                           </p>
                           
-                          {/* Work Order Details */}
-                          {equipmentWorkOrders.length > 0 ? (
-                            <div className="space-y-2">
-                              {equipmentWorkOrders.map((workOrder) => (
-                                <div key={workOrder.id} className="bg-gray-600 p-2 rounded text-xs">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-white font-medium">{workOrder.title}</span>
-                                    <div className="flex gap-1">
-                                      <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-2 py-1 min-w-[80px] text-center`}>
-                                        {workOrder.priority.toUpperCase()}
-                                      </Badge>
-                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[80px] text-center`}>
-                                        {workOrder.status.toUpperCase()}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <p className="text-gray-300 text-xs mb-1">{workOrder.description}</p>
-                                  <div className="text-gray-400 text-xs">
-                                    <div><strong>Reason:</strong> {workOrder.reason}</div>
-                                    {workOrder.assignedTo && (
-                                      <div><strong>Assigned to:</strong> {workOrder.assignedTo}</div>
-                                    )}
-                                    {workOrder.notes && (
-                                      <div><strong>Notes:</strong> {workOrder.notes}</div>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
+                          {/* Create Work Order Button - only show if no work orders exist */}
+                          {equipmentWorkOrders.length === 0 && (
                             <div className="bg-gray-600 p-2 rounded text-xs text-center">
                               <p className="text-gray-300 mb-2">No work orders yet</p>
                               <Button 
