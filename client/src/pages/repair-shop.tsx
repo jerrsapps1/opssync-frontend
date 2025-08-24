@@ -131,17 +131,24 @@ export default function RepairShop() {
 
   const createCommentMutation = useMutation({
     mutationFn: async ({ workOrderId, comment }: { workOrderId: string, comment: string }) => {
-      return await createWorkOrderComment(workOrderId, comment);
+      console.log("Creating comment for workOrder:", workOrderId, "comment:", comment);
+      const result = await createWorkOrderComment(workOrderId, comment);
+      console.log("Comment created result:", result);
+      return result;
     },
     onSuccess: (newComment, { workOrderId }) => {
+      console.log("Comment creation successful!", newComment, "for workOrder:", workOrderId);
+      
       // Update UI state after successful API call
       setWorkOrderComments(prev => {
+        console.log("Previous comments:", prev[workOrderId]);
         const existing = prev[workOrderId] || [];
-        // Add new comment and sort by createdAt (newest first) for consistent ordering
         const updated = [newComment, ...existing].sort((a, b) => 
           new Date(b.createdAt || new Date()).getTime() - 
           new Date(a.createdAt || new Date()).getTime()
         );
+        console.log("Updated comments:", updated);
+        
         return {
           ...prev,
           [workOrderId]: updated
@@ -157,6 +164,7 @@ export default function RepairShop() {
       });
     },
     onError: (error: any) => {
+      console.error("Comment creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to send message",
