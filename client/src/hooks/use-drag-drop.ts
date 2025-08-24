@@ -69,11 +69,18 @@ export function useDragDrop() {
     mutationFn: async ({ employeeId, projectId }: { employeeId: string; projectId: string | null }) => {
       console.log("Making assignment request to:", `/api/employees/${employeeId}/assignment`);
       console.log("Request payload:", { projectId });
-      return await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
+      const response = await apiRequest("PATCH", `/api/employees/${employeeId}/assignment`, {
         projectId,
       });
+      return await response.json();
     },
     onSuccess: async (employee, variables) => {
+      // Ensure we have the actual employee data
+      if (!employee || !employee.id) {
+        console.error("❌ No employee data returned from assignment");
+        queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+        return;
+      }
       console.log("Employee assignment success - parsed data:", employee);
       
       // Create audit log
@@ -133,11 +140,18 @@ export function useDragDrop() {
     mutationFn: async ({ equipmentId, projectId }: { equipmentId: string; projectId: string | null }) => {
       console.log("Making assignment request to:", `/api/equipment/${equipmentId}/assignment`);
       console.log("Request payload:", { projectId });
-      return await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
+      const response = await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
         projectId,
       });
+      return await response.json();
     },
     onSuccess: async (equipment, variables) => {
+      // Ensure we have the actual equipment data
+      if (!equipment || !equipment.id) {
+        console.error("❌ No equipment data returned from assignment");
+        queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+        return;
+      }
       console.log("Equipment assignment success - parsed data:", equipment);
       
       // Create audit log
