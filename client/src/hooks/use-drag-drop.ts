@@ -51,12 +51,12 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: async (data, variables) => {
-      console.log("Employee assignment success:", data);
+    onSuccess: async (response, variables) => {
+      console.log("Employee assignment success:", response);
       
       // Create audit log
       try {
-        const employee = data; // data is already parsed JSON from apiRequest
+        const employee = await response.json();
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
@@ -106,12 +106,12 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: async (data, variables) => {
-      console.log("Equipment assignment success:", data);
+    onSuccess: async (response, variables) => {
+      console.log("Equipment assignment success:", response);
       
       // Create audit log
       try {
-        const equipment = data; // data is already parsed JSON from apiRequest
+        const equipment = await response.json();
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
