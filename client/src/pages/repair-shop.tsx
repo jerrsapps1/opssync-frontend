@@ -14,9 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
-import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment, InsertWorkOrder } from "@shared/schema";
+import { insertWorkOrderSchema } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
   const response = await apiRequest("GET", "/api/equipment");
@@ -77,6 +81,9 @@ export default function RepairShop() {
   const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
   const [newComment, setNewComment] = useState("");
   const [loadedComments, setLoadedComments] = useState<Set<string>>(new Set());
+  
+  // Create work order state
+  const [createWorkOrderEquipment, setCreateWorkOrderEquipment] = useState<Equipment | null>(null);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -234,6 +241,65 @@ export default function RepairShop() {
       });
     }
   });
+
+  const createWorkOrderMutation = useMutation({
+    mutationFn: async (workOrder: InsertWorkOrder) => {
+      const response = await apiRequest("POST", "/api/work-orders", workOrder);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      setCreateWorkOrderEquipment(null);
+      toast({
+        title: "Work Order Created",
+        description: "New work order has been created successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating work order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create work order. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const form = useForm<InsertWorkOrder>({
+    resolver: zodResolver(insertWorkOrderSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      reason: "",
+      priority: "medium",
+      status: "open",
+      equipmentId: "",
+    },
+  });
+
+  const onSubmitWorkOrder = (data: InsertWorkOrder) => {
+    if (createWorkOrderEquipment) {
+      const workOrderData = {
+        ...data,
+        equipmentId: createWorkOrderEquipment.id,
+      };
+      createWorkOrderMutation.mutate(workOrderData);
+    }
+  };
+
+  // Reset form when equipment changes
+  useEffect(() => {
+    if (createWorkOrderEquipment) {
+      form.reset({
+        title: "",
+        description: "",
+        reason: "",
+        priority: "medium",
+        status: "open",
+        equipmentId: createWorkOrderEquipment.id,
+      });
+    }
+  }, [createWorkOrderEquipment, form]);
 
   const handleUpdateClick = () => {
     const selectedIds = Array.from(selectedWorkOrders);
@@ -499,8 +565,16 @@ export default function RepairShop() {
                               ))}
                             </div>
                           ) : (
-                            <div className="bg-gray-600 p-2 rounded text-xs text-gray-300">
-                              <p className="text-center">No work orders yet</p>
+                            <div className="bg-gray-600 p-2 rounded text-xs text-center">
+                              <p className="text-gray-300 mb-2">No work orders yet</p>
+                              <Button 
+                                size="sm" 
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={() => setCreateWorkOrderEquipment(equipment)}
+                                data-testid={`button-create-workorder-${equipment.id}`}
+                              >
+                                + Create Work Order
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -903,6 +977,122 @@ export default function RepairShop() {
             💡 Status changes will be applied to all {selectedWorkOrders.size} selected work order(s). Use individual work order details for adding comments.
           </div>
         </div>
+      </Dialog>
+
+      {/* Create Work Order Dialog */}
+      <Dialog 
+        open={createWorkOrderEquipment !== null} 
+        onClose={() => setCreateWorkOrderEquipment(null)}
+        title={
+          <div className="flex items-center gap-2">
+            <Wrench className="h-5 w-5 text-blue-400" />
+            Create Work Order - {createWorkOrderEquipment?.name}
+          </div>
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setCreateWorkOrderEquipment(null)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={form.handleSubmit(onSubmitWorkOrder)}
+              disabled={createWorkOrderMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-500"
+              data-testid="button-create-workorder"
+            >
+              {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
+            </Button>
+          </div>
+        }
+      >
+        <Form {...form}>
+          <form className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Title</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="e.g., Hydraulic System Repair"
+                      className="bg-gray-700 border-gray-600 text-white"
+                      data-testid="input-workorder-title"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Reason for Repair</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="e.g., Equipment malfunction, scheduled maintenance"
+                      className="bg-gray-700 border-gray-600 text-white"
+                      data-testid="input-workorder-reason"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Detailed description of the work needed..."
+                      className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
+                      data-testid="textarea-workorder-description"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Priority</FormLabel>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-priority">
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
       </Dialog>
 
     </DragDropContext>
