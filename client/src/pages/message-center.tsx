@@ -13,7 +13,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import type { MessageThread, Message } from "@shared/schema";
 
 async function getMessageThreads(): Promise<MessageThread[]> {
-  const response = await apiRequest("GET", "/api/messages/threads");
+  const response = await fetch("/api/msg/threads");
   return response.json();
 }
 
@@ -30,7 +30,7 @@ async function createMessageThread(topic: string, createdBy: string): Promise<Me
   const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
   
   try {
-    const response = await fetch("/api/messages/threads", {
+    const response = await fetch("/api/msg/create-thread", {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'

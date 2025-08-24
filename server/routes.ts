@@ -1818,10 +1818,10 @@ Rules:
     }
   });
 
-  // Direct message endpoints BEFORE the router to avoid conflicts
-  app.post('/api/messages/threads', async (req, res) => {
-    console.log('=== DIRECT MESSAGE THREAD CREATION START ===');
-    console.log('Request received at POST /api/messages/threads');
+  // Completely separate message endpoints to avoid any routing conflicts
+  app.post('/api/msg/create-thread', async (req, res) => {
+    console.log('=== NEW MESSAGE THREAD CREATION START ===');
+    console.log('Request received at POST /api/msg/create-thread');
     console.log('Request body:', req.body);
     
     try {
@@ -1838,7 +1838,7 @@ Rules:
     }
   });
 
-  app.get('/api/messages/threads', async (req, res) => {
+  app.get('/api/msg/threads', async (req, res) => {
     console.log('=== GETTING MESSAGE THREADS ===');
     try {
       const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
