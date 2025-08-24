@@ -46,13 +46,14 @@ async function initData() {
   
   console.log(`💾 initData: Found ${existingProjects.length} existing projects in PostgreSQL database`);
   
-  // Check if employees and equipment exist regardless of projects
-  const existingEmployees = (await db.get(EMPLOYEES_KEY)) || [];
-  const existingEquipment = (await db.get(EQUIPMENT_KEY)) || [];
+  // Check if employees and equipment exist in PostgreSQL database
+  const existingEmployees = await storage.getEmployees();
+  const existingEquipment = await storage.getEquipment();
   const hasEmployeesAndEquipment = existingEmployees.length > 0 && existingEquipment.length > 0;
   
   if (hasUserProjects && hasEmployeesAndEquipment) {
     console.log(`💾 initData: User projects and employees/equipment found, skipping mock data initialization`);
+    console.log(`💾 initData: Found ${existingEmployees.length} employees and ${existingEquipment.length} equipment in PostgreSQL`);
     return;
   }
   
