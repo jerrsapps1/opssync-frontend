@@ -52,8 +52,8 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     return Wrench;
   };
 
-  // Dashboard shows only unassigned equipment - assigned equipment lives on project pages
-  const availableEquipment = equipment.filter(eq => !eq.currentProjectId);
+  // Dashboard shows only unassigned equipment that's not in repair shop
+  const availableEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status !== "maintenance");
 
   // Use all available equipment directly
   const visible = availableEquipment;
