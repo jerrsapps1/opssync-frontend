@@ -83,6 +83,16 @@ export function AssetLocationSearch() {
       let locationIcon: any;
       let statusColor: string;
 
+      // Debug logging for 966M Wheel Loader
+      if (eq.name.includes("966M")) {
+        console.log('🔍 Search Debug - 966M Wheel Loader:', {
+          id: eq.id,
+          name: eq.name,
+          status: eq.status,
+          currentProjectId: eq.currentProjectId
+        });
+      }
+
       if (eq.status === "maintenance") {
         location = "Repair Shop";
         locationIcon = Wrench;
