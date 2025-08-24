@@ -14,7 +14,8 @@ import {
   updateEquipmentSchema,
   updateBrandConfigSchema,
   insertWorkOrderSchema,
-  updateWorkOrderSchema
+  updateWorkOrderSchema,
+  insertAuditLogSchema
 } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -1817,6 +1818,29 @@ Rules:
     }
   });
 
+
+  // Audit Logs routes
+  app.get("/api/audit-logs", authenticateToken, async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const logs = await storage.getAuditLogs(limit);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
+  app.post("/api/audit-logs", authenticateToken, async (req, res) => {
+    try {
+      const auditLogData = insertAuditLogSchema.parse(req.body);
+      const auditLog = await storage.createAuditLog(auditLogData);
+      res.status(201).json(auditLog);
+    } catch (error) {
+      console.error("Error creating audit log:", error);
+      res.status(400).json({ message: "Failed to create audit log" });
+    }
+  });
 
   // StaffTrak: Branding & White Label controls
   app.use("/api/owner-admin", ownerBrandingAdminRouter);                 // owner toggles

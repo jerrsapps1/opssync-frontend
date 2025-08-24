@@ -447,6 +447,26 @@ export const notificationRecipients = pgTable("notification_recipients", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Audit Logs table for tracking drag-and-drop operations
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  action: text("action").notNull(), // drag-drop-move, drag-drop-assign, drag-drop-unassign
+  assetType: text("asset_type").notNull(), // employee, equipment
+  assetId: varchar("asset_id").notNull(),
+  assetName: text("asset_name").notNull(),
+  sourceLocation: text("source_location").notNull(), // available, project-id, repair-shop
+  sourceLocationName: text("source_location_name").notNull(), // Available, Project Name, Repair Shop
+  destinationLocation: text("destination_location").notNull(), // available, project-id, repair-shop  
+  destinationLocationName: text("destination_location_name").notNull(), // Available, Project Name, Repair Shop
+  performedBy: varchar("performed_by").notNull().references(() => users.id),
+  performedByUsername: text("performed_by_username").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  time: text("time").notNull(), // HH:MM:SS format
+  userAgent: text("user_agent"), // Browser/device info for future multi-user tracking
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Work Order schema
 export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   id: true,
@@ -522,6 +542,15 @@ export const insertNotificationRecipientSchema = createInsertSchema(notification
 
 export const updateNotificationRecipientSchema = insertNotificationRecipientSchema.partial();
 
+// Audit Logs schemas
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  timestamp: true,
+  createdAt: true,
+});
+
+export const updateAuditLogSchema = insertAuditLogSchema.partial();
+
 // Project Activity Log schema
 export const insertProjectActivityLogSchema = z.object({
   date: z.string(),
@@ -576,4 +605,8 @@ export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationRecipient = typeof notificationRecipients.$inferSelect;
 export type InsertNotificationRecipient = z.infer<typeof insertNotificationRecipientSchema>;
 export type UpdateNotificationRecipient = z.infer<typeof updateNotificationRecipientSchema>;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type UpdateAuditLog = z.infer<typeof updateAuditLogSchema>;
 

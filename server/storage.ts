@@ -1,5 +1,5 @@
 import { 
-  projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, workOrders,
+  projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, auditLogs, workOrders,
   workOrderComments, workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds, systemSettings,
   notifications, notificationRecipients,
   type Project, type InsertProject, type UpdateProject,
@@ -13,6 +13,8 @@ import {
   type UpdateEquipmentAssignment,
   type ProjectActivityLog,
   type InsertProjectActivityLog,
+  type AuditLog,
+  type InsertAuditLog,
   type WorkOrder,
   type InsertWorkOrder,
   type UpdateWorkOrder,
@@ -93,6 +95,10 @@ export interface IStorage {
   getProjectActivityLogs(projectId?: string, startDate?: string, endDate?: string): Promise<ProjectActivityLog[]>;
   createProjectActivityLog(log: InsertProjectActivityLog): Promise<ProjectActivityLog>;
   
+  // Audit Logs
+  getAuditLogs(limit?: number): Promise<AuditLog[]>;
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  
   // Work Orders
   getWorkOrders(equipmentId?: string): Promise<WorkOrder[]>;
   getWorkOrder(id: string): Promise<WorkOrder | undefined>;
@@ -162,6 +168,7 @@ export class MemStorage implements IStorage {
   protected alerts: Map<string, Alert>;
   protected projectContacts: Map<string, ProjectContact>;
   protected projectActivityLogs: ProjectActivityLog[];
+  protected auditLogs: AuditLog[];
   protected workOrders: Map<string, WorkOrder>;
 
   constructor() {
@@ -173,6 +180,7 @@ export class MemStorage implements IStorage {
     this.alerts = new Map();
     this.projectContacts = new Map();
     this.projectActivityLogs = [];
+    this.auditLogs = [];
     this.workOrders = new Map();
     
     // Load data from shared database instead of hardcoded data
@@ -1443,6 +1451,32 @@ export class MemStorage implements IStorage {
     return newLog;
   }
 
+  // Audit Logs
+  async getAuditLogs(limit?: number): Promise<AuditLog[]> {
+    const sortedLogs = this.auditLogs.sort((a, b) => {
+      // Sort by timestamp descending (most recent first)
+      return new Date(b.timestamp!).getTime() - new Date(a.timestamp!).getTime();
+    });
+    
+    if (limit) {
+      return sortedLogs.slice(0, limit);
+    }
+    return sortedLogs;
+  }
+
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const id = randomUUID();
+    const now = new Date();
+    const newLog: AuditLog = {
+      ...log,
+      id,
+      timestamp: now,
+      createdAt: now,
+    };
+    this.auditLogs.push(newLog);
+    return newLog;
+  }
+
   // Work Orders
   async getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
     const allWorkOrders = Array.from(this.workOrders.values());
@@ -1636,6 +1670,27 @@ export class PostgreSQLStorage extends MemStorage {
     console.log(`💾 PostgreSQLStorage.createProjectActivityLog: Creating log for project ${log.projectId}`);
     const [newLog] = await db.insert(projectActivityLogs).values(log).returning();
     console.log(`💾 PostgreSQLStorage.createProjectActivityLog: Created log ${newLog.id} successfully`);
+    return newLog;
+  }
+
+  // Audit Logs - PostgreSQL implementation
+  async getAuditLogs(limit?: number): Promise<AuditLog[]> {
+    console.log(`💾 PostgreSQLStorage.getAuditLogs: Loading audit logs from PostgreSQL database`);
+    let query = db.select().from(auditLogs).orderBy(desc(auditLogs.timestamp));
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+    
+    const logs = await query;
+    console.log(`💾 PostgreSQLStorage.getAuditLogs: Found ${logs.length} audit logs`);
+    return logs;
+  }
+
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    console.log(`💾 PostgreSQLStorage.createAuditLog: Creating audit log for ${log.assetType} ${log.assetId}`);
+    const [newLog] = await db.insert(auditLogs).values(log).returning();
+    console.log(`💾 PostgreSQLStorage.createAuditLog: Created audit log ${newLog.id} successfully`);
     return newLog;
   }
 

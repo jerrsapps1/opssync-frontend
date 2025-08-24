@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import type { DropResult } from "react-beautiful-dnd";
 import { onDragEndFactory } from "@/dnd/onDragEnd";
 
@@ -10,6 +11,28 @@ export function useDragDrop() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Helper function to create audit logs
+  const createAuditLog = async (assetType: string, assetId: string, assetName: string, sourceLocation: string, destinationLocation: string) => {
+    if (!user) return; // Skip if no user
+    
+    try {
+      await apiRequest("POST", "/api/audit-logs", {
+        assetType,
+        assetId,
+        assetName,
+        sourceLocation,
+        destinationLocation,
+        performedBy: user.id,
+        performedByEmail: user.email || user.username,
+      });
+      console.log(`✅ Audit log created: ${assetType} ${assetName} moved from ${sourceLocation} to ${destinationLocation}`);
+    } catch (error) {
+      console.error("❌ Failed to create audit log:", error);
+      // Don't throw error - audit log failure shouldn't break assignment
+    }
+  };
 
   // Create assignment functions for the onDragEndFactory
   const setEmployeeAssignment = async (id: string, projectId: string | null) => {
@@ -28,8 +51,39 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: (data) => {
+    onSuccess: async (data, variables) => {
       console.log("Employee assignment success:", data);
+      
+      // Create audit log
+      try {
+        const response = await data.json();
+        const employee = response;
+        
+        // Get project names for better audit trail
+        const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
+        const sourceProject = projects.find(p => p.id === employee.previousProjectId);
+        const destinationProject = projects.find(p => p.id === variables.projectId);
+        
+        const sourceLocation = employee.previousProjectId ? 
+          (sourceProject?.name || `Project ${employee.previousProjectId}`) : 
+          "Unassigned";
+        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "Repair Shop" : 
+          variables.projectId ? 
+            (destinationProject?.name || `Project ${variables.projectId}`) : 
+            "Unassigned";
+        
+        await createAuditLog(
+          "employee",
+          variables.employeeId,
+          employee.name || variables.employeeId,
+          sourceLocation,
+          destinationLocation
+        );
+      } catch (auditError) {
+        console.error("Failed to create employee audit log:", auditError);
+      }
+      
       // Force immediate invalidation and refetch using consistent query keys
       queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
       queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
@@ -53,8 +107,39 @@ export function useDragDrop() {
         projectId,
       });
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       console.log("Equipment assignment success:", data);
+      
+      // Create audit log
+      try {
+        const response = await data.json();
+        const equipment = response;
+        
+        // Get project names for better audit trail
+        const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
+        const sourceProject = projects.find(p => p.id === equipment.previousProjectId);
+        const destinationProject = projects.find(p => p.id === variables.projectId);
+        
+        const sourceLocation = equipment.previousProjectId ? 
+          (sourceProject?.name || `Project ${equipment.previousProjectId}`) : 
+          "Unassigned";
+        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "Repair Shop" : 
+          variables.projectId ? 
+            (destinationProject?.name || `Project ${variables.projectId}`) : 
+            "Unassigned";
+        
+        await createAuditLog(
+          "equipment",
+          variables.equipmentId,
+          equipment.name || variables.equipmentId,
+          sourceLocation,
+          destinationLocation
+        );
+      } catch (auditError) {
+        console.error("Failed to create equipment audit log:", auditError);
+      }
+      
       // Force immediate invalidation and refetch using consistent query keys
       queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
       queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
