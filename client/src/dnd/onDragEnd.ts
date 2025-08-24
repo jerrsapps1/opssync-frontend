@@ -14,7 +14,8 @@ export function onDragEndFactory(fns: Fns) {
     // Ignore if dropped back in same location
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-    const isEmp = draggableId.startsWith("emp-");
+    // Better asset type detection: use source droppableId as primary method
+    const isEmp = source.droppableId === "employees" || draggableId.startsWith("emp-");
     const id = draggableId;
 
     // Handle the standard employee-X and equipment-X format
@@ -60,6 +61,12 @@ export function onDragEndFactory(fns: Fns) {
     });
 
     try {
+      // Validate ID format before making assignment
+      if (isEmp && !id.startsWith("emp-") && !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.error(`❌ INVALID EMPLOYEE ID: ${id} - skipping assignment`);
+        return; // Skip invalid employee IDs
+      }
+      
       if (isEmp) {
         console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
         await fns.setEmployeeAssignment(id, projectId);
@@ -74,7 +81,13 @@ export function onDragEndFactory(fns: Fns) {
       console.error(`❌ Error:`, error.message);
       console.error(`❌ Target:`, projectId);
       
-      // Re-throw to let higher level handlers deal with it
+      // For invalid ID errors, don't re-throw to prevent UI disruption
+      if (error.message?.includes('not found')) {
+        console.warn(`⚠️ Skipping invalid ${isEmp ? 'employee' : 'equipment'} ID: ${id}`);
+        return;
+      }
+      
+      // Re-throw other errors to let higher level handlers deal with it
       throw error;
     }
   };
