@@ -579,7 +579,7 @@ export default function RepairShop() {
 
             {/* Sort Headers */}
             <div className="bg-gray-700 border border-gray-600 rounded-t-lg p-3">
-              <div className="grid grid-cols-10 gap-4 text-sm font-medium text-gray-300">
+              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-300">
                 <div className="col-span-1 flex items-center gap-1">
                   <Checkbox
                     checked={filteredAndSortedWorkOrders.length > 0 && filteredAndSortedWorkOrders.every(wo => selectedWorkOrders.has(wo.id))}
@@ -607,13 +607,13 @@ export default function RepairShop() {
                 </button>
                 
                 
-                <div className="col-span-5 flex items-center gap-1">
+                <div className="col-span-4 flex items-center gap-1">
                   Details
                 </div>
                 
                 <button
                   onClick={() => handleSort("priority")}
-                  className="col-span-1 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
                   data-testid="button-sort-priority"
                 >
                   Priority
@@ -624,7 +624,7 @@ export default function RepairShop() {
                 
                 <button
                   onClick={() => handleSort("status")}
-                  className="col-span-1 flex items-center gap-1 hover:text-white transition-colors text-left"
+                  className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
                   data-testid="button-sort-status"
                 >
                   Status
@@ -633,7 +633,7 @@ export default function RepairShop() {
                   )}
                 </button>
                 
-                <div className="col-span-2 flex items-center gap-1">
+                <div className="col-span-1 flex items-center gap-1">
                   <MessageCircle className="h-4 w-4" />
                   Comments
                 </div>
@@ -690,7 +690,7 @@ export default function RepairShop() {
                         </div>
                         
                         
-                        <div className="col-span-5">
+                        <div className="col-span-4">
                           <div className="text-white font-medium text-sm mb-1">
                             {workOrder.title}
                           </div>
@@ -703,19 +703,19 @@ export default function RepairShop() {
                           </div>
                         </div>
                         
-                        <div className="col-span-1">
-                          <Badge className={`${getPriorityColor(workOrder.priority)} text-xs`}>
+                        <div className="col-span-2">
+                          <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-2 py-1 min-w-[80px] text-center`}>
                             {workOrder.priority.toUpperCase()}
                           </Badge>
                         </div>
                         
-                        <div className="col-span-1">
+                        <div className="col-span-2">
                           <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[80px] text-center`}>
                             {workOrder.status.toUpperCase()}
                           </Badge>
                         </div>
                         
-                        <div className="col-span-2 text-sm">
+                        <div className="col-span-1 text-sm">
                           <div className="text-gray-400 text-xs">
                             {workOrder.comments ? (
                               <div className="text-gray-300 truncate">{workOrder.comments}</div>
