@@ -633,7 +633,7 @@ export default function RepairShop() {
                   )}
                 </button>
                 
-                <div className="col-span-1 flex items-center gap-1">
+                <div className="col-span-2 flex items-center gap-1">
                   <MessageCircle className="h-4 w-4" />
                   Comments
                 </div>
@@ -715,7 +715,7 @@ export default function RepairShop() {
                           </Badge>
                         </div>
                         
-                        <div className="col-span-1 text-sm">
+                        <div className="col-span-2 text-sm">
                           <div className="text-gray-400 text-xs">
                             {workOrder.comments ? (
                               <div className="text-gray-300 truncate">{workOrder.comments}</div>
