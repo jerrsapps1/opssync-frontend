@@ -248,20 +248,10 @@ export default function RepairShop() {
 
   const createWorkOrderMutation = useMutation({
     mutationFn: async (workOrder: InsertWorkOrder) => {
-      console.log("🚀 CLIENT: Starting work order creation");
-      try {
-        const response = await apiRequest("POST", "/api/work-orders", workOrder);
-        console.log("✅ CLIENT: Got response, status:", response.status);
-        const result = await response.json();
-        console.log("✅ CLIENT: Parsed result:", result);
-        return result;
-      } catch (error) {
-        console.error("❌ CLIENT: API request failed:", error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/work-orders", workOrder);
+      return response.json();
     },
     onSuccess: (newWorkOrder) => {
-      console.log("Work order creation successful, invalidating queries...");
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
       setCreateWorkOrderEquipment(null);
       toast({
@@ -270,7 +260,6 @@ export default function RepairShop() {
       });
     },
     onError: (error) => {
-      console.error("Error creating work order:", error);
       toast({
         title: "Error",
         description: "Failed to create work order. Please try again.",
@@ -292,10 +281,6 @@ export default function RepairShop() {
   });
 
   const onSubmitWorkOrder = (data: InsertWorkOrder) => {
-    console.log("🔧 onSubmitWorkOrder called with data:", data);
-    console.log("🔧 createWorkOrderEquipment:", createWorkOrderEquipment);
-    console.log("🔧 Form errors:", form.formState.errors);
-    
     if (createWorkOrderEquipment) {
       const workOrderData = {
         ...data,
@@ -303,10 +288,7 @@ export default function RepairShop() {
         description: data.description || "Work order created from repair shop",
         reason: data.reason || "Equipment requires maintenance/repair",
       };
-      console.log("🔧 Final workOrderData:", workOrderData);
       createWorkOrderMutation.mutate(workOrderData);
-    } else {
-      console.log("❌ No createWorkOrderEquipment found!");
     }
   };
 
@@ -624,17 +606,32 @@ export default function RepairShop() {
                   if (selectedWorkOrders.size > 0) {
                     handleUpdateClick();
                   } else {
-                    // For creating work orders from this section, we need to show equipment selection
-                    // For now, just show equipment selection or find first available equipment
-                    const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
-                    if (availableEquipment) {
-                      setCreateWorkOrderEquipment(availableEquipment);
-                    } else {
+                    // Use selected equipment if any, otherwise find first available equipment
+                    const selectedEquipmentIds = Array.from(selectedItems);
+                    if (selectedEquipmentIds.length === 1) {
+                      // Single equipment selected - use it
+                      const selectedEquipment = repairEquipment.find(eq => eq.id === selectedEquipmentIds[0]);
+                      if (selectedEquipment) {
+                        setCreateWorkOrderEquipment(selectedEquipment);
+                      }
+                    } else if (selectedEquipmentIds.length > 1) {
                       toast({
-                        title: "No Equipment Available",
-                        description: "All repair shop equipment already has work orders. Create work orders from the equipment cards above.",
+                        title: "Multiple Equipment Selected",
+                        description: "Please select only one piece of equipment to create a work order.",
                         variant: "destructive",
                       });
+                    } else {
+                      // No equipment selected - find first available equipment
+                      const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
+                      if (availableEquipment) {
+                        setCreateWorkOrderEquipment(availableEquipment);
+                      } else {
+                        toast({
+                          title: "No Equipment Available",
+                          description: "All repair shop equipment already has work orders. Select an equipment card above to create a work order for it.",
+                          variant: "destructive",
+                        });
+                      }
                     }
                   }
                 }}

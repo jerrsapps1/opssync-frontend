@@ -12,8 +12,6 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  console.log("🌐 apiRequest: Starting", method, url);
-  
   const headers: Record<string, string> = {};
   
   // Add content type for requests with data
@@ -25,10 +23,8 @@ export async function apiRequest(
   const token = localStorage.getItem("token");
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-    console.log("🌐 apiRequest: Token added to headers");
   }
 
-  console.log("🌐 apiRequest: Making fetch request...");
   const res = await fetch(url, {
     method,
     headers,
@@ -36,9 +32,7 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  console.log("🌐 apiRequest: Got response, status:", res.status);
   await throwIfResNotOk(res);
-  console.log("🌐 apiRequest: Response validated, returning");
   return res;
 }
 

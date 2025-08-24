@@ -17,12 +17,6 @@ const app = express();
 // Stripe webhook requires raw body, must come before express.json()
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhookRouter);
 
-// Debug middleware - log all requests
-app.use((req, res, next) => {
-  console.log(`🌍 SERVER: ${req.method} ${req.path} - Headers:`, req.headers['content-type'] || 'none');
-  next();
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
