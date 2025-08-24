@@ -10,7 +10,6 @@ import stream from "./realtime/stream";
 import assignments from "./routes/assignments";
 import archive from "./routes/archive";
 import billing from "./routes/billing";
-import stripeWebhook from "./routes/stripe-webhook";
 import limits from "./routes/limits";
 
 const app = express();
