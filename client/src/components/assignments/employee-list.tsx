@@ -27,7 +27,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-3 overflow-y-auto">
+      <div className="flex-1 p-3">
         <h2 className="text-sm font-medium mb-3">Available Employees</h2>
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (

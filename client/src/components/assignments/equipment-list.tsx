@@ -28,7 +28,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
 
   if (isLoading) {
     return (
-      <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-gray-800">
+      <div className="w-72 border-l border-[color:var(--brand-primary)] p-3 bg-gray-800">
         <h2 className="text-sm font-medium mb-3">Available Equipment</h2>
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
