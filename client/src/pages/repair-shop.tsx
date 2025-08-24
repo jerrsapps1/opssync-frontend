@@ -280,6 +280,10 @@ export default function RepairShop() {
   });
 
   const onSubmitWorkOrder = (data: InsertWorkOrder) => {
+    console.log("🔧 onSubmitWorkOrder called with data:", data);
+    console.log("🔧 createWorkOrderEquipment:", createWorkOrderEquipment);
+    console.log("🔧 Form errors:", form.formState.errors);
+    
     if (createWorkOrderEquipment) {
       const workOrderData = {
         ...data,
@@ -287,7 +291,10 @@ export default function RepairShop() {
         description: data.description || "Work order created from repair shop",
         reason: data.reason || "Equipment requires maintenance/repair",
       };
+      console.log("🔧 Final workOrderData:", workOrderData);
       createWorkOrderMutation.mutate(workOrderData);
+    } else {
+      console.log("❌ No createWorkOrderEquipment found!");
     }
   };
 
@@ -1003,10 +1010,15 @@ export default function RepairShop() {
               Cancel
             </Button>
             <Button
-              onClick={form.handleSubmit(onSubmitWorkOrder)}
+              type="submit"
               disabled={createWorkOrderMutation.isPending}
               className="bg-blue-600 hover:bg-blue-500"
               data-testid="button-create-workorder"
+              onClick={() => {
+                console.log("🔧 Create Work Order button clicked!");
+                console.log("🔧 Form valid?", form.formState.isValid);
+                console.log("🔧 Form errors:", form.formState.errors);
+              }}
             >
               {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
             </Button>
@@ -1014,7 +1026,7 @@ export default function RepairShop() {
         }
       >
         <Form {...form}>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmitWorkOrder)}>
             <FormField
               control={form.control}
               name="title"
