@@ -1,0 +1,2 @@
+-- Database schema file
+-- Add your table definitions here
