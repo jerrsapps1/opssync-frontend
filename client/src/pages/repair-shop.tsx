@@ -56,11 +56,8 @@ export default function RepairShop() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<Set<string>>(new Set());
-  const [commentingWorkOrder, setCommentingWorkOrder] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState("");
-  const [showCommentDialog, setShowCommentDialog] = useState(false);
-  const [showStatusDialog, setShowStatusDialog] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [updateData, setUpdateData] = useState({ status: "", comments: "" });
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -128,123 +125,83 @@ export default function RepairShop() {
     completeRepairMutation.mutate(equipmentId);
   };
 
-  const updateCommentMutation = useMutation({
-    mutationFn: async ({ workOrderId, comments }: { workOrderId: string; comments: string }) => {
-      const response = await apiRequest("PATCH", `/api/work-orders/${workOrderId}/comments`, {
-        comments
+  const updateWorkOrderMutation = useMutation({
+    mutationFn: async ({ workOrderIds, updates }: { workOrderIds: string[]; updates: { status?: string; comments?: string } }) => {
+      // Update multiple work orders efficiently
+      const promises = workOrderIds.map(id => {
+        const updateData: any = {};
+        if (updates.status) updateData.status = updates.status;
+        if (updates.comments !== undefined) updateData.comments = updates.comments;
+        
+        return apiRequest("PATCH", `/api/work-orders/${id}`, updateData);
       });
-      return response.json();
+      return Promise.all(promises);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
-      setShowCommentDialog(false);
-      setCommentingWorkOrder(null);
-      setCommentText("");
-      toast({
-        title: "Comment Added",
-        description: "Work order comment has been updated.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update comment",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleCommentClick = () => {
-    const selectedIds = Array.from(selectedWorkOrders);
-    if (selectedIds.length === 0) {
-      toast({
-        title: "No Selection",
-        description: "Please select at least one work order to add a comment.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (selectedIds.length > 1) {
-      toast({
-        title: "Multiple Selection",
-        description: "Please select only one work order at a time to add a comment.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const workOrderId = selectedIds[0];
-    const workOrder = workOrders.find(wo => wo.id === workOrderId);
-    setCommentingWorkOrder(workOrderId);
-    setCommentText(workOrder?.comments || "");
-    setShowCommentDialog(true);
-  };
-
-  const handleSaveComment = () => {
-    if (commentingWorkOrder) {
-      updateCommentMutation.mutate({
-        workOrderId: commentingWorkOrder,
-        comments: commentText
-      });
-    }
-  };
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ workOrderIds, status }: { workOrderIds: string[]; status: string }) => {
-      // Update multiple work orders
-      const updates = workOrderIds.map(id => 
-        apiRequest("PATCH", `/api/work-orders/${id}`, { status })
-      );
-      return Promise.all(updates);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
-      setShowStatusDialog(false);
+      setShowUpdateDialog(false);
       setSelectedWorkOrders(new Set());
-      setNewStatus("");
+      setUpdateData({ status: "", comments: "" });
       toast({
-        title: "Status Updated",
+        title: "Work Orders Updated",
         description: `Successfully updated ${selectedWorkOrders.size} work order(s).`,
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update status",
+        description: error.message || "Failed to update work orders",
         variant: "destructive",
       });
     }
   });
 
-  const handleStatusClick = () => {
+  const handleUpdateClick = () => {
     const selectedIds = Array.from(selectedWorkOrders);
     if (selectedIds.length === 0) {
       toast({
         title: "No Selection",
-        description: "Please select at least one work order to update status.",
+        description: "Please select at least one work order to update.",
         variant: "destructive",
       });
       return;
     }
     
-    setNewStatus("");
-    setShowStatusDialog(true);
+    // Pre-fill with existing data if only one work order is selected
+    if (selectedIds.length === 1) {
+      const workOrder = workOrders.find(wo => wo.id === selectedIds[0]);
+      setUpdateData({
+        status: workOrder?.status || "",
+        comments: workOrder?.comments || ""
+      });
+    } else {
+      setUpdateData({ status: "", comments: "" });
+    }
+    
+    setShowUpdateDialog(true);
   };
 
-  const handleSaveStatus = () => {
-    if (!newStatus) {
+  const handleSaveUpdate = () => {
+    const { status, comments } = updateData;
+    
+    if (!status && !comments.trim()) {
       toast({
-        title: "No Status Selected",
-        description: "Please select a status to update.",
+        title: "No Changes",
+        description: "Please update at least one field.",
         variant: "destructive",
       });
       return;
     }
     
     const selectedIds = Array.from(selectedWorkOrders);
-    updateStatusMutation.mutate({
+    const updates: { status?: string; comments?: string } = {};
+    
+    if (status) updates.status = status;
+    if (comments.trim()) updates.comments = comments;
+    
+    updateWorkOrderMutation.mutate({
       workOrderIds: selectedIds,
-      status: newStatus
+      updates
     });
   };
 
@@ -530,27 +487,15 @@ export default function RepairShop() {
               </Select>
 
               <Button
-                onClick={handleCommentClick}
+                onClick={handleUpdateClick}
                 size="sm"
                 variant="outline"
-                className="flex items-center gap-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                className="flex items-center gap-2 bg-blue-700 border-blue-600 text-white hover:bg-blue-600"
                 disabled={selectedWorkOrders.size === 0}
-                data-testid="button-comment-workorders"
+                data-testid="button-update-workorders"
               >
-                <MessageCircle className="h-4 w-4" />
-                Comment ({selectedWorkOrders.size})
-              </Button>
-
-              <Button
-                onClick={handleStatusClick}
-                size="sm"
-                variant="outline"
-                className="flex items-center gap-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-                disabled={selectedWorkOrders.size === 0}
-                data-testid="button-status-workorders"
-              >
-                <Clock className="h-4 w-4" />
-                Status ({selectedWorkOrders.size})
+                <Wrench className="h-4 w-4" />
+                Update ({selectedWorkOrders.size})
               </Button>
               
               <div className="text-sm text-gray-400">
@@ -840,98 +785,72 @@ export default function RepairShop() {
         </div>
       </div>
 
-      {/* Comment Dialog */}
+      {/* Combined Update Dialog */}
       <Dialog 
-        open={showCommentDialog} 
-        onClose={() => setShowCommentDialog(false)}
+        open={showUpdateDialog} 
+        onClose={() => setShowUpdateDialog(false)}
         title={
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-blue-400" />
-            Add Work Order Comment
+            <Wrench className="h-5 w-5 text-blue-400" />
+            Update Work Orders ({selectedWorkOrders.size})
           </div>
         }
         footer={
           <div className="flex gap-3 justify-end">
             <Button
               variant="outline"
-              onClick={() => setShowCommentDialog(false)}
+              onClick={() => setShowUpdateDialog(false)}
               className="border-gray-600 text-gray-300 hover:bg-gray-700"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleSaveComment}
-              disabled={updateCommentMutation.isPending}
+              onClick={handleSaveUpdate}
+              disabled={updateWorkOrderMutation.isPending}
               className="bg-blue-600 hover:bg-blue-500"
-              data-testid="button-save-comment"
+              data-testid="button-save-update"
             >
-              {updateCommentMutation.isPending ? "Saving..." : "Save Comment"}
+              {updateWorkOrderMutation.isPending ? "Updating..." : "Update Work Orders"}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
+          {/* Status Update */}
           <div>
             <label className="text-sm font-medium text-gray-300 mb-2 block">
-              Comment for Work Order
+              Status (optional)
             </label>
-            <Textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Add your comment about this work order..."
-              className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
-              data-testid="textarea-comment"
-            />
-          </div>
-        </div>
-      </Dialog>
-
-      {/* Status Dialog */}
-      <Dialog 
-        open={showStatusDialog} 
-        onClose={() => setShowStatusDialog(false)}
-        title={
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-blue-400" />
-            Update Work Order Status
-          </div>
-        }
-        footer={
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setShowStatusDialog(false)}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveStatus}
-              disabled={updateStatusMutation.isPending || !newStatus}
-              className="bg-blue-600 hover:bg-blue-500"
-              data-testid="button-save-status"
-            >
-              {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-300 mb-2 block">
-              New Status for {selectedWorkOrders.size} work order(s)
-            </label>
-            <Select value={newStatus} onValueChange={setNewStatus}>
-              <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-new-status">
+            <Select value={updateData.status} onValueChange={(value) => setUpdateData(prev => ({ ...prev, status: value }))}>
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-update-status">
                 <SelectValue placeholder="Select new status" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">No change</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
                 <SelectItem value="in-progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Comments Update */}
+          <div>
+            <label className="text-sm font-medium text-gray-300 mb-2 block">
+              Comments (optional)
+            </label>
+            <Textarea
+              value={updateData.comments}
+              onChange={(e) => setUpdateData(prev => ({ ...prev, comments: e.target.value }))}
+              placeholder="Add or update comments for these work orders..."
+              className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[80px]"
+              data-testid="textarea-update-comments"
+            />
+          </div>
+          
+          <div className="text-xs text-gray-400 bg-gray-700 p-2 rounded">
+            💡 You can update status, comments, or both. Changes will be applied to all {selectedWorkOrders.size} selected work order(s).
           </div>
         </div>
       </Dialog>
