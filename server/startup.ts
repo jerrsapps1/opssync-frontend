@@ -1,14 +1,10 @@
 import { query } from "./db";
-import * as fs from "fs";
-import * as path from "path";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
 
 export async function ensureSchema() {
-  const schemaPath = path.join(process.cwd(), "server", "schema.sql");
-  const schema = fs.readFileSync(schemaPath, "utf8");
-  await query(schema);
-  console.log("Database schema ensured");
+  const sql = await (await import("fs/promises")).readFile(process.cwd()+"/server/schema.sql","utf-8");
+  await query(sql);
 }
 
 export async function createDefaultOrgAndOwner() {
@@ -16,31 +12,35 @@ export async function createDefaultOrgAndOwner() {
   const ownerEmail = process.env.OWNER_EMAIL || "owner@example.com";
   const ownerPassword = process.env.OWNER_PASSWORD || "Admin123!";
 
-  try {
-    // Check if org exists
-    const orgResult = await query("SELECT id FROM organizations LIMIT 1");
-    if (orgResult.rows.length > 0) {
-      console.log("Default organization already exists");
-      return;
-    }
-
-    // Create organization
-    const orgId = uuidv4();
+  const org = await query("SELECT * FROM organizations LIMIT 1");
+  if (org.rows.length === 0) {
+    const orgId = crypto.randomUUID();
     await query(
-      "INSERT INTO organizations (id, name, plan, seat_limit) VALUES ($1, $2, $3, $4)",
+      "INSERT INTO organizations (id, name, plan, seat_limit) VALUES ($1,$2,$3,$4)",
       [orgId, orgName, "single", 1]
     );
-
-    // Create owner user
-    const userId = uuidv4();
-    const hashedPassword = await bcrypt.hash(ownerPassword, 10);
+    const hash = await bcrypt.hash(ownerPassword, 10);
     await query(
-      "INSERT INTO users (id, org_id, email, name, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6)",
-      [userId, orgId, ownerEmail, "Owner", hashedPassword, "owner"]
+      "INSERT INTO users (id, org_id, email, name, password_hash, role) VALUES ($1,$2,$3,$4,$5,$6)",
+      [crypto.randomUUID(), orgId, ownerEmail, "Owner", hash, "owner"]
     );
-
-    console.log(`Default org '${orgName}' and owner '${ownerEmail}' created`);
-  } catch (error) {
-    console.error("Error creating default org/owner:", error);
+    console.log("Created default organization and owner:", ownerEmail);
   }
+}
+
+export async function getOrg() {
+  const res = await query(
+    "SELECT o.*, (SELECT COUNT(*)::int FROM users WHERE org_id = o.id) as seats_used FROM organizations o LIMIT 1"
+  );
+  return res.rows[0];
+}
+
+export async function updatePlan(plan: "single"|"five"|"ten") {
+  const seat_limit = plan === "single" ? 1 : (plan === "five" ? 5 : 10);
+  const org = await getOrg();
+  await query(
+    "UPDATE organizations SET plan=$1, seat_limit=$2 WHERE id=$3",
+    [plan, seat_limit, org.id]
+  );
+  return getOrg();
 }
