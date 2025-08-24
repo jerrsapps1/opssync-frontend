@@ -154,21 +154,32 @@ export function registerWorkOrderRoutes(app: Express) {
 
   app.post("/api/work-orders/:workOrderId/comments", async (req, res) => {
     try {
+      console.log("POST /api/work-orders/:workOrderId/comments - Request body:", req.body);
+      console.log("WorkOrderId:", req.params.workOrderId);
+      
       // Get user from session/auth - for now using test user
       const userId = "test-user-001"; // TODO: Get from actual session
       
-      const validatedData = insertWorkOrderCommentSchema.parse({
+      const dataToValidate = {
         ...req.body,
         workOrderId: req.params.workOrderId,
         createdBy: userId,
         createdAt: new Date(), // Ensure current timestamp
-      });
+      };
+      
+      console.log("Data to validate:", dataToValidate);
+      
+      const validatedData = insertWorkOrderCommentSchema.parse(dataToValidate);
+      console.log("Validated data:", validatedData);
       
       const comment = await storage.createWorkOrderComment(validatedData);
+      console.log("Created comment:", comment);
+      
       res.json(comment);
     } catch (error) {
       console.error("Error creating work order comment:", error);
-      res.status(500).json({ error: "Failed to create comment" });
+      console.error("Error stack:", error.stack);
+      res.status(500).json({ error: "Failed to create comment", details: error.message });
     }
   });
 
