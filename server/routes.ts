@@ -1584,6 +1584,9 @@ Rules:
   });
 
   app.post("/api/work-orders", authenticateToken, async (req, res) => {
+    console.log("🔧 SERVER: Work order creation request received");
+    console.log("🔧 SERVER: Request body:", req.body);
+    console.log("🔧 SERVER: User:", req.user);
     try {
       const validatedData = insertWorkOrderSchema.parse(req.body);
       
