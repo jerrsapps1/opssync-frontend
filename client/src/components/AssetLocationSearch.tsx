@@ -117,29 +117,13 @@ export function AssetLocationSearch() {
 
   // Filter and create search results for employees
   const employeeResults = employees
-    .filter(emp => {
-      const isMatch = searchTerm.length >= 2 && 
-        ((emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-         (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-         (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-         emp.id.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      // Debug Test Employee matches
-      if (isMatch && emp.name.toLowerCase().includes('test')) {
-        console.log('🔍 Test Employee match for "' + searchTerm + '":', {
-          name: emp.name,
-          role: emp.role,
-          email: emp.email,
-          id: emp.id,
-          nameMatch: (emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()),
-          roleMatch: (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()),
-          emailMatch: (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()),
-          idMatch: emp.id.toLowerCase().includes(searchTerm.toLowerCase())
-        });
-      }
-      
-      return isMatch;
-    })
+    .filter(emp => 
+      searchTerm.length >= 2 && 
+      ((emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       emp.id.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
     .map(emp => {
       let location: string;
       let locationIcon: any;
