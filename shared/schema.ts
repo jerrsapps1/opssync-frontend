@@ -362,6 +362,24 @@ export const workOrderComments = pgTable("work_order_comments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Message Threads table for general messaging
+export const messageThreads = pgTable("message_threads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  topic: text("topic").notNull(), // Subject/title of the conversation
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Messages table for general messaging
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: varchar("thread_id").notNull().references(() => messageThreads.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Work Order Documents table for PDF attachments
 export const workOrderDocuments = pgTable("work_order_documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -575,3 +593,28 @@ export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationRecipient = typeof notificationRecipients.$inferSelect;
 export type InsertNotificationRecipient = z.infer<typeof insertNotificationRecipientSchema>;
 export type UpdateNotificationRecipient = z.infer<typeof updateNotificationRecipientSchema>;
+
+// Message Thread schemas
+export const insertMessageThreadSchema = createInsertSchema(messageThreads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateMessageThreadSchema = insertMessageThreadSchema.partial();
+
+// Messages schemas
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateMessageSchema = insertMessageSchema.partial();
+
+export type MessageThread = typeof messageThreads.$inferSelect;
+export type InsertMessageThread = z.infer<typeof insertMessageThreadSchema>;
+export type UpdateMessageThread = z.infer<typeof updateMessageThreadSchema>;
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type UpdateMessage = z.infer<typeof updateMessageSchema>;

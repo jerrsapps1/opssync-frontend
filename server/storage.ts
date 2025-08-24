@@ -39,7 +39,15 @@ import {
   type UpdateNotification,
   type NotificationRecipient,
   type InsertNotificationRecipient,
-  type UpdateNotificationRecipient
+  type UpdateNotificationRecipient,
+  messageThreads,
+  messages,
+  type MessageThread,
+  type InsertMessageThread,
+  type UpdateMessageThread,
+  type Message,
+  type InsertMessage,
+  type UpdateMessage
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -150,6 +158,14 @@ export interface IStorage {
   createNotificationRecipient(recipient: InsertNotificationRecipient): Promise<NotificationRecipient>;
   updateNotificationRecipient(id: string, updates: UpdateNotificationRecipient): Promise<NotificationRecipient>;
   deleteNotificationRecipient(id: string): Promise<void>;
+  
+  // Messages
+  getMessageThreads(): Promise<MessageThread[]>;
+  createMessageThread(thread: InsertMessageThread): Promise<MessageThread>;
+  getMessagesByThread(threadId: string): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  updateMessageThreadTimestamp(threadId: string): Promise<void>;
+  searchMessages(query?: string, date?: string): Promise<{ thread: MessageThread; messages: Message[] }[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -2194,6 +2210,62 @@ export class PostgreSQLStorage extends MemStorage {
 
   async deleteNotificationRecipient(id: string): Promise<void> {
     await db.delete(notificationRecipients).where(eq(notificationRecipients.id, id));
+  }
+
+  // Messages implementation
+  async getMessageThreads(): Promise<MessageThread[]> {
+    return await db.select().from(messageThreads).orderBy(desc(messageThreads.updatedAt));
+  }
+
+  async createMessageThread(thread: InsertMessageThread): Promise<MessageThread> {
+    const [newThread] = await db.insert(messageThreads).values(thread).returning();
+    return newThread;
+  }
+
+  async getMessagesByThread(threadId: string): Promise<Message[]> {
+    return await db.select().from(messages).where(eq(messages.threadId, threadId)).orderBy(messages.createdAt);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
+  }
+
+  async updateMessageThreadTimestamp(threadId: string): Promise<void> {
+    await db
+      .update(messageThreads)
+      .set({ updatedAt: new Date() })
+      .where(eq(messageThreads.id, threadId));
+  }
+
+  async searchMessages(query?: string, date?: string): Promise<{ thread: MessageThread; messages: Message[] }[]> {
+    // Get all threads first
+    const threads = await this.getMessageThreads();
+    
+    const results: { thread: MessageThread; messages: Message[] }[] = [];
+    
+    for (const thread of threads) {
+      let threadMessages = await this.getMessagesByThread(thread.id);
+      
+      // Filter messages based on search criteria
+      if (query || date) {
+        threadMessages = threadMessages.filter(msg => {
+          const matchesQuery = !query || 
+            msg.content.toLowerCase().includes(query.toLowerCase()) ||
+            thread.topic.toLowerCase().includes(query.toLowerCase());
+            
+          const matchesDate = !date || msg.createdAt.toDateString() === new Date(date).toDateString();
+          
+          return matchesQuery && matchesDate;
+        });
+      }
+      
+      if (threadMessages.length > 0) {
+        results.push({ thread, messages: threadMessages });
+      }
+    }
+    
+    return results;
   }
 }
 

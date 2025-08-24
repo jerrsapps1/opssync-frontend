@@ -36,6 +36,7 @@ import billingPortalRouter from "./routes/billing_portal";
 import ownerBrandingAdminRouter from "./routes/owner_branding_admin";
 import orgEntitlementsRouter from "./routes/org_entitlements";
 import whiteLabelRouter from "./routes/white_label";
+import messagesRouter from "./routes/messages";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
 import "./types"; // Import type declarations
@@ -1814,6 +1815,9 @@ Rules:
       res.status(500).json({ error: "Failed to fetch activities" });
     }
   });
+
+  // Messages
+  app.use("/api/messages", messagesRouter);
 
   // StaffTrak: Branding & White Label controls
   app.use("/api/owner-admin", ownerBrandingAdminRouter);                 // owner toggles
