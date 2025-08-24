@@ -269,8 +269,6 @@ export default function RepairShop() {
     resolver: zodResolver(insertWorkOrderSchema),
     defaultValues: {
       title: "",
-      description: "",
-      reason: "",
       priority: "medium",
       status: "open",
       equipmentId: "",
@@ -287,13 +285,13 @@ export default function RepairShop() {
     }
   };
 
-  // Reset form when equipment changes
+  // Reset form when equipment changes and auto-populate title
   useEffect(() => {
     if (createWorkOrderEquipment) {
+      const autoTitle = `${createWorkOrderEquipment.make || ''} ${createWorkOrderEquipment.model || ''} - Asset #${createWorkOrderEquipment.assetNumber || createWorkOrderEquipment.id}`.trim();
+      
       form.reset({
-        title: "",
-        description: "",
-        reason: "",
+        title: autoTitle,
         priority: "medium",
         status: "open",
         equipmentId: createWorkOrderEquipment.id,
@@ -1020,9 +1018,9 @@ export default function RepairShop() {
                   <FormControl>
                     <Input 
                       {...field} 
-                      placeholder="e.g., Hydraulic System Repair"
                       className="bg-gray-700 border-gray-600 text-white"
                       data-testid="input-workorder-title"
+                      readOnly
                     />
                   </FormControl>
                   <FormMessage />
@@ -1030,67 +1028,55 @@ export default function RepairShop() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Reason for Repair</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="e.g., Equipment malfunction, scheduled maintenance"
-                      className="bg-gray-700 border-gray-600 text-white"
-                      data-testid="input-workorder-reason"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Priority</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-priority">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      placeholder="Detailed description of the work needed..."
-                      className="bg-gray-700 border-gray-600 text-white min-h-[100px]"
-                      data-testid="textarea-workorder-description"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Priority</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-priority">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Status</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="in-progress">In Progress</SelectItem>
+                          <SelectItem value="completed">Returned to Service</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </form>
         </Form>
       </Dialog>
