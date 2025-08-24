@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { User, Package } from "lucide-react";
+import { StatusIndicator, StatusDot } from "@/components/ui/status-indicator";
 import type { Employee, Equipment } from "@shared/schema";
 
 interface UnassignedAssetsProps {
@@ -56,9 +57,15 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                           data-testid={`employee-${employee.id}`}
                         >
                           <User size={16} className="text-blue-400" />
-                          <div>
-                            <p className="text-sm font-medium text-white">{employee.name}</p>
-                            <p className="text-xs text-gray-400">{employee.role}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium text-white">{employee.name}</p>
+                              <StatusDot status={employee.status} type="employee" />
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              <StatusIndicator status={employee.role} type="role" size="sm" />
+                              <StatusIndicator status={employee.status} type="employee" size="sm" />
+                            </div>
                           </div>
                         </div>
                       )}
@@ -87,9 +94,13 @@ export function UnassignedAssets({ employees, equipment, isLoading }: Unassigned
                           data-testid={`equipment-${item.id}`}
                         >
                           <Package size={16} className="text-green-400" />
-                          <div>
-                            <p className="text-sm font-medium text-white">{item.name}</p>
-                            <p className="text-xs text-gray-400">{item.type}</p>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium text-white">{item.name}</p>
+                              <StatusDot status={item.status} type="equipment" />
+                            </div>
+                            <p className="text-xs text-gray-400 mb-1">{item.type}</p>
+                            <StatusIndicator status={item.status} type="equipment" size="sm" />
                           </div>
                         </div>
                       )}

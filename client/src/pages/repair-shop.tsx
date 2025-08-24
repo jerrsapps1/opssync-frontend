@@ -16,6 +16,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle, Plus } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { StatusIndicator, StatusDot } from "@/components/ui/status-indicator";
 import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
@@ -472,13 +473,17 @@ export default function RepairShop() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-white font-medium text-sm leading-tight">
-                              {equipment.name}
-                            </h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-white font-medium text-sm leading-tight">
+                                {equipment.name}
+                              </h4>
+                              <StatusDot status={equipment.status} type="equipment" />
+                            </div>
                           </div>
                           <p className="text-gray-400 text-xs mb-2">
                             {equipment.type}
                           </p>
+                          <StatusIndicator status={equipment.status} type="equipment" size="sm" />
                         </div>
                       </div>
                     </div>

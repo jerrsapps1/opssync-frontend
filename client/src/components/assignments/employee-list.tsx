@@ -8,6 +8,7 @@ import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
 import { useSelection } from "@/state/selection";
 import { buildDroppableId } from "@/dnd/ids";
+import { StatusIndicator, StatusDot } from "@/components/ui/status-indicator";
 import type { Employee, Project } from "@shared/schema";
 
 interface EmployeeListProps {
@@ -92,8 +93,14 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                   >
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        <div className="text-white text-sm font-medium leading-tight">{emp.name}</div>
-                        <div className="text-[color:var(--muted-foreground)] text-xs font-medium leading-tight">{(emp as any).role || "Employee"}</div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="text-white text-sm font-medium leading-tight">{emp.name}</div>
+                          <StatusDot status={emp.status} type="employee" />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <StatusIndicator status={(emp as any).role || "Employee"} type="role" size="sm" />
+                          <StatusIndicator status={emp.status} type="employee" size="sm" />
+                        </div>
                         {emp.currentProjectId && (
                           <div className="text-[color:var(--brand-primary)] text-xs mt-1 font-medium">
                             Assigned: {projects.find(p => p.id === emp.currentProjectId)?.name || "Unknown Project"}
