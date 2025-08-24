@@ -14,6 +14,7 @@ type Equipment = {
   make?: string;
   model?: string;
   year?: number;
+  assetNumber?: string;
   serialNumber?: string;
   currentProjectId?: string | null;
   status?: string;
@@ -60,6 +61,7 @@ export default function EquipmentSetUpPage() {
 
   // Form state for creation/editing
   const [formData, setFormData] = useState({
+    assetNumber: "",
     name: "",
     type: "",
     make: "",
@@ -124,6 +126,7 @@ export default function EquipmentSetUpPage() {
 
   function resetForm() {
     setFormData({
+      assetNumber: "",
       name: "",
       type: "",
       make: "",
@@ -142,6 +145,7 @@ export default function EquipmentSetUpPage() {
 
   function openEditDialog(equipment: Equipment) {
     setFormData({
+      assetNumber: equipment.assetNumber || "",
       name: equipment.name || "",
       type: equipment.type || "",
       make: equipment.make || "",
@@ -174,7 +178,7 @@ export default function EquipmentSetUpPage() {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1: return formData.name.trim() && formData.type.trim();
+      case 1: return formData.assetNumber.trim() && formData.name.trim() && formData.type.trim();
       case 2: return formData.make.trim() && formData.model.trim();
       case 3: return true;
       default: return false;
@@ -349,6 +353,19 @@ export default function EquipmentSetUpPage() {
               <div className="space-y-4">
                 {currentStep === 1 && (
                   <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Asset Number *
+                      </label>
+                      <input
+                        data-testid="input-asset-number"
+                        type="text"
+                        value={formData.assetNumber}
+                        onChange={e => setFormData(prev => ({ ...prev, assetNumber: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg bg-[#121212] border border-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-[#4A90E2] focus:border-transparent"
+                        placeholder="Enter asset number"
+                      />
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Equipment Name *
