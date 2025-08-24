@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
+import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle, Plus } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -631,6 +631,29 @@ export default function RepairShop() {
               >
                 <Wrench className="h-4 w-4" />
                 Update ({selectedWorkOrders.size})
+              </Button>
+
+              <Button
+                onClick={() => {
+                  // For creating work orders from this section, we need to show equipment selection
+                  // For now, just show equipment selection or find first available equipment
+                  const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
+                  if (availableEquipment) {
+                    setCreateWorkOrderEquipment(availableEquipment);
+                  } else {
+                    toast({
+                      title: "No Equipment Available",
+                      description: "All repair shop equipment already has work orders. Create work orders from the equipment cards above.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                size="sm"
+                className="flex items-center gap-2 bg-green-600 border-green-500 text-white hover:bg-green-500"
+                data-testid="button-create-workorder-activity"
+              >
+                <Plus className="h-4 w-4" />
+                Create Work Order
               </Button>
               
               <div className="text-sm text-gray-400">
