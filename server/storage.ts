@@ -52,7 +52,7 @@ import {
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { eq, gte, lte, desc } from "drizzle-orm";
+import { eq, gte, lte, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -2214,28 +2214,70 @@ export class PostgreSQLStorage extends MemStorage {
 
   // Messages implementation
   async getMessageThreads(): Promise<MessageThread[]> {
-    return await db.select().from(messageThreads).orderBy(desc(messageThreads.updatedAt));
+    try {
+      return await db.select().from(messageThreads).orderBy(desc(messageThreads.updatedAt));
+    } catch (error) {
+      console.error('Error getting message threads:', error);
+      // Fallback to raw SQL
+      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
+      return result.rows as MessageThread[];
+    }
   }
 
   async createMessageThread(thread: InsertMessageThread): Promise<MessageThread> {
-    const [newThread] = await db.insert(messageThreads).values(thread).returning();
-    return newThread;
+    try {
+      const [newThread] = await db.insert(messageThreads).values(thread).returning();
+      return newThread;
+    } catch (error) {
+      console.error('Error creating message thread:', error);
+      // Fallback to raw SQL
+      const result = await db.execute(sql`
+        INSERT INTO message_threads (topic, created_by, created_at, updated_at) 
+        VALUES (${thread.topic}, ${thread.createdBy}, NOW(), NOW()) 
+        RETURNING *
+      `);
+      return result.rows[0] as MessageThread;
+    }
   }
 
   async getMessagesByThread(threadId: string): Promise<Message[]> {
-    return await db.select().from(messages).where(eq(messages.threadId, threadId)).orderBy(messages.createdAt);
+    try {
+      return await db.select().from(messages).where(eq(messages.threadId, threadId)).orderBy(messages.createdAt);
+    } catch (error) {
+      console.error('Error getting messages by thread:', error);
+      // Fallback to raw SQL
+      const result = await db.execute(sql`SELECT * FROM messages WHERE thread_id = ${threadId} ORDER BY created_at`);
+      return result.rows as Message[];
+    }
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
-    const [newMessage] = await db.insert(messages).values(message).returning();
-    return newMessage;
+    try {
+      const [newMessage] = await db.insert(messages).values(message).returning();
+      return newMessage;
+    } catch (error) {
+      console.error('Error creating message:', error);
+      // Fallback to raw SQL
+      const result = await db.execute(sql`
+        INSERT INTO messages (thread_id, content, created_by, created_at) 
+        VALUES (${message.threadId}, ${message.content}, ${message.createdBy}, NOW()) 
+        RETURNING *
+      `);
+      return result.rows[0] as Message;
+    }
   }
 
   async updateMessageThreadTimestamp(threadId: string): Promise<void> {
-    await db
-      .update(messageThreads)
-      .set({ updatedAt: new Date() })
-      .where(eq(messageThreads.id, threadId));
+    try {
+      await db
+        .update(messageThreads)
+        .set({ updatedAt: new Date() })
+        .where(eq(messageThreads.id, threadId));
+    } catch (error) {
+      console.error('Error updating message thread timestamp:', error);
+      // Fallback to raw SQL
+      await db.execute(sql`UPDATE message_threads SET updated_at = NOW() WHERE id = ${threadId}`);
+    }
   }
 
   async searchMessages(query?: string, date?: string): Promise<{ thread: MessageThread; messages: Message[] }[]> {

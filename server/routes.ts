@@ -39,6 +39,8 @@ import whiteLabelRouter from "./routes/white_label";
 import messagesRouter from "./routes/messages";
 import { mockAuth } from "./middleware/authz";
 import { features } from "./config/features";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import "./types"; // Import type declarations
 
 // Helper function for status-based conditional logging with enhanced tracking
@@ -1813,6 +1815,54 @@ Rules:
     } catch (error) {
       console.error("Error fetching work order activities:", error);
       res.status(500).json({ error: "Failed to fetch activities" });
+    }
+  });
+
+  // Direct message endpoints to bypass router issues
+  app.get('/api/messages/test-direct', (req, res) => {
+    console.log('Direct message test endpoint hit!');
+    res.json({ status: 'working from direct route', timestamp: new Date().toISOString() });
+  });
+
+  app.get('/api/messages/threads', async (req, res) => {
+    try {
+      console.log('Getting message threads directly...');
+      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
+      console.log('Direct message threads result:', result.rows.length);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Direct get message threads error:', error);
+      res.status(500).json({ error: 'Failed to fetch message threads', details: error.message });
+    }
+  });
+
+  app.post('/api/messages/threads', async (req, res) => {
+    try {
+      console.log('Creating message thread directly with data:', req.body);
+      const { topic, createdBy } = req.body;
+      
+      const result = await db.execute(sql`
+        INSERT INTO message_threads (topic, created_by, created_at, updated_at) 
+        VALUES (${topic}, ${createdBy}, NOW(), NOW()) 
+        RETURNING *
+      `);
+      
+      console.log('Direct created thread:', result.rows[0]);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error('Direct create message thread error:', error);
+      res.status(500).json({ error: 'Failed to create message thread', details: error.message });
+    }
+  });
+
+  // Simple message test endpoint
+  app.get('/api/test/messages', async (req, res) => {
+    try {
+      const threads = await storage.getMessageThreads();
+      res.json({ success: true, threads, count: threads.length });
+    } catch (error) {
+      console.error('Message test error:', error);
+      res.status(500).json({ error: 'Failed to test messages', details: error.message });
     }
   });
 

@@ -1,26 +1,40 @@
 import { Router } from "express";
-import { storage } from "../storage";
-import { insertMessageThreadSchema, insertMessageSchema } from "@shared/schema";
 
 const router = Router();
 
-// Get all message threads
+// Simple test endpoint
+router.get("/test", (req, res) => {
+  console.log("Message test endpoint hit!");
+  res.json({ status: "working", timestamp: new Date().toISOString() });
+});
+
+// Get all message threads - Direct database query
 router.get("/threads", async (req, res) => {
   try {
-    const threads = await storage.getMessageThreads();
-    res.json(threads);
+    console.log("Getting message threads...");
+    const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
+    console.log("Message threads result:", result.rows);
+    res.json(result.rows);
   } catch (error) {
     console.error("Get message threads error:", error);
     res.status(500).json({ error: "Failed to fetch message threads" });
   }
 });
 
-// Create a new message thread
+// Create a new message thread - Direct database query
 router.post("/threads", async (req, res) => {
   try {
-    const validatedData = insertMessageThreadSchema.parse(req.body);
-    const thread = await storage.createMessageThread(validatedData);
-    res.status(201).json(thread);
+    console.log("Creating message thread with data:", req.body);
+    const { topic, createdBy } = req.body;
+    
+    const result = await db.execute(sql`
+      INSERT INTO message_threads (topic, created_by, created_at, updated_at) 
+      VALUES (${topic}, ${createdBy}, NOW(), NOW()) 
+      RETURNING *
+    `);
+    
+    console.log("Created thread:", result.rows[0]);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("Create message thread error:", error);
     res.status(500).json({ error: "Failed to create message thread" });
