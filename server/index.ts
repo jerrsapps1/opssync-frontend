@@ -16,7 +16,7 @@ app.use("/api/billing", billingRoutes);
 app.use("/api/invites", inviteRoutes);
 app.use("/api/auth", authRoutes);
 
-const clientDist = path.join(process.cwd(), "dist", "client");
+const clientDist = path.join(process.cwd(), "dist", "public");
 app.use(express.static(clientDist));
 app.get("*", (_req, res) => res.sendFile(path.join(clientDist, "index.html")));
 
