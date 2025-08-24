@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
@@ -53,6 +55,10 @@ export default function RepairShop() {
   const [sortBy, setSortBy] = useState<"dateCreated" | "priority" | "status" | "equipment">("dateCreated");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
+  const [selectedWorkOrders, setSelectedWorkOrders] = useState<Set<string>>(new Set());
+  const [commentingWorkOrder, setCommentingWorkOrder] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [showCommentDialog, setShowCommentDialog] = useState(false);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -118,6 +124,67 @@ export default function RepairShop() {
 
   const handleCompleteRepair = (equipmentId: string) => {
     completeRepairMutation.mutate(equipmentId);
+  };
+
+  const updateCommentMutation = useMutation({
+    mutationFn: async ({ workOrderId, comments }: { workOrderId: string; comments: string }) => {
+      const response = await apiRequest("PATCH", `/api/work-orders/${workOrderId}/comments`, {
+        comments
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      setShowCommentDialog(false);
+      setCommentingWorkOrder(null);
+      setCommentText("");
+      toast({
+        title: "Comment Added",
+        description: "Work order comment has been updated.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update comment",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleCommentClick = () => {
+    const selectedIds = Array.from(selectedWorkOrders);
+    if (selectedIds.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select at least one work order to add a comment.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (selectedIds.length > 1) {
+      toast({
+        title: "Multiple Selection",
+        description: "Please select only one work order at a time to add a comment.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const workOrderId = selectedIds[0];
+    const workOrder = workOrders.find(wo => wo.id === workOrderId);
+    setCommentingWorkOrder(workOrderId);
+    setCommentText(workOrder?.comments || "");
+    setShowCommentDialog(true);
+  };
+
+  const handleSaveComment = () => {
+    if (commentingWorkOrder) {
+      updateCommentMutation.mutate({
+        workOrderId: commentingWorkOrder,
+        comments: commentText
+      });
+    }
   };
 
   const toggleSelection = (equipmentId: string) => {
@@ -402,13 +469,15 @@ export default function RepairShop() {
               </Select>
 
               <Button
+                onClick={handleCommentClick}
                 size="sm"
                 variant="outline"
                 className="flex items-center gap-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                disabled={selectedWorkOrders.size === 0}
                 data-testid="button-comment-workorders"
               >
                 <MessageCircle className="h-4 w-4" />
-                Comment
+                Comment ({selectedWorkOrders.size})
               </Button>
               
               <div className="text-sm text-gray-400">
@@ -419,6 +488,20 @@ export default function RepairShop() {
             {/* Sort Headers */}
             <div className="bg-gray-700 border border-gray-600 rounded-t-lg p-3">
               <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-300">
+                <div className="col-span-1 flex items-center gap-1">
+                  <Checkbox
+                    checked={filteredAndSortedWorkOrders.length > 0 && filteredAndSortedWorkOrders.every(wo => selectedWorkOrders.has(wo.id))}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedWorkOrders(new Set(filteredAndSortedWorkOrders.map(wo => wo.id)));
+                      } else {
+                        setSelectedWorkOrders(new Set());
+                      }
+                    }}
+                    data-testid="checkbox-select-all"
+                  />
+                  Select
+                </div>
                 <button
                   onClick={() => handleSort("dateCreated")}
                   className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
@@ -470,8 +553,8 @@ export default function RepairShop() {
                 </button>
                 
                 <div className="col-span-2 flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  Assigned To
+                  <MessageCircle className="h-4 w-4" />
+                  Comments
                 </div>
                 
                 <div className="col-span-1 flex items-center gap-1">
@@ -503,6 +586,23 @@ export default function RepairShop() {
                         onClick={() => setExpandedWorkOrder(isExpanded ? null : workOrder.id)}
                         data-testid={`workorder-row-${workOrder.id}`}
                       >
+                        <div className="col-span-1 flex items-center">
+                          <Checkbox
+                            checked={selectedWorkOrders.has(workOrder.id)}
+                            onCheckedChange={(checked) => {
+                              const newSelected = new Set(selectedWorkOrders);
+                              if (checked) {
+                                newSelected.add(workOrder.id);
+                              } else {
+                                newSelected.delete(workOrder.id);
+                              }
+                              setSelectedWorkOrders(newSelected);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid={`checkbox-select-${workOrder.id}`}
+                          />
+                        </div>
+                        
                         <div className="col-span-2 text-sm">
                           <div className="text-white font-medium">
                             {format(new Date(workOrder.dateCreated || new Date()), "MMM dd, yyyy")}
@@ -551,8 +651,19 @@ export default function RepairShop() {
                         
                         <div className="col-span-2 text-sm">
                           <div className="text-white">
-                            {workOrder.assignedTo || (
-                              <span className="text-gray-400 italic">Unassigned</span>
+                            {workOrder.comments ? (
+                              <div className="bg-gray-700 p-2 rounded text-xs max-w-full">
+                                <div className="flex items-center gap-1 mb-1">
+                                  <MessageCircle className="h-3 w-3 text-blue-400" />
+                                  <span className="text-blue-400 font-medium">Comment:</span>
+                                </div>
+                                <div className="text-gray-300 break-words">{workOrder.comments}</div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-gray-400 italic">
+                                <MessageCircle className="h-3 w-3" />
+                                <span>No comments</span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -655,6 +766,52 @@ export default function RepairShop() {
           </Droppable>
         </div>
       </div>
+
+      {/* Comment Dialog */}
+      <Dialog 
+        open={showCommentDialog} 
+        onClose={() => setShowCommentDialog(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-blue-400" />
+            Add Work Order Comment
+          </div>
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowCommentDialog(false)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveComment}
+              disabled={updateCommentMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-500"
+              data-testid="button-save-comment"
+            >
+              {updateCommentMutation.isPending ? "Saving..." : "Save Comment"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-300 mb-2 block">
+              Comment for Work Order
+            </label>
+            <Textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add your comment about this work order..."
+              className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
+              data-testid="textarea-comment"
+            />
+          </div>
+        </div>
+      </Dialog>
 
     </DragDropContext>
   );
