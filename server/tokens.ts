@@ -1,26 +1,15 @@
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-const INVITE_SECRET = process.env.INVITE_SECRET || "change-this";
+const INVITE_SECRET = process.env.INVITE_SECRET || "dev-secret";
 
-export function generateAuthToken(userId: string, orgId: string) {
-  return jwt.sign({ userId, orgId }, JWT_SECRET, { expiresIn: "7d" });
+export function signInvite(payload: { email: string, org_id: string }) {
+  return jwt.sign(payload, INVITE_SECRET, { expiresIn: "7d" });
 }
 
-export function verifyAuthToken(token: string) {
+export function verifyInvite(token: string) {
   try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; orgId: string };
+    return jwt.verify(token, INVITE_SECRET) as { email: string, org_id: string, iat: number, exp: number };
   } catch {
     return null;
   }
-}
-
-export function generateInviteToken() {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-export function createInviteLink(token: string) {
-  const baseUrl = process.env.APP_BASE_URL || "http://localhost:5173";
-  return `${baseUrl}/accept-invite?token=${token}`;
 }
