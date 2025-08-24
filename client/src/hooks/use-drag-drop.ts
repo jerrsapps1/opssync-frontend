@@ -14,20 +14,30 @@ export function useDragDrop() {
   const { user } = useAuth();
 
   // Helper function to create audit logs
-  const createAuditLog = async (assetType: string, assetId: string, assetName: string, sourceLocation: string, destinationLocation: string) => {
+  const createAuditLog = async (
+    assetType: string, 
+    assetId: string, 
+    assetName: string, 
+    sourceLocation: string, 
+    destinationLocation: string,
+    sourceLocationName: string,
+    destinationLocationName: string
+  ) => {
     if (!user) return; // Skip if no user
     
     try {
       await apiRequest("POST", "/api/audit-logs", {
+        action: "drag-drop-move",
         assetType,
         assetId,
         assetName,
         sourceLocation,
+        sourceLocationName,
         destinationLocation,
+        destinationLocationName,
         performedBy: user.id,
-        performedByEmail: user.email || user.username,
       });
-      console.log(`✅ Audit log created: ${assetType} ${assetName} moved from ${sourceLocation} to ${destinationLocation}`);
+      console.log(`✅ Audit log created: ${assetType} ${assetName} moved from ${sourceLocationName} to ${destinationLocationName}`);
     } catch (error) {
       console.error("❌ Failed to create audit log:", error);
       // Don't throw error - audit log failure shouldn't break assignment
@@ -63,21 +73,32 @@ export function useDragDrop() {
         const sourceProject = projects.find(p => p.id === employee.previousProjectId);
         const destinationProject = projects.find(p => p.id === variables.projectId);
         
-        const sourceLocation = employee.previousProjectId ? 
+        const sourceLocationName = employee.previousProjectId ? 
           (sourceProject?.name || `Project ${employee.previousProjectId}`) : 
-          "Unassigned";
-        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "Available";
+        const destinationLocationName = variables.projectId === "repair-shop" ? 
           "Repair Shop" : 
           variables.projectId ? 
             (destinationProject?.name || `Project ${variables.projectId}`) : 
-            "Unassigned";
+            "Available";
+        
+        const sourceLocation = employee.previousProjectId === "repair-shop" ? 
+          "repair-shop" : 
+          employee.previousProjectId ? 
+            employee.previousProjectId : 
+            "available";
+        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "repair-shop" : 
+          variables.projectId || "available";
         
         await createAuditLog(
           "employee",
           variables.employeeId,
           employee.name || variables.employeeId,
           sourceLocation,
-          destinationLocation
+          destinationLocation,
+          sourceLocationName,
+          destinationLocationName
         );
       } catch (auditError) {
         console.error("Failed to create employee audit log:", auditError);
@@ -118,21 +139,32 @@ export function useDragDrop() {
         const sourceProject = projects.find(p => p.id === equipment.previousProjectId);
         const destinationProject = projects.find(p => p.id === variables.projectId);
         
-        const sourceLocation = equipment.previousProjectId ? 
+        const sourceLocationName = equipment.previousProjectId ? 
           (sourceProject?.name || `Project ${equipment.previousProjectId}`) : 
-          "Unassigned";
-        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "Available";
+        const destinationLocationName = variables.projectId === "repair-shop" ? 
           "Repair Shop" : 
           variables.projectId ? 
             (destinationProject?.name || `Project ${variables.projectId}`) : 
-            "Unassigned";
+            "Available";
+        
+        const sourceLocation = equipment.previousProjectId === "repair-shop" ? 
+          "repair-shop" : 
+          equipment.previousProjectId ? 
+            equipment.previousProjectId : 
+            "available";
+        const destinationLocation = variables.projectId === "repair-shop" ? 
+          "repair-shop" : 
+          variables.projectId || "available";
         
         await createAuditLog(
           "equipment",
           variables.equipmentId,
           equipment.name || variables.equipmentId,
           sourceLocation,
-          destinationLocation
+          destinationLocation,
+          sourceLocationName,
+          destinationLocationName
         );
       } catch (auditError) {
         console.error("Failed to create equipment audit log:", auditError);
