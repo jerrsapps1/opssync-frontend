@@ -710,7 +710,7 @@ export default function RepairShop() {
                         </div>
                         
                         <div className="col-span-1">
-                          <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[90px] text-center`}>
+                          <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[80px] text-center`}>
                             {workOrder.status.toUpperCase()}
                           </Badge>
                         </div>
