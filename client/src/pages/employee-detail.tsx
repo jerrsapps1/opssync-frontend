@@ -1,10 +1,10 @@
 import React from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "../lib/queryClient";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
+import { apiRequest } from "@/lib/queryClient";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type Employee = { id: string; name: string; role?: string; phone?: string; email?: string; certs?: string };
 
@@ -19,7 +19,7 @@ async function updateEmployee(e: Employee) {
 
 export default function EmployeeDetail() {
   const { id } = useParams();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["employee", id], queryFn: () => fetchEmployee(id!), enabled: !!id });
   const [form, setForm] = React.useState<Employee | null>(null);
@@ -43,7 +43,7 @@ export default function EmployeeDetail() {
       {/* Page Header with Brand Logo Placeholder */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => setLocation('/dashboard')} className="text-white hover:bg-[color:var(--card)]">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-[color:var(--card)]">
             ← Back
           </Button>
           {brandConfig?.logoUrl && (

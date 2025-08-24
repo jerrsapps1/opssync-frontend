@@ -1,21 +1,19 @@
 // Removed Chakra UI imports - using Tailwind classes instead
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
 
-import { ProjectList } from "../components/assignments/project-list";
-import { EmployeeList } from "../components/assignments/employee-list";
-import { EquipmentList } from "../components/assignments/equipment-list";
-import ProjectCountsBar from "../components/dashboard/ProjectCountsBar";
-import { DashboardHeader } from "../components/DashboardHeader";
-import FieldFriendlyRAGPanel from "../partials/FieldFriendlyRAGPanel";
-import { SearchBar } from "../components/SearchBar";
-
-import { useTenantFeatures } from "../hooks/useTenantFeatures";
-import { useApp } from "../App";
-import { useDragDrop } from "../hooks/use-drag-drop";
-import { apiRequest } from "../lib/queryClient";
+import { ProjectList } from "@/components/assignments/project-list";
+import { EmployeeList } from "@/components/assignments/employee-list";
+import { EquipmentList } from "@/components/assignments/equipment-list";
+import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
+import { useTenantFeatures } from "@/hooks/useTenantFeatures";
+import { useApp } from "@/App";
+import { useDragDrop } from "@/hooks/use-drag-drop";
+import { apiRequest } from "@/lib/queryClient";
 import type { Project, Employee, Equipment } from "@shared/schema";
 
 function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => void }) {
@@ -48,7 +46,7 @@ function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => 
 }
 
 export default function Dashboard() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const appContext = useApp();
   const queryClient = useQueryClient();
@@ -85,9 +83,7 @@ export default function Dashboard() {
     totalEmployees: employees.length,
     totalEquipment: equipment.length,
     isLoading,
-    errors: { projectsError, employeesError, equipmentError },
-    projectsData: projects.slice(0, 2),
-    employeesData: employees.slice(0, 2)
+    errors: { projectsError, employeesError, equipmentError }
   });
 
 
@@ -130,8 +126,6 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center gap-4">
-              <SearchBar />
-              
               <span className="text-xs text-gray-500">
                 Drag equipment here to create repair work orders →
               </span>
@@ -142,18 +136,17 @@ export default function Dashboard() {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-all duration-300 cursor-pointer min-h-12 ${
+                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer min-h-12 ${
                     snapshot.isDraggingOver
-                      ? "border-orange-400 bg-orange-900/40 scale-110 shadow-2xl ring-4 ring-orange-400/30 animate-pulse"
-                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20 hover:border-orange-500 hover:scale-[1.02]"
+                      ? "border-orange-400 bg-orange-900/30 scale-105"
+                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
                   }`}
-                  onClick={() => setLocation('/repair-shop')}
+                  onClick={() => navigate('/repair-shop')}
                   data-testid="repair-shop-drop-zone"
-                  style={{ minHeight: '48px' }}
                 >
                   <span className="text-orange-400 text-lg">🔧</span>
                   <span className="text-sm text-orange-300 font-medium">
-                    Repair Shop ({equipment.filter(eq => eq.status === "maintenance").length})
+                    Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
                   </span>
                   {provided.placeholder}
                 </div>
@@ -163,7 +156,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="flex overflow-hidden" style={{ height: "calc(100vh - 180px)" }}>
+        <div className="flex" style={{ height: "calc(100vh - 180px)" }}>
           <ProjectList projects={projects} employees={employees} equipment={equipment} />
           <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
           <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />

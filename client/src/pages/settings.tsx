@@ -1,9 +1,9 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Card } from "../components/ui/card";
-import { Select } from "../components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 
 export default function Settings() {
   const { data: brandConfig } = useQuery<{

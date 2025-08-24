@@ -31,7 +31,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { Save, Settings, DollarSign, Mail, Users, Bell, AlertTriangle } from "lucide-react";
-import { apiRequest } from "../lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 
 interface SystemSetting {
   id: string;

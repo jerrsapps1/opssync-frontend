@@ -1,8 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "../../../lib/queryClient";
-import ImportExportPanel from "../../../components/settings/ImportExportPanel";
-import { Table, THead, TBody, TR, TH, TD } from "../../../components/ui/table";
+import { apiRequest } from "@/lib/queryClient";
+import ImportExportPanel from "@/components/settings/ImportExportPanel";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 
 type Equipment = { id: string; name: string; type: string; serialNumber?: string; make?: string; model?: string; year?: number };
 

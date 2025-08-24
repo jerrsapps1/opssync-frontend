@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "../lib/queryClient";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
-import { Dialog } from "../components/ui/dialog";
-import { useToast } from "../hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 import { Plus, Edit3, Trash2, User, MapPin, Phone, Mail, Calendar, Wrench, Upload, Download } from "lucide-react";
 

@@ -1,9 +1,9 @@
-import { useParams, useLocation } from "wouter";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useDragDrop } from "../hooks/use-drag-drop";
-import { apiRequest } from "../lib/queryClient";
-import { useToast } from "../hooks/use-toast";
+import { useDragDrop } from "@/hooks/use-drag-drop";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import type { Project, Employee, Equipment } from "@shared/schema";
 import ProjectTemplate from "../../../templates/project-template";
@@ -41,7 +41,7 @@ function elapsedPct(start?: string | Date | null, end?: string | Date | null) {
 
 export default function ProjectProfile() {
   const { id = "" } = useParams();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const { toast } = useToast();
@@ -50,13 +50,11 @@ export default function ProjectProfile() {
   const [selectedEmployees, setSelectedEmployees] = useState<Set<string>>(new Set());
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
 
-  const { data: project, isLoading: projectLoading, error: projectError } = useQuery({ 
+  const { data: project } = useQuery({ 
     queryKey: ["projects", id], 
     queryFn: () => getProject(id), 
     enabled: !!id 
   });
-
-  console.log("ProjectProfile render:", { id, project, projectLoading, projectError });
   const { data: employees = [] } = useQuery({ 
     queryKey: ["/api", "employees"], 
     queryFn: getEmployees
@@ -110,9 +108,7 @@ export default function ProjectProfile() {
     }
   });
 
-  if (projectLoading) return <div className="p-4 text-gray-400">Loading project {id}...</div>;
-  if (projectError) return <div className="p-4 text-red-400">Error loading project: {(projectError as any)?.message}</div>;
-  if (!project) return <div className="p-4 text-gray-400">Project not found</div>;
+  if (!project) return <div className="p-4 text-gray-400">Loading…</div>;
 
   const assignedEmp = employees.filter(e => e.currentProjectId === id);
   const assignedEq = equipment.filter(e => e.currentProjectId === id);
@@ -271,14 +267,12 @@ export default function ProjectProfile() {
       <ProjectTemplate 
         project={{
           ...project,
-          description: project.description || undefined,
-          priority: project.priority || undefined,
-          riskLevel: project.riskLevel || undefined
+          description: project.description || undefined
         }}
         assignedEmployees={assignedEmp}
         assignedEquipment={assignedEq}
         onExport={exportToExcel}
-        onBack={() => setLocation('/dashboard')}
+        onBack={() => navigate('/dashboard')}
       />
 
       {/* Interactive Assignment Sections */}
@@ -303,7 +297,7 @@ export default function ProjectProfile() {
                 className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
                 data-testid="input-start-date"
               />
-              <span className="text-sm text-gray-400 font-medium">
+              <span className="text-xs text-gray-500">
                 {project.startDate ? new Date(project.startDate).toLocaleDateString() : ''}
               </span>
             </div>
@@ -316,12 +310,12 @@ export default function ProjectProfile() {
                 className="px-2 py-1 rounded bg-gray-800 text-white text-sm border border-gray-600 focus:border-blue-500 focus:outline-none" 
                 data-testid="input-end-date"
               />
-              <span className="text-sm text-gray-400 font-medium">
+              <span className="text-xs text-gray-500">
                 {project.endDate ? new Date(project.endDate).toLocaleDateString() : ''}
               </span>
             </div>
           </div>
-          <div className="text-sm text-gray-300 mt-2 font-medium">
+          <div className="text-xs text-gray-400 mt-2 font-medium">
             {durationDays !== null ? `${durationDays} days` : "Set both dates to compute duration"}
           </div>
         </div>
@@ -417,7 +411,7 @@ export default function ProjectProfile() {
           <div className="font-medium text-white mb-2">
             Assigned Employees ({assignedEmp.length})
           </div>
-          <Droppable droppableId={`employee-${id}`}>
+          <Droppable droppableId="unassigned-employees">
             {(provided, snapshot) => (
               <div 
                 ref={provided.innerRef}
@@ -469,7 +463,7 @@ export default function ProjectProfile() {
           <div className="font-medium text-white mb-2">
             Assigned Equipment ({assignedEq.length})
           </div>
-          <Droppable droppableId={`equipment-${id}`}>
+          <Droppable droppableId="unassigned-equipment">
             {(provided, snapshot) => (
               <div 
                 ref={provided.innerRef}

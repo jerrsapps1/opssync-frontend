@@ -1,19 +1,17 @@
 import React from "react";
-import { Link, useLocation } from "wouter";
+import { NavLink } from "react-router-dom";
 
 export function Sidebar() {
-  const [location] = useLocation();
-  
-  const Item = ({ to, children }: { to: string; children: React.ReactNode }) => {
-    const isActive = location === to;
-    return (
-      <Link href={to}>
-        <a className={`block px-3 py-2 rounded text-sm ${isActive ? "bg-gray-800 text-white" : "text-gray-300 hover:bg-gray-800"}`}>
-          {children}
-        </a>
-      </Link>
-    );
-  };
+  const Item = ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `block px-3 py-2 rounded text-sm ${isActive ? "bg-gray-800 text-white" : "text-gray-300 hover:bg-gray-800"}`
+      }
+    >
+      {children}
+    </NavLink>
+  );
 
   return (
     <aside className="w-56 bg-[#111827] border-r border-gray-800 text-gray-200 flex flex-col">
@@ -23,6 +21,7 @@ export function Sidebar() {
 
       <nav className="p-3 space-y-1">
         <Item to="/dashboard">Dashboard</Item>
+        <Item to="/repair-shop">Repair Shop</Item>
         <Item to="/projects">Projects</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>
@@ -34,8 +33,6 @@ export function Sidebar() {
         <Item to="/white-label">White Label Config</Item>
         <Item to="/org/branding">Branding Settings</Item>
         <Item to="/billing">Billing Management</Item>
-        <div className="mt-3 pt-3 border-t border-gray-800"></div>
-        <Item to="/repair-shop">Repair Shop</Item>
       </nav>
 
       <div className="mt-auto p-3 text-xs text-gray-500">

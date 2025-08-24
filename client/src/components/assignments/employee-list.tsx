@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
@@ -17,8 +17,7 @@ interface EmployeeListProps {
 }
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
-  console.log("EmployeeList render:", { employees: employees?.length, isLoading });
-  const [, setLocation] = useLocation();
+  const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("employees");
   const { projectId } = useSelection();
 
@@ -66,12 +65,11 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
     <div className="flex-1 p-3 overflow-y-auto">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Employees ({filteredEmployees.length})
-        {filteredEmployees.length === 0 && <span className="text-orange-400"> - No unassigned employees</span>}
       </h2>
 
       
       {/* Single employee list - drag to projects */}
-      <Droppable droppableId="employee-unassigned">
+      <Droppable droppableId="employees">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
@@ -89,7 +87,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
                       dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--card)] hover:bg-[color:var(--card)]/80"
                     }`}
                     data-testid={`employee-${emp.id}`}
-                    onDoubleClick={() => setLocation(`/directory`)}
+                    onDoubleClick={() => nav(`/directory`)}
                     onContextMenu={(e) => openContext(e, emp.id)}
                   >
                     <div className="flex items-center gap-2">
@@ -117,7 +115,7 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { label: "View in Directory", onClick: () => { setLocation(`/directory`); setMenu(null); } },
+            { label: "View in Directory", onClick: () => { nav(`/directory`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
             { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}

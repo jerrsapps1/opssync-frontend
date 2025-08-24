@@ -1,21 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useLocation } from "wouter";
-const useNavigate = () => {
-  const [, setLocation] = useLocation();
-  return setLocation;
-};
-import { useDragDrop } from "../hooks/use-drag-drop";
-import { apiRequest } from "../lib/queryClient";
-import { useToast } from "../hooks/use-toast";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Checkbox } from "../components/ui/checkbox";
-import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { EnhancedWorkOrderWizard } from "../components/work-orders/EnhancedWorkOrderWizard";
+import { useNavigate } from "react-router-dom";
+import { useDragDrop } from "@/hooks/use-drag-drop";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EnhancedWorkOrderWizard } from "@/components/work-orders/EnhancedWorkOrderWizard";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
@@ -43,7 +39,6 @@ async function getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
 }
 
 export default function RepairShop() {
-  const [, setLocation] = useLocation();
   const navigate = useNavigate();
   const { handleDragEnd, isAssigning } = useDragDrop();
   const { toast } = useToast();
@@ -252,7 +247,7 @@ export default function RepairShop() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => setLocation('/dashboard')}
+                onClick={() => navigate('/dashboard')}
                 variant="outline"
                 className="text-gray-300 border-gray-600 hover:bg-gray-800"
               >

@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "../lib/queryClient";
-import { Table, THead, TBody, TR, TH, TD } from "../components/ui/table";
-import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Button } from "../components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
+import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 async function getHistory(): Promise<any[]> {
   const r = await apiRequest("GET", "/api/history");

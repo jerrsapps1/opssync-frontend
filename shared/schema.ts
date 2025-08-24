@@ -553,3 +553,7 @@ export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationRecipient = typeof notificationRecipients.$inferSelect;
 export type InsertNotificationRecipient = z.infer<typeof insertNotificationRecipientSchema>;
 export type UpdateNotificationRecipient = z.infer<typeof updateNotificationRecipientSchema>;
+
+export type CostApprovalThreshold = typeof costApprovalThresholds.$inferSelect;
+export type InsertCostApprovalThreshold = z.infer<typeof insertCostApprovalThresholdSchema>;
+export type UpdateCostApprovalThreshold = z.infer<typeof updateCostApprovalThresholdSchema>;

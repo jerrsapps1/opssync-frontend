@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import ContextMenu from "@/components/common/ContextMenu";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { apiRequest } from "@/lib/queryClient";
 import type { Employee, Project } from "@shared/schema";
 
@@ -16,7 +16,7 @@ interface EmployeeListProps {
 }
 
 export function EmployeeList({ employees, projects, isLoading }: EmployeeListProps) {
-  const [, setLocation] = useLocation();
+  const nav = useNavigate();
   const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
   async function unassign(id: string) {

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Badge } from "../components/ui/badge";
-import { useToast } from "../hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { CreditCard, DollarSign, Calendar, Users, Building, Wrench } from "lucide-react";
 
 import { billingUtils } from "@/lib/billing";

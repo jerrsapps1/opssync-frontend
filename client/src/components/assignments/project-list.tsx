@@ -1,7 +1,7 @@
 import { Box, VStack, Text, Heading, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useSelection } from "@/state/selection";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import type { Project } from "@shared/schema";
@@ -13,11 +13,8 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ projects, employees = [], equipment = [] }: ProjectListProps) {
-  console.log("ProjectList render:", { projects: projects?.length, employees: employees?.length });
   const { projectId, setProjectId } = useSelection();
-  const [location, setLocation] = useLocation();
-  
-  console.log("Current location:", location);
+  const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
   // Remove repair shop code - moved to equipment section
@@ -31,10 +28,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       overflowY="auto"
       bg="gray.800"
     >
-      <Heading size="md" mb={4} color="white">
-        Projects ({projects.length})
-        {projects.length === 0 && <Text color="orange.400" fontSize="sm"> - No projects found</Text>}
-      </Heading>
+      <Heading size="md" mb={4} color="white">Projects</Heading>
       
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
@@ -69,18 +63,12 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
                   borderColor: "blue.500",
                   transform: "translateY(-1px)",
                 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("Project clicked:", project.id, project.name);
-                  console.log("Attempting navigation to:", `/projects/${project.id}`);
-                  
-                  // Try direct window navigation as a fallback
+                onClick={() => {
                   if (project.id === "repair-shop") {
-                    window.location.href = "/repair-shop";
+                    navigate("/repair-shop");
                   } else {
-                    window.location.href = `/projects/${project.id}`;
+                    navigate(`/projects/${project.id}`);
                   }
-                  console.log("Direct navigation triggered for project:", project.id);
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -193,7 +181,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
               _hover={{ bg: "gray.700" }}
               cursor="pointer"
               onClick={() => {
-                setLocation(`/projects/${contextMenu.project.id}`);
+                navigate(`/projects/${contextMenu.project.id}`);
                 setContextMenu(null);
               }}
             >

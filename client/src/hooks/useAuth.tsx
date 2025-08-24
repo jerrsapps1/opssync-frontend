@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { apiRequest } from "../lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: string;
@@ -50,13 +50,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      // TEMPORARY: Mock validation while backend is not available
-      if (token === "mock-jwt-token") {
-        const mockUserData = { id: "test-user-001", username: "demo", brandConfig: "{}" };
-        setUser(mockUserData);
-        return;
-      }
-      
       // Validate token with backend
       const response = await fetch("/api/auth/validate", {
         headers: {
@@ -82,7 +75,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const login = (userData: User, token: string) => {
-    console.log("Setting auth data:", { user: userData, token: token ? "present" : "missing" });
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);

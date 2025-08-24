@@ -9,9 +9,6 @@ type Fns = {
 export function onDragEndFactory(fns: Fns) {
   return async function onDragEnd(result: DropResult) {
     const { destination, source, draggableId } = result;
-    
-    console.log("🎯 Drag end:", { destination, source, draggableId });
-    
     if (!destination) return;
 
     // Ignore if dropped back in same location
@@ -46,11 +43,19 @@ export function onDragEndFactory(fns: Fns) {
     } else if (isRepairShop) {
       projectId = "repair-shop"; // Special handling for repair shop
     } else {
-      // Direct project ID (from project cards in dashboard)
       projectId = destination.droppableId;
     }
 
-    // Clean assignment logic
+    console.log("Drag and Drop Debug:", {
+      draggableId,
+      source: source.droppableId,
+      destination: destination.droppableId,
+      assetType: isEmp ? "emp" : "eq",
+      assetId: id,
+      projectId: projectId,
+      isUnassignedDestination,
+      isRepairShop
+    });
 
     if (isEmp) {
       await fns.setEmployeeAssignment(id, projectId);

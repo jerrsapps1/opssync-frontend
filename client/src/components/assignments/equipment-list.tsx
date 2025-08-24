@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { Card } from "@/components/ui/card";
 import { Wrench, Truck, Hammer } from "lucide-react";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import ContextMenu from "@/components/common/ContextMenu";
 import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
 import { useAssignmentSync } from "@/hooks/useAssignmentSync";
@@ -18,7 +18,7 @@ interface EquipmentListProps {
 }
 
 export function EquipmentList({ equipment, projects, isLoading }: EquipmentListProps) {
-  const [, setLocation] = useLocation();
+  const nav = useNavigate();
   const { setAssignment } = useAssignmentSync("equipment");
   const { projectId } = useSelection();
 
@@ -70,19 +70,14 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
     <div className="flex-1 border-l border-[color:var(--brand-primary)] p-3 overflow-y-auto bg-[color:var(--background)]">
       <h2 className="text-sm font-medium mb-3 text-white">
         Available Equipment ({visible.length})
-        {visible.length === 0 && <span className="text-orange-400"> - No unassigned equipment</span>}
       </h2>
 
-      <Droppable droppableId="equipment-unassigned">
+      <Droppable droppableId="equipment">
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`space-y-1 transition-all duration-300 ${
-              snapshot.isDraggingOver 
-                ? "bg-[color:var(--brand-primary)]/20 rounded-lg p-2 ring-2 ring-[color:var(--brand-primary)]/30 scale-[1.01]" 
-                : ""
-            }`}
+            className={`space-y-1 ${snapshot.isDraggingOver ? "bg-[color:var(--brand-primary)]/10 rounded-lg p-2" : ""}`}
           >
             {visible.map((eq, index) => {
               const IconComponent = getEquipmentIcon(eq.type);
@@ -94,13 +89,11 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
                       ref={dragProvided.innerRef}
                       {...dragProvided.draggableProps}
                       {...dragProvided.dragHandleProps}
-                      className={`p-2 transition-all duration-200 select-none cursor-move border-gray-600 ${
-                        dragSnapshot.isDragging 
-                          ? "bg-[color:var(--brand-accent)] shadow-2xl scale-105 rotate-2 z-50 ring-2 ring-[color:var(--brand-accent)]/50" 
-                          : "bg-[color:var(--brand-primary)] hover:brightness-110 hover:scale-[1.02] hover:shadow-lg"
+                      className={`p-2 transition-all select-none cursor-move border-gray-600 ${
+                        dragSnapshot.isDragging ? "bg-[color:var(--brand-accent)] shadow-lg" : "bg-[color:var(--brand-primary)] hover:brightness-110"
                       }`}
                       data-testid={`equipment-${eq.id}`}
-                      onDoubleClick={() => setLocation(`/directory`)}
+                      onDoubleClick={() => nav(`/directory`)}
                       onContextMenu={(e) => openContext(e, eq.id)}
                     >
                       <div className="flex items-center gap-2">
@@ -127,7 +120,7 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
           pos={{ x: menu.x, y: menu.y }}
           onClose={() => setMenu(null)}
           items={[
-            { label: "View in Directory", onClick: () => { setLocation(`/directory`); setMenu(null); } },
+            { label: "View in Directory", onClick: () => { nav(`/directory`); setMenu(null); } },
             { label: "Assign…", onClick: () => { setAssignPos(menu); setMenu(null); } },
             { label: "Unassign", onClick: async () => { setAssignment(menu.id, null); setMenu(null); } },
           ]}

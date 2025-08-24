@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Card } from "../components/ui/card";
-import { useToast } from "../hooks/use-toast";
-import { apiRequest } from "../lib/queryClient";
-import { useAuth } from "../hooks/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 import { Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
 
 interface LoginProps {
@@ -24,9 +24,13 @@ export default function Login({ brandConfig }: LoginProps) {
     confirmPassword: ""
   });
   
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
+  
+  // Get redirect path from location state or default to dashboard
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   useEffect(() => {
     // Apply brand colors to login page
@@ -39,31 +43,6 @@ export default function Login({ brandConfig }: LoginProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    console.log("Login form submitted:", { isLogin, formData: { ...formData, password: '[REDACTED]' } });
-    
-    // TEMPORARY: Since backend is not available, simulate successful login for testing
-    if (formData.username === "demo" && formData.password === "demo123") {
-      const mockResult = {
-        user: { id: "test-user-001", username: "demo", brandConfig: "{}" },
-        token: "mock-jwt-token"
-      };
-      
-      console.log("Using mock authentication:", mockResult);
-      login(mockResult.user, mockResult.token);
-      
-      toast({
-        title: "Welcome back!",
-        description: `Logged in as ${mockResult.user.username}`,
-      });
-      
-      setTimeout(() => {
-        setLocation("/dashboard");
-      }, 100);
-      
-      setIsLoading(false);
-      return;
-    }
 
     try {
       if (!isLogin) {
@@ -74,7 +53,6 @@ export default function Login({ brandConfig }: LoginProps) {
             description: "Please make sure your passwords match.",
             variant: "destructive",
           });
-          setIsLoading(false);
           return;
         }
         
@@ -98,7 +76,6 @@ export default function Login({ brandConfig }: LoginProps) {
         
         setIsLogin(true);
         setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
-        setIsLoading(false);
         return;
       }
 
@@ -126,7 +103,7 @@ export default function Login({ brandConfig }: LoginProps) {
 
       // Small delay to ensure state is updated before navigation
       setTimeout(() => {
-        setLocation("/dashboard");
+        navigate(from, { replace: true });
       }, 100);
       
     } catch (error: any) {

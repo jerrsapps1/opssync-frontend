@@ -1,14 +1,11 @@
 import React from "react";
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout() {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -59,7 +56,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>

@@ -1531,7 +1531,8 @@ Rules:
   // Supervisor Portal & Timeliness
   app.use("/api/supervisor", supervisorRouter);
   
-  // Real authentication - no mock auth needed
+  // Apply mock auth for development
+  app.use(mockAuth());
 
   // Mount routes conditionally based on feature flags
   if (features.SLA) {

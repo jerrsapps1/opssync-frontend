@@ -11,24 +11,16 @@ Focus on efficient, immediate solutions without unnecessary back-and-forth.
 
 # Recent Changes
 
-**January 17, 2025**: Complete OpsSync.ai rebranding and drag-and-drop restoration
+**January 17, 2025**: Complete OpsSync.ai rebranding and navigation improvements
 - Updated application name throughout codebase from legacy brands (StaffTrak, Asset Tracker Pro) to "OpsSync.ai"
 - Changed tagline to "Repair Shop Management" focusing on repair shop operations
 - Updated HTML title, meta descriptions, and SEO content for repair shop management
 - Modified all brand configuration defaults to OpsSync.ai
 - Updated sidebar header, login page, and all user-facing branding elements
-- Added "Repair Shop" navigation item to sidebar menu for direct access below admin section with visual separator
-- **Successfully restored drag-and-drop functionality**: Equipment can be dragged from Available Equipment panel to orange Repair Shop drop zone in dashboard header
-- Fixed react-beautiful-dnd scroll container conflicts by adding proper type matching and overflow controls
-- Implemented dual access method: sidebar navigation for page visits + drag-and-drop zone for equipment assignment
-- Equipment assignment to repair shop properly updates status to "maintenance" and triggers work order creation
-
-**January 18, 2025**: UI improvements and authentication system fixes
-- Enhanced project profile date display: Increased font sizes from text-xs to text-sm for start/end dates and duration display
-- Added font-medium weight and improved color contrast (text-gray-400/300) for better readability
-- Implemented temporary mock authentication system to resolve signin/signup button issues while backend server configuration is addressed
-- Added mock login functionality for "demo/demo123" credentials to allow immediate testing
-- Identified backend server startup issues preventing Express authentication endpoints from running properly
+- Added "Repair Shop" navigation item to sidebar menu for direct access
+- Maintained drag-and-drop functionality on dashboard for repair shop assignments
+- Fixed dashboard header to display "OpsSync.ai Dashboard" instead of "StaffTrak Dashboard"
+- Dual access method: sidebar navigation + drag-and-drop zone for optimal UX
 
 # System Architecture
 
