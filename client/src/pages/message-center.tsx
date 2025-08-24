@@ -23,11 +23,40 @@ async function getMessages(threadId: string): Promise<Message[]> {
 }
 
 async function createMessageThread(topic: string, createdBy: string): Promise<MessageThread> {
-  const response = await apiRequest("POST", "/api/messages/threads", {
-    topic,
-    createdBy
-  });
-  return response.json();
+  console.log("Creating thread with direct fetch:", { topic, createdBy });
+  
+  // Use direct fetch with timeout to avoid hanging
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+  
+  try {
+    const response = await fetch("/api/messages/threads", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        topic,
+        createdBy
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log("Thread creation successful:", result);
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error("Thread creation failed:", error);
+    throw error;
+  }
 }
 
 async function createMessage(threadId: string, content: string, createdBy: string): Promise<Message> {
