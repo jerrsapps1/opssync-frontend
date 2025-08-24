@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
+import { apiRequest } from "../lib/queryClient";
+import { Button } from "../components/ui/button";
 
 type Employee = { id: string; name: string; role?: string; email?: string; phone?: string; yearsExperience?: number; operates?: string[] };
 type Equipment = { id: string; name: string; type: string; make?: string; model?: string; year?: number; serialNumber?: string };

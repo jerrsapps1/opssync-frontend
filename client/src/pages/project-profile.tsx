@@ -1,9 +1,9 @@
 import { useParams, useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useDragDrop } from "@/hooks/use-drag-drop";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { useDragDrop } from "../hooks/use-drag-drop";
+import { apiRequest } from "../lib/queryClient";
+import { useToast } from "../hooks/use-toast";
 import { useState } from "react";
 import type { Project, Employee, Equipment } from "@shared/schema";
 import ProjectTemplate from "../../../templates/project-template";

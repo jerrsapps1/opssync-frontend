@@ -4,18 +4,18 @@ import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { useLocation } from "wouter";
 import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
 
-import { ProjectList } from "@/components/assignments/project-list";
-import { EmployeeList } from "@/components/assignments/employee-list";
-import { EquipmentList } from "@/components/assignments/equipment-list";
-import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
-import { SearchBar } from "@/components/SearchBar";
+import { ProjectList } from "../components/assignments/project-list";
+import { EmployeeList } from "../components/assignments/employee-list";
+import { EquipmentList } from "../components/assignments/equipment-list";
+import ProjectCountsBar from "../components/dashboard/ProjectCountsBar";
+import { DashboardHeader } from "../components/DashboardHeader";
+import FieldFriendlyRAGPanel from "../partials/FieldFriendlyRAGPanel";
+import { SearchBar } from "../components/SearchBar";
 
-import { useTenantFeatures } from "@/hooks/useTenantFeatures";
-import { useApp } from "@/App";
-import { useDragDrop } from "@/hooks/use-drag-drop";
-import { apiRequest } from "@/lib/queryClient";
+import { useTenantFeatures } from "../hooks/useTenantFeatures";
+import { useApp } from "../App";
+import { useDragDrop } from "../hooks/use-drag-drop";
+import { apiRequest } from "../lib/queryClient";
 import type { Project, Employee, Equipment } from "@shared/schema";
 
 function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => void }) {

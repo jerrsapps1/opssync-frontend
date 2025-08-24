@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 
 export default function AnalyticsPage() {
   const { data: brandConfig } = useQuery<{

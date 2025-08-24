@@ -1,14 +1,14 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
-import CompletenessBadge from "@/components/common/CompletenessBadge";
-import ContextMenu from "@/components/common/ContextMenu";
-import ProjectAssignMenu from "@/components/common/ProjectAssignMenu";
+import { apiRequest } from "../lib/queryClient";
+import { Table, THead, TBody, TR, TH, TD } from "../components/ui/table";
+import CompletenessBadge from "../components/common/CompletenessBadge";
+import ContextMenu from "../components/common/ContextMenu";
+import ProjectAssignMenu from "../components/common/ProjectAssignMenu";
 import { useLocation } from "wouter";
 import type { Project } from "@shared/schema";
-import { Dialog } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
 
 type Employee = { id: string; name: string; role?: string; email?: string; phone?: string; yearsExperience?: number; operates?: string[]; currentProjectId?: string | null };
 type Equipment = { id: string; name: string; type: string; make?: string; model?: string; year?: number; serialNumber?: string; currentProjectId?: string | null };

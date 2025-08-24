@@ -1,10 +1,10 @@
 import React from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { apiRequest } from "../lib/queryClient";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 
 type Equipment = { id: string; name: string; type: string; make?: string; model?: string; year?: number; serialNumber?: string; notes?: string };
 

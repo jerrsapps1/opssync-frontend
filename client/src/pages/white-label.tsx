@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Select } from "@/components/ui/select";
-import { Dialog } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { apiRequest } from "../lib/queryClient";
+import { Select } from "../components/ui/select";
+import { Dialog } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
 
 type BrandConfig = {
   companyName?: string;

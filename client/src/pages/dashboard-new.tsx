@@ -1,19 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import CommandBar from "@/components/CommandBar";
+import CommandBar from "../components/CommandBar";
 import { applyActions } from "@/lib/applyActions";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "../lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "react-beautiful-dnd";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Search, Bell, Plus, ChevronDown } from "lucide-react";
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { StatsGrid } from "@/components/dashboard/stats-grid";
-import { UnassignedAssets } from "@/components/dashboard/unassigned-assets";
-import { ActiveProjects } from "@/components/dashboard/active-projects";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { AlertsPanel } from "@/components/dashboard/alerts-panel";
-import { useDragDrop } from "@/hooks/use-drag-drop";
+import { Sidebar } from "../components/dashboard/sidebar";
+import { StatsGrid } from "../components/dashboard/stats-grid";
+import { UnassignedAssets } from "../components/dashboard/unassigned-assets";
+import { ActiveProjects } from "../components/dashboard/active-projects";
+import { RecentActivity } from "../components/dashboard/recent-activity";
+import { AlertsPanel } from "../components/dashboard/alerts-panel";
+import { useDragDrop } from "../hooks/use-drag-drop";
 import type { Project, Employee, Equipment, Activity, Alert } from "@shared/schema";
 
 export default function Dashboard() {

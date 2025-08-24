@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "../lib/queryClient";
 import TimelinessDashboard, { TimelinessItem } from "../components/TimelinessDashboard";
 import ChecklistForm from "../components/ChecklistForm";
 import ChangeRequestForm from "../components/ChangeRequestForm";
