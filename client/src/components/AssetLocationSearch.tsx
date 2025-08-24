@@ -47,18 +47,24 @@ export function AssetLocationSearch() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  // Fetch equipment and employee data
+  // Fetch equipment and employee data - force fresh data
   const { data: equipment = [] } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/employees"],
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
-  // Fetch projects data
+  // Fetch projects data - force fresh data
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
   // Create project lookup
@@ -83,15 +89,6 @@ export function AssetLocationSearch() {
       let locationIcon: any;
       let statusColor: string;
 
-      // Debug logging for 966M Wheel Loader
-      if (eq.name.includes("966M")) {
-        console.log('🔍 Search Debug - 966M Wheel Loader:', {
-          id: eq.id,
-          name: eq.name,
-          status: eq.status,
-          currentProjectId: eq.currentProjectId
-        });
-      }
 
       if (eq.status === "maintenance") {
         location = "Repair Shop";
