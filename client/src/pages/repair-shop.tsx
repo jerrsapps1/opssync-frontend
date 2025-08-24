@@ -59,6 +59,8 @@ export default function RepairShop() {
   const [commentingWorkOrder, setCommentingWorkOrder] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [showCommentDialog, setShowCommentDialog] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -185,6 +187,65 @@ export default function RepairShop() {
         comments: commentText
       });
     }
+  };
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ workOrderIds, status }: { workOrderIds: string[]; status: string }) => {
+      // Update multiple work orders
+      const updates = workOrderIds.map(id => 
+        apiRequest("PATCH", `/api/work-orders/${id}`, { status })
+      );
+      return Promise.all(updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      setShowStatusDialog(false);
+      setSelectedWorkOrders(new Set());
+      setNewStatus("");
+      toast({
+        title: "Status Updated",
+        description: `Successfully updated ${selectedWorkOrders.size} work order(s).`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update status",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleStatusClick = () => {
+    const selectedIds = Array.from(selectedWorkOrders);
+    if (selectedIds.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select at least one work order to update status.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setNewStatus("");
+    setShowStatusDialog(true);
+  };
+
+  const handleSaveStatus = () => {
+    if (!newStatus) {
+      toast({
+        title: "No Status Selected",
+        description: "Please select a status to update.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const selectedIds = Array.from(selectedWorkOrders);
+    updateStatusMutation.mutate({
+      workOrderIds: selectedIds,
+      status: newStatus
+    });
   };
 
   const toggleSelection = (equipmentId: string) => {
@@ -478,6 +539,18 @@ export default function RepairShop() {
               >
                 <MessageCircle className="h-4 w-4" />
                 Comment ({selectedWorkOrders.size})
+              </Button>
+
+              <Button
+                onClick={handleStatusClick}
+                size="sm"
+                variant="outline"
+                className="flex items-center gap-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+                disabled={selectedWorkOrders.size === 0}
+                data-testid="button-status-workorders"
+              >
+                <Clock className="h-4 w-4" />
+                Status ({selectedWorkOrders.size})
               </Button>
               
               <div className="text-sm text-gray-400">
@@ -809,6 +882,56 @@ export default function RepairShop() {
               className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
               data-testid="textarea-comment"
             />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Status Dialog */}
+      <Dialog 
+        open={showStatusDialog} 
+        onClose={() => setShowStatusDialog(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-blue-400" />
+            Update Work Order Status
+          </div>
+        }
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowStatusDialog(false)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveStatus}
+              disabled={updateStatusMutation.isPending || !newStatus}
+              className="bg-blue-600 hover:bg-blue-500"
+              data-testid="button-save-status"
+            >
+              {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-300 mb-2 block">
+              New Status for {selectedWorkOrders.size} work order(s)
+            </label>
+            <Select value={newStatus} onValueChange={setNewStatus}>
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-new-status">
+                <SelectValue placeholder="Select new status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </Dialog>
