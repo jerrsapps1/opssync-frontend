@@ -1651,6 +1651,44 @@ Rules:
     }
   });
 
+  // Work Order Comments - for progressive messaging system
+  app.get("/api/work-orders/:workOrderId/comments", async (req, res) => {
+    console.log("🚀 GET comments route hit! WorkOrderId:", req.params.workOrderId);
+    try {
+      const comments = await storage.getWorkOrderComments(req.params.workOrderId);
+      console.log("🚀 Successfully fetched comments:", comments.length);
+      res.json(comments);
+    } catch (error: any) {
+      console.error("❌ Error fetching work order comments:", error);
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/work-orders/:workOrderId/comments", async (req, res) => {
+    console.log("🚀 POST comment route hit! WorkOrderId:", req.params.workOrderId);
+    console.log("🚀 Request body:", req.body);
+    
+    try {
+      const commentData = {
+        workOrderId: req.params.workOrderId,
+        comment: req.body.comment,
+        createdBy: "test-user-001",
+        createdAt: new Date()
+      };
+      
+      console.log("🚀 Creating comment with data:", commentData);
+      
+      const newComment = await storage.createWorkOrderComment(commentData);
+      console.log("🚀 Successfully created comment:", newComment);
+      
+      res.json(newComment);
+    } catch (error: any) {
+      console.error("❌ Error creating work order comment:", error);
+      console.error("❌ Error stack:", error?.stack);
+      res.status(500).json({ error: "Failed to create comment", details: error?.message });
+    }
+  });
+
   app.delete("/api/work-orders/:id", authenticateToken, async (req, res) => {
     try {
       await storage.deleteWorkOrder(req.params.id);
