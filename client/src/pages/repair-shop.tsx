@@ -131,31 +131,35 @@ export default function RepairShop() {
 
   const createCommentMutation = useMutation({
     mutationFn: async ({ workOrderId, comment }: { workOrderId: string, comment: string }) => {
-      const newComment = await createWorkOrderComment(workOrderId, comment);
+      return await createWorkOrderComment(workOrderId, comment);
+    },
+    onSuccess: (newComment, { workOrderId }) => {
+      // Update UI state after successful API call
       setWorkOrderComments(prev => {
         const existing = prev[workOrderId] || [];
         // Add new comment and sort by createdAt (newest first) for consistent ordering
         const updated = [newComment, ...existing].sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt || new Date()).getTime() - 
+          new Date(a.createdAt || new Date()).getTime()
         );
         return {
           ...prev,
           [workOrderId]: updated
         };
       });
-      return newComment;
-    },
-    onSuccess: () => {
-      setNewComment(""); // Clear the comment box after successful submission
+      
+      // Clear the comment box after successful submission
+      setNewComment("");
+      
       toast({
-        title: "Comment Added",
-        description: "Your comment has been added to the work order.",
+        title: "Message Sent",
+        description: "Your message has been added.",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to add comment",
+        description: error.message || "Failed to send message",
         variant: "destructive",
       });
     }
