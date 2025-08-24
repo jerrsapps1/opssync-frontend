@@ -1,0 +1,321 @@
+here are the frontend files to paste into Replit so the multi‑user + invites flow works end‑to‑end. Create the folders exactly as shown, then paste each file.
+
+📁 Create these folders
+client/
+  index.html
+  src/
+    main.tsx
+    App.tsx
+    pages/
+      BillingManagement.tsx
+      AcceptInvite.tsx
+    components/
+      PlanSelector.tsx
+      InviteForm.tsx
+
+client/index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpsSync.ai</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+client/src/main.tsx
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+const el = document.getElementById("root");
+if (!el) throw new Error("#root not found");
+createRoot(el).render(<App />);
+
+client/src/App.tsx
+import React, { useEffect, useState } from "react";
+import BillingManagement from "./pages/BillingManagement";
+import AcceptInvite from "./pages/AcceptInvite";
+
+/**
+ * Minimal client-side router (no dependency on react-router) so it works in Replit out of the box.
+ * If you already use React Router, convert these to Routes.
+ */
+export default function App() {
+  const [route, setRoute] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const onPop = () => setRoute(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  function nav(to: string) {
+    window.history.pushState({}, "", to);
+    setRoute(to);
+  }
+
+  return (
+    <div style={{ padding: 24, fontFamily: "system-ui, Arial, sans-serif", maxWidth: 900, margin: "0 auto" }}>
+      <header style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 24 }}>
+        <h1 style={{ marginRight: "auto" }}>OpsSync.ai</h1>
+        <button onClick={() => nav("/")}>Home</button>
+        <button onClick={() => nav("/billing")}>Billing Management</button>
+      </header>
+
+      {route === "/billing" && <BillingManagement />}
+      {route.startsWith("/accept-invite") && <AcceptInvite />}
+      {route === "/" && (
+        <div>
+          <h2>Welcome</h2>
+          <p>Your app is wired for multi‑user plans and invitations.</p>
+          <ul>
+            <li>Open <b>Billing Management</b> to change plan and invite users.</li>
+            <li>Invite emails send users to <code>/accept-invite?token=...</code> to set their password.</li>
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+client/src/pages/BillingManagement.tsx
+import React, { useEffect, useState } from "react";
+import PlanSelector from "../components/PlanSelector";
+import InviteForm from "../components/InviteForm";
+
+type Org = {
+  id: string;
+  name: string;
+  plan: "single" | "five" | "ten";
+  seat_limit: number;
+  seats_used: number;
+};
+
+export default function BillingManagement() {
+  const [org, setOrg] = useState<Org | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/billing/org");
+      const data = await res.json();
+      setOrg(data.org);
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || "Failed to load org");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { refresh(); }, []);
+
+  async function onPlanChange(plan: "single" | "five" | "ten") {
+    try {
+      const res = await fetch("/api/billing/upgrade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upgrade failed");
+      await refresh();
+      alert("Plan updated");
+    } catch (e: any) {
+      alert(e.message);
+    }
+  }
+
+  if (loading) return <p>Loading…</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (!org) return <p>No organization found.</p>;
+
+  return (
+    <div>
+      <h2>Billing Management</h2>
+      <p><b>Organization:</b> {org.name}</p>
+      <p><b>Current Plan:</b> {org.plan} — {org.seats_used}/{org.seat_limit} seats used</p>
+
+      <PlanSelector value={org.plan} onChange={onPlanChange} />
+
+      <hr style={{ margin: "24px 0" }} />
+
+      <h3>Invite Users</h3>
+      <InviteForm onInvited={refresh} remaining={org.seat_limit - org.seats_used} />
+    </div>
+  );
+}
+
+client/src/pages/AcceptInvite.tsx
+import React, { useEffect, useState } from "react";
+
+export default function AcceptInvite() {
+  const [ok, setOk] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("token");
+    setToken(t);
+    setOk(!!t);
+  }, []);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token) return;
+    const res = await fetch("/api/auth/accept-invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.error || "Failed");
+    alert("Account created. You can now log in.");
+    window.location.href = "/";
+  }
+
+  if (!ok) return <p>Missing invite token.</p>;
+
+  return (
+    <div>
+      <h2>Set your password</h2>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 8, maxWidth: 400 }}>
+        <input
+          type="password"
+          value={password}
+          onChange={e=>setPassword(e.target.value)}
+          placeholder="Choose a strong password"
+          required
+        />
+        <button type="submit">Create Account</button>
+      </form>
+    </div>
+  );
+}
+
+client/src/components/PlanSelector.tsx
+import React from "react";
+
+export default function PlanSelector({
+  value,
+  onChange
+}: {
+  value: "single" | "five" | "ten";
+  onChange: (v: "single" | "five" | "ten") => void;
+}) {
+  const plans: ("single" | "five" | "ten")[] = ["single", "five", "ten"];
+  return (
+    <div style={{ display: "grid", gap: 12, maxWidth: 500 }}>
+      {plans.map((p) => {
+        const active = value === p;
+        const label = p === "single" ? "Single User" : p === "five" ? "5 Users" : "10 Users";
+        const seats = p === "single" ? "1 seat" : `Up to ${p === "five" ? 5 : 10} seats`;
+        return (
+          <label key={p} style={boxStyle(active)}>
+            <input
+              type="radio"
+              name="plan"
+              value={p}
+              checked={active}
+              onChange={() => onChange(p)}
+            />
+            <div>
+              <div><b>{label}</b></div>
+              <div>{seats}</div>
+            </div>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+function boxStyle(active: boolean): React.CSSProperties {
+  return {
+    display: "flex",
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid " + (active ? "black" : "#ccc"),
+    alignItems: "center",
+    cursor: "pointer"
+  };
+}
+
+client/src/components/InviteForm.tsx
+import React, { useState } from "react";
+
+export default function InviteForm({
+  onInvited,
+  remaining
+}: {
+  onInvited: () => void;
+  remaining: number;
+}) {
+  const [emails, setEmails] = useState<string>("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const list = emails.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    if (!list.length) return alert("Add at least one email");
+    try {
+      const res = await fetch("/api/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: list })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to invite");
+      alert(`Invited: ${data.sent}/${list.length}`);
+      setEmails("");
+      onInvited();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} style={{ display: "grid", gap: 8, maxWidth: 600 }}>
+      <label><b>Emails to invite</b> (separate with commas or spaces)</label>
+      <textarea
+        value={emails}
+        onChange={(e) => setEmails(e.target.value)}
+        rows={4}
+        placeholder="alice@company.com, bob@company.com"
+      />
+      <div style={{ fontSize: 12, color: "#555" }}>Seats remaining: {remaining}</div>
+      <div>
+        <button type="submit">Send Invites</button>
+      </div>
+    </form>
+  );
+}
+
+✅ Final steps (once all files are pasted)
+
+In Replit Shell:
+
+npm install
+npm run db:init
+npm run dev
+
+
+Open the preview at http://localhost:5173.
+
+Go to Billing Management → pick a plan → invite a couple emails.
+
+If SENDGRID_API_KEY isn’t set, the server will log the invite links in the console so you can click them.
+
+Open an invite link → you’ll land on /accept‑invite?token=... → set a password → success.
+
+If you want me to also re-paste the root files (package.json, tsconfig.json, vite.config.ts, .replit, replit.nix, .env.example) in one message so you can copy them verbatim, say the word and I’ll drop them here too.
+
+ChatGPT can make mistakes. Check important info.
