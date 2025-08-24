@@ -71,6 +71,7 @@ export function useDragDrop() {
         // Fall back to forcing cache refresh without audit log
         queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
         queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+        queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
         return;
       }
       
@@ -116,6 +117,7 @@ export function useDragDrop() {
       // Force immediate invalidation and refetch using consistent query keys
       queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
       queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
       queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
     },
@@ -146,6 +148,7 @@ export function useDragDrop() {
         // Fall back to forcing cache refresh without audit log
         queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
         queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+        queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
         return;
       }
       
@@ -191,6 +194,7 @@ export function useDragDrop() {
       // Force immediate invalidation and refetch using consistent query keys
       queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
       queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
       queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
       
