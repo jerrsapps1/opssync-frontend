@@ -738,7 +738,7 @@ export default function RepairShop() {
                   return (
                     <div key={workOrder.id} className="border-b border-gray-700 last:border-b-0">
                       <div 
-                        className="grid grid-cols-10 gap-4 p-3 hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="grid grid-cols-12 gap-4 p-3 hover:bg-gray-700 transition-colors cursor-pointer"
                         onClick={() => setExpandedWorkOrder(isExpanded ? null : workOrder.id)}
                         data-testid={`workorder-row-${workOrder.id}`}
                       >
@@ -796,10 +796,8 @@ export default function RepairShop() {
                         
                         <div className="col-span-2 text-sm">
                           <div className="text-gray-400 text-xs">
-                            {workOrder.comments ? (
+                            {workOrder.comments && (
                               <div className="text-gray-300 truncate">{workOrder.comments}</div>
-                            ) : (
-                              <span className="italic">No comments</span>
                             )}
                           </div>
                         </div>
