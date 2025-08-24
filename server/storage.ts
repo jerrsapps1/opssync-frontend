@@ -1885,13 +1885,13 @@ export class PostgreSQLStorage extends MemStorage {
   async createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder> {
     const [newWorkOrder] = await db.insert(workOrders).values(workOrder).returning();
     
-    // Create initial activity log
-    await this.createWorkOrderActivity({
-      workOrderId: newWorkOrder.id,
-      action: "created",
-      description: `Work order "${newWorkOrder.title}" was created`,
-      performedBy: workOrder.createdBy,
-    });
+    // Skip activity log creation for now to avoid hanging
+    // await this.createWorkOrderActivity({
+    //   workOrderId: newWorkOrder.id,
+    //   action: "created",
+    //   description: `Work order "${newWorkOrder.title}" was created`,
+    //   performedBy: workOrder.createdBy,
+    // });
     
     return newWorkOrder;
   }
