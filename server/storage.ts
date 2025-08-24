@@ -2086,23 +2086,6 @@ export class PostgreSQLStorage extends MemStorage {
     await db.delete(costApprovalThresholds).where(eq(costApprovalThresholds.id, id));
   }
 
-  async updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder> {
-    const [updatedWorkOrder] = await db
-      .update(workOrders)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(workOrders.id, id))
-      .returning();
-    
-    if (!updatedWorkOrder) {
-      throw new Error(`Work order with id ${id} not found`);
-    }
-    
-    return updatedWorkOrder;
-  }
-
-  async deleteWorkOrder(id: string): Promise<void> {
-    await db.delete(workOrders).where(eq(workOrders.id, id));
-  }
 
   // System Settings implementation
   async getSystemSettings(): Promise<SystemSetting[]> {
