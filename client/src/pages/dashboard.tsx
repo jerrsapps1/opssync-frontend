@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { useNavigate } from "react-router-dom";
-import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
+import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton, Button } from "@chakra-ui/react";
 
 import { ProjectList } from "@/components/assignments/project-list";
 import { EmployeeList } from "@/components/assignments/employee-list";
@@ -86,6 +86,13 @@ export default function Dashboard() {
     errors: { projectsError, employeesError, equipmentError }
   });
 
+  // Function to refresh all data
+  const refreshData = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+    queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+    queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
+  };
+
 
 
   if (isLoading) {
@@ -124,35 +131,44 @@ export default function Dashboard() {
             <div className="text-sm text-gray-400">
               Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
             </div>
+            <Button
+              size="sm"
+              colorScheme="blue"
+              variant="outline"
+              onClick={refreshData}
+              isDisabled={isLoading}
+            >
+              Refresh Data
+            </Button>
+          </div>
             
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-gray-500">
-                Drag equipment here to create repair work orders →
-              </span>
-              
-              {/* Repair Shop Drop Zone */}
-              <Droppable droppableId="repair-shop">
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer min-h-12 ${
-                    snapshot.isDraggingOver
-                      ? "border-orange-400 bg-orange-900/30 scale-105"
-                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
-                  }`}
-                  onClick={() => navigate('/repair-shop')}
-                  data-testid="repair-shop-drop-zone"
-                >
-                  <span className="text-orange-400 text-lg">🔧</span>
-                  <span className="text-sm text-orange-300 font-medium">
-                    Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
-                  </span>
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-            </div>
+          <div className="flex items-center gap-4 mt-4">
+            <span className="text-xs text-gray-500">
+              Drag equipment here to create repair work orders →
+            </span>
+            
+            {/* Repair Shop Drop Zone */}
+            <Droppable droppableId="repair-shop">
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer min-h-12 ${
+                  snapshot.isDraggingOver
+                    ? "border-orange-400 bg-orange-900/30 scale-105"
+                    : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
+                }`}
+                onClick={() => navigate('/repair-shop')}
+                data-testid="repair-shop-drop-zone"
+              >
+                <span className="text-orange-400 text-lg">🔧</span>
+                <span className="text-sm text-orange-300 font-medium">
+                  Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
+                </span>
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
           </div>
         </div>
         
