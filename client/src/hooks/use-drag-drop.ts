@@ -115,11 +115,14 @@ export function useDragDrop() {
       }
       
       // Force immediate invalidation and refetch using consistent query keys
-      queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
-      queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
+      await queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+      await queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
+      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
+      
+      console.log("✅ EMPLOYEE SUCCESS:", variables.employeeId, "assigned to", variables.projectId);
     },
     onError: (error) => {
       toast({
@@ -192,11 +195,14 @@ export function useDragDrop() {
       }
       
       // Force immediate invalidation and refetch using consistent query keys
-      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
-      queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
+      await queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      await queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
+      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
       queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
+      
+      console.log("✅ EQUIPMENT SUCCESS:", variables.equipmentId, "assigned to", variables.projectId);
       
       // If equipment was assigned to repair shop, also invalidate repair shop queries
       if (variables.projectId === "repair-shop") {
