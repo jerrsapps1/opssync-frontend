@@ -1,6 +1,6 @@
 import { 
   projects, employees, equipment, activities, alerts, users, projectContacts, projectActivityLogs, workOrders,
-  workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds, systemSettings,
+  workOrderComments, workOrderDocuments, workOrderApprovals, workOrderActivities, costApprovalThresholds, systemSettings,
   notifications, notificationRecipients,
   type Project, type InsertProject, type UpdateProject,
   type Employee, type InsertEmployee, type UpdateEmployee,
@@ -16,6 +16,9 @@ import {
   type WorkOrder,
   type InsertWorkOrder,
   type UpdateWorkOrder,
+  type WorkOrderComment,
+  type InsertWorkOrderComment,
+  type UpdateWorkOrderComment,
   type WorkOrderDocument,
   type InsertWorkOrderDocument,
   type UpdateWorkOrderDocument,
@@ -96,6 +99,10 @@ export interface IStorage {
   createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder>;
   updateWorkOrder(id: string, updates: UpdateWorkOrder): Promise<WorkOrder>;
   deleteWorkOrder(id: string): Promise<void>;
+  
+  // Work Order Comments
+  getWorkOrderComments(workOrderId: string): Promise<WorkOrderComment[]>;
+  createWorkOrderComment(comment: InsertWorkOrderComment): Promise<WorkOrderComment>;
   
   // Work Order Documents
   getWorkOrderDocuments(workOrderId: string): Promise<WorkOrderDocument[]>;
@@ -1479,6 +1486,28 @@ export class MemStorage implements IStorage {
   async deleteWorkOrder(id: string): Promise<void> {
     this.workOrders.delete(id);
   }
+
+  // Work Order Comments - Mock implementation using Map
+  private workOrderComments = new Map<string, WorkOrderComment[]>();
+
+  async getWorkOrderComments(workOrderId: string): Promise<WorkOrderComment[]> {
+    return this.workOrderComments.get(workOrderId) || [];
+  }
+
+  async createWorkOrderComment(comment: InsertWorkOrderComment): Promise<WorkOrderComment> {
+    const id = randomUUID();
+    const newComment: WorkOrderComment = {
+      ...comment,
+      id,
+      createdAt: new Date(),
+    };
+    
+    const existing = this.workOrderComments.get(comment.workOrderId) || [];
+    existing.push(newComment);
+    this.workOrderComments.set(comment.workOrderId, existing);
+    
+    return newComment;
+  }
 }
 
 // Create a PostgreSQL storage class that extends MemStorage but uses database for projects
@@ -2010,6 +2039,16 @@ export class PostgreSQLStorage extends MemStorage {
   async createWorkOrderActivity(activity: InsertWorkOrderActivity): Promise<WorkOrderActivity> {
     const [newActivity] = await db.insert(workOrderActivities).values(activity).returning();
     return newActivity;
+  }
+
+  // Work Order Comments - PostgreSQL implementation
+  async getWorkOrderComments(workOrderId: string): Promise<WorkOrderComment[]> {
+    return await db.select().from(workOrderComments).where(eq(workOrderComments.workOrderId, workOrderId)).orderBy(desc(workOrderComments.createdAt));
+  }
+
+  async createWorkOrderComment(comment: InsertWorkOrderComment): Promise<WorkOrderComment> {
+    const [newComment] = await db.insert(workOrderComments).values(comment).returning();
+    return newComment;
   }
 
   // Cost Approval Thresholds

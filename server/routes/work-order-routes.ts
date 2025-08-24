@@ -3,6 +3,7 @@ import {
   insertWorkOrderSchema,
   updateWorkOrderSchema,
   insertWorkOrderDocumentSchema,
+  insertWorkOrderCommentSchema,
   insertWorkOrderApprovalSchema,
   updateWorkOrderApprovalSchema,
   insertCostApprovalThresholdSchema,
@@ -137,6 +138,33 @@ export function registerWorkOrderRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting work order:", error);
       res.status(500).json({ error: "Failed to delete work order" });
+    }
+  });
+
+  // Work Order Comments
+  app.get("/api/work-orders/:workOrderId/comments", async (req, res) => {
+    try {
+      const comments = await storage.getWorkOrderComments(req.params.workOrderId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching work order comments:", error);
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/work-orders/:workOrderId/comments", async (req, res) => {
+    try {
+      const validatedData = insertWorkOrderCommentSchema.parse({
+        ...req.body,
+        workOrderId: req.params.workOrderId,
+        createdBy: "test-user-001", // TODO: Get from auth
+      });
+      
+      const comment = await storage.createWorkOrderComment(validatedData);
+      res.json(comment);
+    } catch (error) {
+      console.error("Error creating work order comment:", error);
+      res.status(500).json({ error: "Failed to create comment" });
     }
   });
 

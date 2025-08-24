@@ -353,6 +353,15 @@ export const workOrders = pgTable("work_orders", {
   taxExempt: boolean("tax_exempt").default(false), // Tax exempt status
 });
 
+// Work Order Comments table for progressive commenting
+export const workOrderComments = pgTable("work_order_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workOrderId: varchar("work_order_id").notNull().references(() => workOrders.id, { onDelete: "cascade" }),
+  comment: text("comment").notNull(),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Work Order Documents table for PDF attachments
 export const workOrderDocuments = pgTable("work_order_documents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -447,6 +456,14 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
 
 export const updateWorkOrderSchema = insertWorkOrderSchema.partial();
 
+// Work Order Comments schema
+export const insertWorkOrderCommentSchema = createInsertSchema(workOrderComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateWorkOrderCommentSchema = insertWorkOrderCommentSchema.partial();
+
 // Work Order Documents schema
 export const insertWorkOrderDocumentSchema = createInsertSchema(workOrderDocuments).omit({
   id: true,
@@ -527,6 +544,10 @@ export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
 export type UpdateWorkOrder = z.infer<typeof updateWorkOrderSchema>;
 
+export type WorkOrderComment = typeof workOrderComments.$inferSelect;
+export type InsertWorkOrderComment = z.infer<typeof insertWorkOrderCommentSchema>;
+export type UpdateWorkOrderComment = z.infer<typeof updateWorkOrderCommentSchema>;
+
 export type WorkOrderDocument = typeof workOrderDocuments.$inferSelect;
 export type InsertWorkOrderDocument = z.infer<typeof insertWorkOrderDocumentSchema>;
 export type UpdateWorkOrderDocument = z.infer<typeof updateWorkOrderDocumentSchema>;
@@ -554,7 +575,3 @@ export type UpdateNotification = z.infer<typeof updateNotificationSchema>;
 export type NotificationRecipient = typeof notificationRecipients.$inferSelect;
 export type InsertNotificationRecipient = z.infer<typeof insertNotificationRecipientSchema>;
 export type UpdateNotificationRecipient = z.infer<typeof updateNotificationRecipientSchema>;
-
-export type CostApprovalThreshold = typeof costApprovalThresholds.$inferSelect;
-export type InsertCostApprovalThreshold = z.infer<typeof insertCostApprovalThresholdSchema>;
-export type UpdateCostApprovalThreshold = z.infer<typeof updateCostApprovalThresholdSchema>;

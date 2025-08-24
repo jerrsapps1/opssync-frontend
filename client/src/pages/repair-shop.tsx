@@ -15,7 +15,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
-import type { Equipment, WorkOrder } from "@shared/schema";
+import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
   const response = await apiRequest("GET", "/api/equipment");
@@ -39,6 +39,18 @@ async function getWorkOrders(equipmentId?: string): Promise<WorkOrder[]> {
   return response.json();
 }
 
+async function getWorkOrderComments(workOrderId: string): Promise<WorkOrderComment[]> {
+  const response = await apiRequest("GET", `/api/work-orders/${workOrderId}/comments`);
+  return response.json();
+}
+
+async function createWorkOrderComment(workOrderId: string, comment: string): Promise<WorkOrderComment> {
+  const response = await apiRequest("POST", `/api/work-orders/${workOrderId}/comments`, {
+    comment
+  });
+  return response.json();
+}
+
 export default function RepairShop() {
   const navigate = useNavigate();
   const { handleDragEnd, isAssigning } = useDragDrop();
@@ -58,6 +70,10 @@ export default function RepairShop() {
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<Set<string>>(new Set());
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [updateData, setUpdateData] = useState({ status: "", comments: "" });
+  
+  // Comments state for progressive commenting
+  const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
+  const [newComment, setNewComment] = useState("");
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -99,6 +115,40 @@ export default function RepairShop() {
   const getWorkOrdersForEquipment = (equipmentId: string) => {
     return workOrders.filter(wo => wo.equipmentId === equipmentId);
   };
+
+  // Comments query and mutation
+  const loadCommentsMutation = useMutation({
+    mutationFn: async (workOrderId: string) => {
+      const comments = await getWorkOrderComments(workOrderId);
+      setWorkOrderComments(prev => ({ ...prev, [workOrderId]: comments }));
+      return comments;
+    }
+  });
+
+  const createCommentMutation = useMutation({
+    mutationFn: async ({ workOrderId, comment }: { workOrderId: string, comment: string }) => {
+      const newComment = await createWorkOrderComment(workOrderId, comment);
+      setWorkOrderComments(prev => ({
+        ...prev,
+        [workOrderId]: [newComment, ...(prev[workOrderId] || [])]
+      }));
+      setNewComment("");
+      return newComment;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Comment Added",
+        description: "Your comment has been added to the work order.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add comment",
+        variant: "destructive",
+      });
+    }
+  });
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -660,18 +710,71 @@ export default function RepairShop() {
                             </h4>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-6">
-                            
+                          <div className="grid grid-cols-1 gap-6">
                             <div>
-                              <h4 className="text-white font-medium mb-3">Comments</h4>
-                              <div className="text-sm">
-                                {workOrder.comments ? (
-                                  <div className="text-gray-300 bg-gray-700 p-3 rounded">
-                                    {workOrder.comments}
-                                  </div>
+                              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                                <MessageCircle className="h-4 w-4" />
+                                Comments Thread
+                              </h4>
+                              
+                              {/* Load comments when expanded */}
+                              {(() => {
+                                if (!workOrderComments[workOrder.id]) {
+                                  loadCommentsMutation.mutate(workOrder.id);
+                                }
+                                return null;
+                              })()}
+                              
+                              <div className="space-y-3">
+                                {/* Comment History */}
+                                {workOrderComments[workOrder.id] && workOrderComments[workOrder.id].length > 0 ? (
+                                  workOrderComments[workOrder.id].map((comment, index) => (
+                                    <div key={comment.id} className="bg-gray-700 p-3 rounded border-l-2 border-blue-400">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <span className="text-blue-400 text-xs font-medium">
+                                          Comment #{workOrderComments[workOrder.id].length - index}
+                                        </span>
+                                        <span className="text-gray-400 text-xs">
+                                          {format(new Date(comment.createdAt || new Date()), "MMM dd, yyyy 'at' h:mm a")}
+                                        </span>
+                                      </div>
+                                      <div className="text-gray-300 text-sm">
+                                        {comment.comment}
+                                      </div>
+                                    </div>
+                                  ))
                                 ) : (
-                                  <div className="text-gray-400 italic">No comments yet</div>
+                                  <div className="text-gray-400 italic text-sm">No comments yet. Add the first comment below.</div>
                                 )}
+                                
+                                {/* Add New Comment */}
+                                <div className="border-t border-gray-600 pt-3">
+                                  <div className="flex gap-2">
+                                    <Textarea
+                                      placeholder="Add a comment..."
+                                      value={newComment}
+                                      onChange={(e) => setNewComment(e.target.value)}
+                                      className="bg-gray-800 border-gray-600 text-white text-sm resize-none"
+                                      rows={2}
+                                      data-testid={`textarea-comment-${workOrder.id}`}
+                                    />
+                                    <Button
+                                      onClick={() => {
+                                        if (newComment.trim()) {
+                                          createCommentMutation.mutate({
+                                            workOrderId: workOrder.id,
+                                            comment: newComment.trim()
+                                          });
+                                        }
+                                      }}
+                                      disabled={!newComment.trim() || createCommentMutation.isPending}
+                                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 shrink-0"
+                                      data-testid={`button-add-comment-${workOrder.id}`}
+                                    >
+                                      {createCommentMutation.isPending ? "Adding..." : "Add Comment"}
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
