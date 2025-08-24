@@ -86,8 +86,44 @@ export function registerWorkOrderRoutes(app: Express) {
   app.patch("/api/work-orders/:id", async (req, res) => {
     try {
       const validatedData = updateWorkOrderSchema.parse(req.body);
-      const workOrder = await storage.updateWorkOrder(req.params.id, validatedData);
-      res.json(workOrder);
+      
+      // Get the current work order to track changes
+      const currentWorkOrder = await storage.getWorkOrder(req.params.id);
+      if (!currentWorkOrder) {
+        return res.status(404).json({ error: "Work order not found" });
+      }
+      
+      // Update the work order
+      const updatedWorkOrder = await storage.updateWorkOrder(req.params.id, validatedData);
+      
+      // Log status change if it occurred
+      if (validatedData.status && validatedData.status !== currentWorkOrder.status) {
+        const statusDescriptions: Record<string, string> = {
+          "open": "Work order opened",
+          "in-progress": "Work order started",
+          "completed": "Work order completed",
+          "cancelled": "Work order cancelled",
+          "pending-approval": "Work order submitted for approval",
+          "approved": "Work order approved",
+          "rejected": "Work order rejected"
+        };
+
+        await storage.createWorkOrderActivity({
+          workOrderId: req.params.id,
+          action: "updated",
+          description: `Status changed from "${currentWorkOrder.status}" to "${validatedData.status}". ${statusDescriptions[validatedData.status] || 'Status updated'}`,
+          performedBy: "test-user-001", // TODO: Get from auth
+          metadata: JSON.stringify({
+            field: "status",
+            oldValue: currentWorkOrder.status,
+            newValue: validatedData.status
+          })
+        });
+        
+        console.log(`📝 Logged status change: Work Order ${req.params.id} status changed from "${currentWorkOrder.status}" to "${validatedData.status}"`);
+      }
+      
+      res.json(updatedWorkOrder);
     } catch (error) {
       console.error("Error updating work order:", error);
       res.status(500).json({ error: "Failed to update work order" });
