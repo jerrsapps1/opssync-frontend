@@ -308,7 +308,7 @@ export default function Settings() {
 
       {/* Company Footer */}
       <div className="text-center text-xs text-gray-500 pt-6">
-        Settings for {brandConfig?.companyName || 'StaffTrak'} Management System
+        Settings for {brandConfig?.companyName || 'OpsSync.ai'} Management System
       </div>
     </div>
   );

@@ -95,7 +95,7 @@ function useAuth() {
 
 /** ======= Default Brand Config ======= **/
 const defaultBrandConfig = {
-  appName: "TrackPro",
+  appName: "OpsSync.ai",
   primaryColor: "#4A90E2",
   secondaryColor: "#BB86FC",
   logoUrl: "https://cdn-icons-png.flaticon.com/512/2920/2920579.png",
@@ -609,7 +609,7 @@ function LoginForm() {
       <Box maxW="md" w="full" p={8} bg="#1E1E2F" borderRadius="md" boxShadow="lg">
         <VStack spacing={6}>
           <Heading size="lg" textAlign="center">
-            {isRegister ? "Create Account" : "Welcome to TrackPro"}
+            {isRegister ? "Create Account" : `Welcome to ${defaultBrandConfig.appName}`}
           </Heading>
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
