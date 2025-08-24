@@ -269,6 +269,13 @@ function AppRoutes() {
             <Navigate to="/dashboard" replace />
           </ProtectedRoute>
         } />
+        {/* Catch any remaining message-center routes and redirect */}
+        <Route path="/message-center" element={
+          <Navigate to="/dashboard" replace />
+        } />
+        <Route path="/message-center/*" element={
+          <Navigate to="/dashboard" replace />
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
