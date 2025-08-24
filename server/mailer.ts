@@ -1,32 +1,24 @@
-import sgMail from "@sendgrid/mail";
+import sendgrid from "sendgrid";
+const sgKey = process.env.SENDGRID_API_KEY || "";
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
-
-export async function sendInviteEmail(email: string, inviteLink: string, orgName: string) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log(`Would send invite email to ${email}: ${inviteLink}`);
-    return;
+export async function sendInviteEmail(to: string, acceptUrl: string) {
+  if (!sgKey) {
+    console.log(`[mailer] SENDGRID_API_KEY missing. Would send invite to ${to}: ${acceptUrl}`);
+    return { mocked: true };
   }
-
-  const msg = {
-    to: email,
-    from: process.env.EMAIL_FROM || "no-reply@opssync.ai",
-    subject: `You're invited to join ${orgName}`,
-    html: `
-      <h2>You're invited to join ${orgName}</h2>
-      <p>Click the link below to accept your invitation:</p>
-      <a href="${inviteLink}">Accept Invitation</a>
-      <p>This link will expire in 7 days.</p>
-    `,
-  };
-
-  try {
-    await sgMail.send(msg);
-    console.log(`Invite email sent to ${email}`);
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
+  const sg = sendgrid(sgKey);
+  const request = sg.emptyRequest({
+    method: "POST",
+    path: "/v3/mail/send",
+    body: {
+      personalizations: [{ to: [{ email: to }], subject: "You're invited to OpsSync.ai" }],
+      from: { email: process.env.EMAIL_FROM || "no-reply@opssync.ai", name: "OpsSync.ai" },
+      content: [{
+        type: "text/plain",
+        value: `You've been granted access to OpsSync.ai.\n\nCreate your password: ${acceptUrl}\n`
+      }]
+    }
+  });
+  const res = await sg.API(request);
+  return res;
 }
