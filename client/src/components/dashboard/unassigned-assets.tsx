@@ -11,7 +11,7 @@ interface UnassignedAssetsProps {
 
 export function UnassignedAssets({ employees, equipment, isLoading }: UnassignedAssetsProps) {
   const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
-  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId);
+  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status !== "maintenance");
 
   if (isLoading) {
     return (

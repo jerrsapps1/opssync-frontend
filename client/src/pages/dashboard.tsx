@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   // Calculate filtered counts for dashboard display
   const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
-  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId);
+  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status !== "maintenance");
   
   // Debug logging
   console.log("Dashboard data:", { 
