@@ -136,10 +136,10 @@ export default function RepairShop() {
         ...prev,
         [workOrderId]: [newComment, ...(prev[workOrderId] || [])]
       }));
-      setNewComment("");
       return newComment;
     },
     onSuccess: () => {
+      setNewComment(""); // Clear the comment box after successful submission
       toast({
         title: "Comment Added",
         description: "Your comment has been added to the work order.",
