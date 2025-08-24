@@ -502,7 +502,7 @@ export default function RepairShop() {
 
             {/* Sort Headers */}
             <div className="bg-gray-700 border border-gray-600 rounded-t-lg p-3">
-              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-300">
+              <div className="grid grid-cols-10 gap-4 text-sm font-medium text-gray-300">
                 <div className="col-span-1 flex items-center gap-1">
                   <Checkbox
                     checked={filteredAndSortedWorkOrders.length > 0 && filteredAndSortedWorkOrders.every(wo => selectedWorkOrders.has(wo.id))}
@@ -529,19 +529,8 @@ export default function RepairShop() {
                   )}
                 </button>
                 
-                <button
-                  onClick={() => handleSort("equipment")}
-                  className="col-span-2 flex items-center gap-1 hover:text-white transition-colors text-left"
-                  data-testid="button-sort-equipment"
-                >
-                  <Wrench className="h-4 w-4" />
-                  Equipment
-                  {sortBy === "equipment" && (
-                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                  )}
-                </button>
                 
-                <div className="col-span-3 flex items-center gap-1">
+                <div className="col-span-5 flex items-center gap-1">
                   Work Order Details
                 </div>
                 
@@ -593,7 +582,7 @@ export default function RepairShop() {
                   return (
                     <div key={workOrder.id} className="border-b border-gray-700 last:border-b-0">
                       <div 
-                        className="grid grid-cols-12 gap-4 p-3 hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="grid grid-cols-10 gap-4 p-3 hover:bg-gray-700 transition-colors cursor-pointer"
                         onClick={() => setExpandedWorkOrder(isExpanded ? null : workOrder.id)}
                         data-testid={`workorder-row-${workOrder.id}`}
                       >
@@ -623,28 +612,17 @@ export default function RepairShop() {
                           </div>
                         </div>
                         
-                        <div className="col-span-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1 bg-orange-900/30 rounded">
-                              <Wrench className="h-3 w-3 text-orange-400" />
-                            </div>
-                            <div>
-                              <div className="text-white font-medium text-sm">
-                                {equipment?.name || "Unknown Equipment"}
-                              </div>
-                              <div className="text-gray-400 text-xs">
-                                {equipment?.type}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                         
-                        <div className="col-span-3">
+                        <div className="col-span-5">
                           <div className="text-white font-medium text-sm mb-1">
                             {workOrder.title}
                           </div>
-                          <div className="text-gray-400 text-xs line-clamp-2">
+                          <div className="text-gray-400 text-xs mb-1">
                             {workOrder.description}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Wrench className="h-3 w-3 text-orange-400" />
+                            <span className="text-gray-400 text-xs">{equipment?.name || "Unknown Equipment"}</span>
                           </div>
                         </div>
                         
@@ -661,20 +639,11 @@ export default function RepairShop() {
                         </div>
                         
                         <div className="col-span-2 text-sm">
-                          <div className="text-white">
+                          <div className="text-gray-400 text-xs">
                             {workOrder.comments ? (
-                              <div className="bg-gray-700 p-2 rounded text-xs max-w-full">
-                                <div className="flex items-center gap-1 mb-1">
-                                  <MessageCircle className="h-3 w-3 text-blue-400" />
-                                  <span className="text-blue-400 font-medium">Comment:</span>
-                                </div>
-                                <div className="text-gray-300 break-words">{workOrder.comments}</div>
-                              </div>
+                              <div className="text-gray-300 truncate">{workOrder.comments}</div>
                             ) : (
-                              <div className="flex items-center gap-1 text-gray-400 italic">
-                                <MessageCircle className="h-3 w-3" />
-                                <span>No comments</span>
-                              </div>
+                              <span className="italic">No comments</span>
                             )}
                           </div>
                         </div>
@@ -694,14 +663,14 @@ export default function RepairShop() {
                           <div className="grid grid-cols-2 gap-6">
                             
                             <div>
-                              <h4 className="text-white font-medium mb-3">Additional Notes</h4>
+                              <h4 className="text-white font-medium mb-3">Comments</h4>
                               <div className="text-sm">
-                                {workOrder.notes ? (
+                                {workOrder.comments ? (
                                   <div className="text-gray-300 bg-gray-700 p-3 rounded">
-                                    {workOrder.notes}
+                                    {workOrder.comments}
                                   </div>
                                 ) : (
-                                  <div className="text-gray-400 italic">No additional notes</div>
+                                  <div className="text-gray-400 italic">No comments yet</div>
                                 )}
                               </div>
                             </div>
