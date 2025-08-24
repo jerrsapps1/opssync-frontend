@@ -56,8 +56,7 @@ export function useDragDrop() {
       
       // Create audit log
       try {
-        const response = await data.json();
-        const employee = response;
+        const employee = data; // data is already parsed JSON from apiRequest
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
@@ -112,8 +111,7 @@ export function useDragDrop() {
       
       // Create audit log
       try {
-        const response = await data.json();
-        const equipment = response;
+        const equipment = data; // data is already parsed JSON from apiRequest
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
