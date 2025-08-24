@@ -244,10 +244,14 @@ export default function RepairShop() {
 
   const createWorkOrderMutation = useMutation({
     mutationFn: async (workOrder: InsertWorkOrder) => {
+      console.log("Creating work order:", workOrder);
       const response = await apiRequest("POST", "/api/work-orders", workOrder);
-      return response.json();
+      const result = await response.json();
+      console.log("Work order created:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (newWorkOrder) => {
+      console.log("Work order creation successful, invalidating queries...");
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
       setCreateWorkOrderEquipment(null);
       toast({
