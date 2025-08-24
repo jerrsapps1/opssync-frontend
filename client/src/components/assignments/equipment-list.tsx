@@ -56,8 +56,13 @@ export function EquipmentList({ equipment, projects, isLoading }: EquipmentListP
   // Dashboard shows only unassigned equipment that's not in repair shop
   const availableEquipment = equipment.filter(eq => !eq.currentProjectId && eq.status !== "maintenance");
 
-  // Use all available equipment directly
-  const visible = availableEquipment;
+  // Sort equipment alphabetically by name
+  const sortedEquipment = [...availableEquipment].sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
+
+  // Use all sorted equipment directly
+  const visible = sortedEquipment;
 
   function openContext(e: React.MouseEvent, id: string) {
     e.preventDefault();

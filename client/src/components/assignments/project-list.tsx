@@ -17,6 +17,11 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
   const navigate = useNavigate();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; project: Project } | null>(null);
   
+  // Sort projects alphabetically by name
+  const sortedProjects = [...projects].sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
+  
   // Remove repair shop code - moved to equipment section
   
   return (
@@ -32,7 +37,7 @@ export function ProjectList({ projects, employees = [], equipment = [] }: Projec
       
       {/* Regular Projects */}
       <VStack spacing={2} align="stretch">
-        {projects.map((project) => (
+        {sortedProjects.map((project) => (
           <Droppable key={project.id} droppableId={project.id}>
             {(provided, snapshot) => (
               <Box

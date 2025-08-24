@@ -36,12 +36,17 @@ export function FourthColumn({ isLoading = false }: FourthColumnProps) {
 
   // Get equipment in repair shop (status === "maintenance")
   const repairShopEquipment = equipment.filter(eq => eq.status === "maintenance");
+  
+  // Sort repair shop equipment alphabetically by name
+  const sortedRepairShopEquipment = [...repairShopEquipment].sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
 
   return (
     <div className="w-1/4 bg-[#1E1E2F] border-l border-gray-700 p-4">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-orange-300 mb-2 flex items-center gap-2">
-          🔧 Repair Shop ({repairShopEquipment.length})
+          🔧 Repair Shop ({sortedRepairShopEquipment.length})
         </h3>
         <p className="text-sm text-gray-400">
           Drop equipment here for maintenance
@@ -59,7 +64,7 @@ export function FourthColumn({ isLoading = false }: FourthColumnProps) {
                 : "border-orange-600/50 bg-orange-900/10"
             }`}
           >
-            {repairShopEquipment.length === 0 && (
+            {sortedRepairShopEquipment.length === 0 && (
               <div className="p-4 text-center text-orange-300">
                 <div className="text-3xl mb-2">🔧</div>
                 <div className="text-sm">
@@ -68,7 +73,7 @@ export function FourthColumn({ isLoading = false }: FourthColumnProps) {
               </div>
             )}
             
-            {repairShopEquipment.map((eq, index) => {
+            {sortedRepairShopEquipment.map((eq, index) => {
               const IconComponent = getEquipmentIcon(eq.type);
               return (
                 <Draggable key={eq.id} draggableId={eq.id} index={index}>
