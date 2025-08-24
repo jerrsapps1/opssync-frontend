@@ -132,10 +132,17 @@ export default function RepairShop() {
   const createCommentMutation = useMutation({
     mutationFn: async ({ workOrderId, comment }: { workOrderId: string, comment: string }) => {
       const newComment = await createWorkOrderComment(workOrderId, comment);
-      setWorkOrderComments(prev => ({
-        ...prev,
-        [workOrderId]: [newComment, ...(prev[workOrderId] || [])]
-      }));
+      setWorkOrderComments(prev => {
+        const existing = prev[workOrderId] || [];
+        // Add new comment and sort by createdAt (newest first) for consistent ordering
+        const updated = [newComment, ...existing].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        return {
+          ...prev,
+          [workOrderId]: updated
+        };
+      });
       return newComment;
     },
     onSuccess: () => {

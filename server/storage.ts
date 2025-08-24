@@ -1491,7 +1491,9 @@ export class MemStorage implements IStorage {
   private workOrderComments = new Map<string, WorkOrderComment[]>();
 
   async getWorkOrderComments(workOrderId: string): Promise<WorkOrderComment[]> {
-    return this.workOrderComments.get(workOrderId) || [];
+    const comments = this.workOrderComments.get(workOrderId) || [];
+    // Return comments sorted by creation date (newest first) for consistent progressive order
+    return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async createWorkOrderComment(comment: InsertWorkOrderComment): Promise<WorkOrderComment> {
