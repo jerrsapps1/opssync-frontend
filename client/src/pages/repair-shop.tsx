@@ -859,12 +859,7 @@ export default function RepairShop() {
                                         </div>
                                       );
                                     })
-                                  ) : (
-                                    <div className="text-center text-gray-400 text-sm py-8">
-                                      <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                      <p>No messages yet. Start the conversation!</p>
-                                    </div>
-                                  )}
+                                  ) : null}
                                 </div>
                               </div>
                               
