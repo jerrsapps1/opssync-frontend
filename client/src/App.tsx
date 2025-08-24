@@ -52,7 +52,6 @@ import BillingSettings from "./pages/BillingSettings";
 import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import OwnerBrandingControls from "./pages/OwnerBrandingControls";
 import WhiteLabelSettings from "./pages/WhiteLabelSettings";
-import RepairShop from "./pages/repair-shop";
 import Logs from "./pages/logs";
 import Login from "./pages/Login";
 import SystemSettings from "./pages/system-settings";
@@ -318,11 +317,6 @@ function AppRoutes() {
         <Route path="/projects/:id" element={
           <ProtectedRoute>
             <ProjectProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/repair-shop" element={
-          <ProtectedRoute>
-            <RepairShop />
           </ProtectedRoute>
         } />
         <Route path="/logs" element={
