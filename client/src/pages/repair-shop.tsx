@@ -714,12 +714,6 @@ export default function RepairShop() {
                       {/* Expanded Details */}
                       {isExpanded && (
                         <div className="bg-gray-750 p-4 border-t border-gray-600">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-white font-medium flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              Work Order Details
-                            </h4>
-                          </div>
                           
                           <div className="grid grid-cols-1 gap-6">
                             <div>
