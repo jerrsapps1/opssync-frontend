@@ -23,11 +23,11 @@ export function FourthColumn({ isLoading = false }: FourthColumnProps) {
   return (
     <div className="w-1/4 bg-[#1E1E2F] border-l border-gray-700 p-4">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white mb-2">
-          Fourth Column
+        <h3 className="text-lg font-semibold text-orange-300 mb-2 flex items-center gap-2">
+          🔧 Repair Shop
         </h3>
         <p className="text-sm text-gray-400">
-          Drop zone ready for items
+          Drop equipment here for maintenance
         </p>
       </div>
 
@@ -38,14 +38,14 @@ export function FourthColumn({ isLoading = false }: FourthColumnProps) {
             {...provided.droppableProps}
             className={`min-h-96 rounded-lg border-2 border-dashed transition-colors ${
               snapshot.isDraggingOver
-                ? "border-blue-400 bg-blue-900/20"
-                : "border-gray-600 bg-gray-800/50"
+                ? "border-orange-400 bg-orange-900/30"
+                : "border-orange-600/50 bg-orange-900/10"
             }`}
           >
-            <div className="p-4 text-center text-gray-400">
-              <div className="text-2xl mb-2">📋</div>
+            <div className="p-4 text-center text-orange-300">
+              <div className="text-3xl mb-2">🔧</div>
               <div className="text-sm">
-                {snapshot.isDraggingOver ? "Drop here!" : "Drag items here"}
+                {snapshot.isDraggingOver ? "Drop equipment here!" : "Drop equipment for repair"}
               </div>
             </div>
             {provided.placeholder}
