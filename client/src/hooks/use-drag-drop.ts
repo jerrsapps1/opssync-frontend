@@ -62,11 +62,20 @@ export function useDragDrop() {
       });
     },
     onSuccess: async (response, variables) => {
-      console.log("Employee assignment success:", response);
+      let employee;
+      try {
+        employee = await response.json();
+        console.log("Employee assignment success - parsed data:", employee);
+      } catch (parseError) {
+        console.error("Failed to parse employee response:", parseError);
+        // Fall back to forcing cache refresh without audit log
+        queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+        queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+        return;
+      }
       
       // Create audit log
       try {
-        const employee = await response.json();
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
@@ -128,11 +137,20 @@ export function useDragDrop() {
       });
     },
     onSuccess: async (response, variables) => {
-      console.log("Equipment assignment success:", response);
+      let equipment;
+      try {
+        equipment = await response.json();
+        console.log("Equipment assignment success - parsed data:", equipment);
+      } catch (parseError) {
+        console.error("Failed to parse equipment response:", parseError);
+        // Fall back to forcing cache refresh without audit log
+        queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+        queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+        return;
+      }
       
       // Create audit log
       try {
-        const equipment = await response.json();
         
         // Get project names for better audit trail
         const projects = queryClient.getQueryData(["/api", "projects"]) as any[] || [];
