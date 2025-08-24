@@ -10,6 +10,7 @@ interface Equipment {
   type: string;
   make: string;
   model: string;
+  assetNumber: string;
   status: string;
   currentProjectId: string | null;
 }
@@ -74,6 +75,7 @@ export function AssetLocationSearch() {
        (eq.type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
        (eq.make || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
        (eq.model || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (eq.assetNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
        eq.id.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .map(eq => {
