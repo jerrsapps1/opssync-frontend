@@ -1099,9 +1099,6 @@ export default function RepairShop() {
                 disabled={createWorkOrderMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-500"
                 data-testid="button-create-workorder"
-                onClick={() => {
-                  // Button click handler 
-                }}
               >
                 {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
               </Button>
