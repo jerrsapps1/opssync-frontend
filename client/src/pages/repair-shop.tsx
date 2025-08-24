@@ -180,11 +180,12 @@ export default function RepairShop() {
   const filteredAndSortedWorkOrders = workOrders
     .filter(wo => {
       // Search filter
+      const equipment = repairEquipment.find(eq => eq.id === wo.equipmentId);
       const searchMatch = searchFilter === "" || 
         wo.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
         wo.description.toLowerCase().includes(searchFilter.toLowerCase()) ||
         wo.assignedTo?.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        (repairEquipment.find(eq => eq.id === wo.equipmentId)?.name.toLowerCase().includes(searchFilter.toLowerCase()));
+        (equipment?.name?.toLowerCase().includes(searchFilter.toLowerCase()) || false);
       
       // Status filter
       const statusMatch = statusFilter === "all" || wo.status === statusFilter;
