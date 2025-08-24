@@ -273,6 +273,8 @@ export default function RepairShop() {
     resolver: zodResolver(insertWorkOrderSchema),
     defaultValues: {
       title: "",
+      description: "Work order created from repair shop",
+      reason: "Equipment requires maintenance/repair",
       priority: "medium",
       status: "open",
       equipmentId: "",
@@ -305,6 +307,8 @@ export default function RepairShop() {
       
       form.reset({
         title: autoTitle,
+        description: "Work order created from repair shop",
+        reason: "Equipment requires maintenance/repair",
         priority: "medium",
         status: "open",
         equipmentId: createWorkOrderEquipment.id,
@@ -1018,6 +1022,8 @@ export default function RepairShop() {
                 console.log("🔧 Create Work Order button clicked!");
                 console.log("🔧 Form valid?", form.formState.isValid);
                 console.log("🔧 Form errors:", form.formState.errors);
+                console.log("🔧 Form values:", form.getValues());
+                console.log("🔧 Form state:", form.formState);
               }}
             >
               {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
@@ -1027,6 +1033,22 @@ export default function RepairShop() {
       >
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmitWorkOrder)}>
+            {/* Hidden fields for required schema validation */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <Input {...field} type="hidden" />
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <Input {...field} type="hidden" />
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="title"
