@@ -71,7 +71,7 @@ export default function RepairShop() {
   const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
   const [selectedWorkOrders, setSelectedWorkOrders] = useState<Set<string>>(new Set());
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
-  const [updateData, setUpdateData] = useState({ status: "", comments: "" });
+  const [updateData, setUpdateData] = useState({ status: "" });
   
   // Comments state for progressive commenting
   const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
@@ -187,12 +187,11 @@ export default function RepairShop() {
   };
 
   const updateWorkOrderMutation = useMutation({
-    mutationFn: async ({ workOrderIds, updates }: { workOrderIds: string[]; updates: { status?: string; comments?: string } }) => {
+    mutationFn: async ({ workOrderIds, updates }: { workOrderIds: string[]; updates: { status?: string } }) => {
       // Update multiple work orders efficiently
       const promises = workOrderIds.map(id => {
         const updateData: any = {};
         if (updates.status) updateData.status = updates.status;
-        if (updates.comments !== undefined) updateData.comments = updates.comments;
         
         return apiRequest("PATCH", `/api/work-orders/${id}`, updateData);
       });
@@ -202,7 +201,7 @@ export default function RepairShop() {
       queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
       setShowUpdateDialog(false);
       setSelectedWorkOrders(new Set());
-      setUpdateData({ status: "", comments: "" });
+      setUpdateData({ status: "" });
       toast({
         title: "Work Orders Updated",
         description: `Successfully updated ${selectedWorkOrders.size} work order(s).`,
@@ -232,33 +231,31 @@ export default function RepairShop() {
     if (selectedIds.length === 1) {
       const workOrder = workOrders.find(wo => wo.id === selectedIds[0]);
       setUpdateData({
-        status: workOrder?.status || "",
-        comments: workOrder?.comments || ""
+        status: workOrder?.status || ""
       });
     } else {
-      setUpdateData({ status: "", comments: "" });
+      setUpdateData({ status: "" });
     }
     
     setShowUpdateDialog(true);
   };
 
   const handleSaveUpdate = () => {
-    const { status, comments } = updateData;
+    const { status } = updateData;
     
-    if ((!status || status === "no-change") && !comments.trim()) {
+    if (!status || status === "no-change") {
       toast({
         title: "No Changes",
-        description: "Please update at least one field.",
+        description: "Please select a status to update.",
         variant: "destructive",
       });
       return;
     }
     
     const selectedIds = Array.from(selectedWorkOrders);
-    const updates: { status?: string; comments?: string } = {};
+    const updates: { status?: string } = {};
     
     if (status && status !== "no-change") updates.status = status;
-    if (comments.trim()) updates.comments = comments;
     
     updateWorkOrderMutation.mutate({
       workOrderIds: selectedIds,
@@ -851,22 +848,8 @@ export default function RepairShop() {
             </Select>
           </div>
           
-          {/* Comments Update */}
-          <div>
-            <label className="text-sm font-medium text-gray-300 mb-2 block">
-              Comments (optional)
-            </label>
-            <Textarea
-              value={updateData.comments}
-              onChange={(e) => setUpdateData(prev => ({ ...prev, comments: e.target.value }))}
-              placeholder="Add or update comments for these work orders..."
-              className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[80px]"
-              data-testid="textarea-update-comments"
-            />
-          </div>
-          
           <div className="text-xs text-gray-400 bg-gray-700 p-2 rounded">
-            💡 You can update status, comments, or both. Changes will be applied to all {selectedWorkOrders.size} selected work order(s).
+            💡 Status changes will be applied to all {selectedWorkOrders.size} selected work order(s). Use individual work order details for adding comments.
           </div>
         </div>
       </Dialog>
