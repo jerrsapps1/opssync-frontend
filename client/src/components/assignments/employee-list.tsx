@@ -49,10 +49,12 @@ export function EmployeeList({ employees, projects, isLoading }: EmployeeListPro
   // Dashboard shows only unassigned employees - assigned employees live on project pages
   const availableEmployees = employees.filter(emp => !emp.currentProjectId);
   
-  // Sort employees alphabetically by name
-  const sortedEmployees = [...availableEmployees].sort((a, b) => 
-    a.name.localeCompare(b.name)
-  );
+  // Sort employees alphabetically by name - force new array and explicit sorting
+  const sortedEmployees = [...availableEmployees].sort((a, b) => {
+    const nameA = (a.name || '').toLowerCase().trim();
+    const nameB = (b.name || '').toLowerCase().trim();
+    return nameA.localeCompare(nameB);
+  });
 
   // Use all sorted employees directly
   const filteredEmployees = sortedEmployees;
