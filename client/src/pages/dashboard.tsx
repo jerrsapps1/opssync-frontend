@@ -1,167 +1,161 @@
-// Removed Chakra UI imports - using Tailwind classes instead
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { useNavigate } from "react-router-dom";
-import { Box, Alert as ChakraAlert, AlertIcon, AlertTitle, AlertDescription as ChakraAlertDescription, CloseButton } from "@chakra-ui/react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 
-import { ProjectList } from "@/components/assignments/project-list";
-import { EmployeeList } from "@/components/assignments/employee-list";
-import { EquipmentList } from "@/components/assignments/equipment-list";
-import ProjectCountsBar from "@/components/dashboard/ProjectCountsBar";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import FieldFriendlyRAGPanel from "@/partials/FieldFriendlyRAGPanel";
-import { useTenantFeatures } from "@/hooks/useTenantFeatures";
-import { useApp } from "@/App";
-import { useDragDrop } from "@/hooks/use-drag-drop";
-import { apiRequest } from "@/lib/queryClient";
-import type { Project, Employee, Equipment } from "@shared/schema";
+type Project = {
+  id: string;
+  name: string;
+  description?: string;
+};
 
-function ConflictAlert({ conflicts, onClose }: { conflicts: any; onClose: () => void }) {
-  const hasConflicts =
-    conflicts.employeeConflicts.length > 0 || conflicts.equipmentConflicts.length > 0;
+type Employee = {
+  id: string;
+  name: string;
+  currentProjectId?: string;
+};
 
-  if (!hasConflicts) return null;
-
-  return (
-    <ChakraAlert status="error" mb={4}>
-      <AlertIcon />
-      <Box flex="1">
-        <AlertTitle mr={2}>Assignment Conflicts Detected!</AlertTitle>
-        <ChakraAlertDescription>
-          {conflicts.employeeConflicts.length > 0 && (
-            <div>
-              Employees: {conflicts.employeeConflicts.map((e: any) => e.name).join(", ")}
-            </div>
-          )}
-          {conflicts.equipmentConflicts.length > 0 && (
-            <div>
-              Equipment: {conflicts.equipmentConflicts.map((e: any) => e.name).join(", ")}
-            </div>
-          )}
-        </ChakraAlertDescription>
-      </Box>
-      <CloseButton onClick={onClose} />
-    </ChakraAlert>
-  );
-}
+type Equipment = {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  currentProjectId?: string;
+};
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { handleDragEnd, isAssigning } = useDragDrop();
-  const appContext = useApp();
-  const queryClient = useQueryClient();
-  const { features, loading: featuresLoading } = useTenantFeatures();
-
-  // Provide default conflicts state if context is not available
-  const conflicts = appContext?.conflicts || { employeeConflicts: [], equipmentConflicts: [] };
-  const alertDismissed = appContext?.alertDismissed || false;
-  const setAlertDismissed = appContext?.setAlertDismissed || (() => {});
-
-  const { data: projects = [], isLoading: projectsLoading, error: projectsError } = useQuery<Project[]>({
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api", "projects"],
   });
 
-  const { data: employees = [], isLoading: employeesLoading, error: employeesError } = useQuery<Employee[]>({
+  const { data: employees = [], isLoading: employeesLoading } = useQuery<Employee[]>({
     queryKey: ["/api", "employees"],
   });
 
-  const { data: equipment = [], isLoading: equipmentLoading, error: equipmentError } = useQuery<Equipment[]>({
+  const { data: equipment = [], isLoading: equipmentLoading } = useQuery<Equipment[]>({
     queryKey: ["/api", "equipment"],
   });
 
   const isLoading = projectsLoading || employeesLoading || equipmentLoading;
 
-  // Calculate filtered counts for dashboard display
-  const unassignedEmployees = employees.filter(emp => !emp.currentProjectId);
-  const unassignedEquipment = equipment.filter(eq => !eq.currentProjectId);
-  
-  // Debug logging
-  console.log("Dashboard data:", { 
-    projects: projects.length, 
-    unassignedEmployees: unassignedEmployees.length, 
-    unassignedEquipment: unassignedEquipment.length,
-    totalEmployees: employees.length,
-    totalEquipment: equipment.length,
-    isLoading,
-    errors: { projectsError, employeesError, equipmentError }
-  });
-
-
-
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900 text-white">
-        Loading OpsSync.ai...
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-xl">Loading OpsSync.ai Dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
-      <DashboardHeader />
-      
-      {/* Conflict Alerts */}
-      {!alertDismissed && (
-        <Box p={4}>
-          <ConflictAlert 
-            conflicts={conflicts} 
-            onClose={() => setAlertDismissed(true)} 
-          />
-        </Box>
-      )}
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gray-800 border-b border-gray-700 p-6">
+        <h1 className="text-3xl font-bold text-blue-400">OpsSync.ai Dashboard</h1>
+        <p className="text-gray-300 mt-2">Repair Shop Management System</p>
+      </div>
 
-      {/* SLA / RAG Overview Panel - Feature Gated */}
-      {!featuresLoading && (features?.sla || features?.manager) && (
-        <div className="p-4">
-          <FieldFriendlyRAGPanel />
+      {/* Stats Overview */}
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-blue-400 mb-2">Projects</h3>
+            <div className="text-3xl font-bold">{projects.length}</div>
+            <p className="text-gray-400">Active projects</p>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-green-400 mb-2">Employees</h3>
+            <div className="text-3xl font-bold">{employees.length}</div>
+            <p className="text-gray-400">Team members</p>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-orange-400 mb-2">Equipment</h3>
+            <div className="text-3xl font-bold">{equipment.length}</div>
+            <p className="text-gray-400">Assets tracked</p>
+          </div>
         </div>
-      )}
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        {/* Project Counts */}
-        <div className="p-4 bg-gray-800 border-b border-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-400">
-              Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-gray-500">
-                Drag equipment here to create repair work orders →
-              </span>
-              
-              {/* Repair Shop Drop Zone */}
-              <Droppable droppableId="repair-shop">
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-lg border-2 border-dashed transition-colors cursor-pointer min-h-12 ${
-                    snapshot.isDraggingOver
-                      ? "border-orange-400 bg-orange-900/30 scale-105"
-                      : "border-orange-600 bg-orange-900/10 hover:bg-orange-900/20"
-                  }`}
-                  onClick={() => navigate('/repair-shop')}
-                  data-testid="repair-shop-drop-zone"
-                >
-                  <span className="text-orange-400 text-lg">🔧</span>
-                  <span className="text-sm text-orange-300 font-medium">
-                    Repair Shop ({equipment.filter(eq => !eq.currentProjectId && eq.status === "maintenance").length})
-                  </span>
-                  {provided.placeholder}
-                </div>
+        {/* Content Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Projects */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-xl font-semibold mb-4 text-blue-400">Projects</h3>
+            <div className="space-y-3">
+              {projects.length > 0 ? (
+                projects.map((project) => (
+                  <div key={project.id} className="p-3 bg-gray-700 rounded border-l-4 border-blue-400">
+                    <div className="font-medium">{project.name}</div>
+                    {project.description && (
+                      <div className="text-sm text-gray-400 mt-1">{project.description}</div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-center py-8">No projects yet</div>
               )}
-            </Droppable>
+            </div>
+          </div>
+
+          {/* Employees */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-xl font-semibold mb-4 text-green-400">Employees</h3>
+            <div className="space-y-3">
+              {employees.length > 0 ? (
+                employees.map((employee) => (
+                  <div key={employee.id} className="p-3 bg-gray-700 rounded border-l-4 border-green-400">
+                    <div className="font-medium">{employee.name}</div>
+                    <div className="text-sm text-gray-400">
+                      {employee.currentProjectId ? 'Assigned' : 'Available'}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-center py-8">No employees yet</div>
+              )}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-xl font-semibold mb-4 text-orange-400">Equipment</h3>
+            <div className="space-y-3">
+              {equipment.length > 0 ? (
+                equipment.map((item) => (
+                  <div key={item.id} className="p-3 bg-gray-700 rounded border-l-4 border-orange-400">
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-sm text-gray-400">
+                      {item.type} • {item.status}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-center py-8">No equipment yet</div>
+              )}
             </div>
           </div>
         </div>
-        
-        <div className="flex" style={{ height: "calc(100vh - 180px)" }}>
-          <ProjectList projects={projects} employees={employees} equipment={equipment} />
-          <EmployeeList employees={employees} projects={projects} isLoading={isLoading} />
-          <EquipmentList equipment={equipment} projects={projects} isLoading={isLoading} />
+
+        {/* Repair Shop Section */}
+        <div className="mt-8 bg-gray-800 p-6 rounded-lg">
+          <h3 className="text-xl font-semibold mb-4 text-orange-400">🔧 Repair Shop</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-orange-900/20 rounded border border-orange-600">
+              <h4 className="font-semibold text-orange-300 mb-2">Assets Needing Repairs</h4>
+              <div className="text-2xl font-bold text-orange-400">
+                {equipment.filter(eq => eq.status === "maintenance" || eq.status === "broken").length}
+              </div>
+              <p className="text-gray-400 text-sm">Items requiring attention</p>
+            </div>
+            
+            <div className="p-4 bg-green-900/20 rounded border border-green-600">
+              <h4 className="font-semibold text-green-300 mb-2">Available Equipment</h4>
+              <div className="text-2xl font-bold text-green-400">
+                {equipment.filter(eq => eq.status === "available").length}
+              </div>
+              <p className="text-gray-400 text-sm">Ready for deployment</p>
+            </div>
+          </div>
         </div>
-      </DragDropContext>
+      </div>
     </div>
   );
 }
