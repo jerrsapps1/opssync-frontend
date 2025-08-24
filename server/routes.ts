@@ -1837,22 +1837,36 @@ Rules:
   });
 
   app.post('/api/messages/threads', async (req, res) => {
+    console.log('=== MESSAGE THREAD CREATION START ===');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
     try {
-      console.log('Creating message thread directly with data:', req.body);
       const { topic, createdBy } = req.body;
+      console.log('Extracted data:', { topic, createdBy });
       
-      const result = await db.execute(sql`
-        INSERT INTO message_threads (topic, created_by, created_at, updated_at) 
-        VALUES (${topic}, ${createdBy}, NOW(), NOW()) 
-        RETURNING *
-      `);
+      // Simple manual query to avoid any ORM issues
+      console.log('About to execute SQL query...');
+      const query = `INSERT INTO message_threads (topic, created_by, created_at, updated_at) VALUES ('${topic}', '${createdBy}', NOW(), NOW()) RETURNING *`;
+      console.log('SQL Query:', query);
       
-      console.log('Direct created thread:', result.rows[0]);
-      res.status(201).json(result.rows[0]);
+      const result = await db.execute(sql`INSERT INTO message_threads (topic, created_by, created_at, updated_at) VALUES (${topic}, ${createdBy}, NOW(), NOW()) RETURNING *`);
+      console.log('Query executed successfully');
+      console.log('Result:', result);
+      
+      const createdThread = result.rows[0];
+      console.log('Created thread data:', createdThread);
+      
+      res.status(201).json(createdThread);
+      console.log('Response sent successfully');
     } catch (error) {
-      console.error('Direct create message thread error:', error);
+      console.error('=== ERROR IN MESSAGE THREAD CREATION ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       res.status(500).json({ error: 'Failed to create message thread', details: error.message });
     }
+    console.log('=== MESSAGE THREAD CREATION END ===');
   });
 
   // Simple message test endpoint
