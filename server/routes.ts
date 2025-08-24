@@ -1818,69 +1818,45 @@ Rules:
     }
   });
 
-  // Direct message endpoints to bypass router issues
-  app.get('/api/messages/test-direct', (req, res) => {
-    console.log('Direct message test endpoint hit!');
-    res.json({ status: 'working from direct route', timestamp: new Date().toISOString() });
-  });
-
-  app.get('/api/messages/threads', async (req, res) => {
-    try {
-      console.log('Getting message threads directly...');
-      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
-      console.log('Direct message threads result:', result.rows.length);
-      res.json(result.rows);
-    } catch (error) {
-      console.error('Direct get message threads error:', error);
-      res.status(500).json({ error: 'Failed to fetch message threads', details: error.message });
-    }
-  });
-
+  // Direct message endpoints BEFORE the router to avoid conflicts
   app.post('/api/messages/threads', async (req, res) => {
-    console.log('=== MESSAGE THREAD CREATION START ===');
+    console.log('=== DIRECT MESSAGE THREAD CREATION START ===');
+    console.log('Request received at POST /api/messages/threads');
     console.log('Request body:', req.body);
-    console.log('Request headers:', req.headers);
     
     try {
       const { topic, createdBy } = req.body;
-      console.log('Extracted data:', { topic, createdBy });
-      
-      // Simple manual query to avoid any ORM issues
-      console.log('About to execute SQL query...');
-      const query = `INSERT INTO message_threads (topic, created_by, created_at, updated_at) VALUES ('${topic}', '${createdBy}', NOW(), NOW()) RETURNING *`;
-      console.log('SQL Query:', query);
+      console.log('About to create thread:', { topic, createdBy });
       
       const result = await db.execute(sql`INSERT INTO message_threads (topic, created_by, created_at, updated_at) VALUES (${topic}, ${createdBy}, NOW(), NOW()) RETURNING *`);
-      console.log('Query executed successfully');
-      console.log('Result:', result);
+      console.log('Thread created successfully:', result.rows[0]);
       
-      const createdThread = result.rows[0];
-      console.log('Created thread data:', createdThread);
-      
-      res.status(201).json(createdThread);
-      console.log('Response sent successfully');
+      res.status(201).json(result.rows[0]);
     } catch (error) {
-      console.error('=== ERROR IN MESSAGE THREAD CREATION ===');
-      console.error('Error details:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('Thread creation failed:', error);
       res.status(500).json({ error: 'Failed to create message thread', details: error.message });
     }
-    console.log('=== MESSAGE THREAD CREATION END ===');
   });
 
-  // Simple message test endpoint
-  app.get('/api/test/messages', async (req, res) => {
+  app.get('/api/messages/threads', async (req, res) => {
+    console.log('=== GETTING MESSAGE THREADS ===');
     try {
-      const threads = await storage.getMessageThreads();
-      res.json({ success: true, threads, count: threads.length });
+      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
+      console.log('Found threads:', result.rows.length);
+      res.json(result.rows);
     } catch (error) {
-      console.error('Message test error:', error);
-      res.status(500).json({ error: 'Failed to test messages', details: error.message });
+      console.error('Get threads failed:', error);
+      res.status(500).json({ error: 'Failed to fetch message threads' });
     }
   });
 
-  // Messages
+  // Test endpoint
+  app.get('/api/messages/test-direct', (req, res) => {
+    console.log('Test endpoint hit!');
+    res.json({ status: 'working', timestamp: new Date().toISOString() });
+  });
+
+  // Messages router (this will handle other routes like /api/messages/search)
   app.use("/api/messages", messagesRouter);
 
   // StaffTrak: Branding & White Label controls
