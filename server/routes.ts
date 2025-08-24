@@ -1818,24 +1818,24 @@ Rules:
     }
   });
 
-  // Completely separate message endpoints to avoid any routing conflicts
-  app.post('/api/msg/create-thread', async (req, res) => {
-    console.log('=== NEW MESSAGE THREAD CREATION START ===');
-    console.log('Request received at POST /api/msg/create-thread');
+  // Simple test endpoint that must work
+  app.get('/api/simple-test', (req, res) => {
+    console.log('Simple test endpoint hit successfully!');
+    res.json({ status: 'endpoint working', time: new Date().toISOString() });
+  });
+
+  // Completely separate message endpoints to avoid any routing conflicts  
+  app.post('/api/msg/create-thread', (req, res) => {
+    console.log('=== MESSAGE THREAD ENDPOINT HIT ===');
     console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
     
-    try {
-      const { topic, createdBy } = req.body;
-      console.log('About to create thread:', { topic, createdBy });
-      
-      const result = await db.execute(sql`INSERT INTO message_threads (topic, created_by, created_at, updated_at) VALUES (${topic}, ${createdBy}, NOW(), NOW()) RETURNING *`);
-      console.log('Thread created successfully:', result.rows[0]);
-      
-      res.status(201).json(result.rows[0]);
-    } catch (error) {
-      console.error('Thread creation failed:', error);
-      res.status(500).json({ error: 'Failed to create message thread', details: error.message });
-    }
+    // Simple response without database for now to test connectivity
+    res.status(201).json({ 
+      success: true, 
+      message: 'Endpoint reached successfully',
+      data: req.body 
+    });
   });
 
   app.get('/api/msg/threads', async (req, res) => {
