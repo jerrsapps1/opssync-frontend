@@ -86,12 +86,6 @@ export default function Dashboard() {
     errors: { projectsError, employeesError, equipmentError }
   });
 
-  // Function to refresh all data
-  const refreshData = () => {
-    queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
-    queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
-    queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
-  };
 
 
 
@@ -127,19 +121,8 @@ export default function Dashboard() {
       <DragDropContext onDragEnd={handleDragEnd}>
         {/* Project Counts */}
         <div className="p-4 bg-gray-800 border-b border-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-400">
-              Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
-            </div>
-            <Button
-              size="sm"
-              colorScheme="blue"
-              variant="outline"
-              onClick={refreshData}
-              isDisabled={isLoading}
-            >
-              Refresh Data
-            </Button>
+          <div className="text-sm text-gray-400 mb-4">
+            Projects: {projects.length} | Employees: {employees.length} | Equipment: {equipment.length}
           </div>
             
           <div className="flex items-center gap-4 mt-4">
