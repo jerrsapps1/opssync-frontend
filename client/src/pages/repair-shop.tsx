@@ -77,6 +77,7 @@ export default function RepairShop() {
   const [workOrderComments, setWorkOrderComments] = useState<Record<string, WorkOrderComment[]>>({});
   const [newComment, setNewComment] = useState("");
   const [loadedComments, setLoadedComments] = useState<Set<string>>(new Set());
+  const [showAvailableEquipment, setShowAvailableEquipment] = useState(false);
   
 
   const { data: repairEquipment = [], isLoading } = useQuery({
@@ -84,10 +85,47 @@ export default function RepairShop() {
     queryFn: getRepairShopEquipment,
   });
 
+  const { data: allEquipment = [] } = useQuery({
+    queryKey: ["/api", "equipment"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/equipment");
+      return response.json();
+    },
+  });
+
+  // Get available equipment (not in repair shop, not assigned to projects)
+  const availableEquipment = allEquipment.filter((eq: Equipment) => 
+    !eq.currentProjectId && eq.status !== "maintenance"
+  );
+
 
   const { data: workOrders = [] } = useQuery({
     queryKey: ["/api", "work-orders"],
     queryFn: () => getWorkOrders(),
+  });
+
+  const sendToRepairMutation = useMutation({
+    mutationFn: async (equipmentId: string) => {
+      const response = await apiRequest("PATCH", `/api/equipment/${equipmentId}/assignment`, {
+        projectId: "repair-shop"
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api", "repair-shop", "equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      toast({
+        title: "Equipment Sent to Repair Shop",
+        description: "Equipment has been moved to the repair shop.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send equipment to repair shop",
+        variant: "destructive",
+      });
+    }
   });
 
   const completeRepairMutation = useMutation({
@@ -487,6 +525,51 @@ export default function RepairShop() {
               </div>
             )}
           </div>
+
+          {/* Add More Equipment Section */}
+          {availableEquipment.length > 0 && (
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mt-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer" 
+                onClick={() => setShowAvailableEquipment(!showAvailableEquipment)}
+              >
+                <h3 className="text-white text-sm font-semibold flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add More Equipment to Repair Shop ({availableEquipment.length} available)
+                </h3>
+                <div className="text-gray-400">
+                  {showAvailableEquipment ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
+              </div>
+              
+              {showAvailableEquipment && (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {availableEquipment.map((equipment) => (
+                    <div
+                      key={equipment.id}
+                      className="bg-gray-700 border border-gray-600 rounded p-3 flex items-center justify-between"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-medium text-sm truncate">
+                          {equipment.name}
+                        </h4>
+                        <p className="text-gray-400 text-xs">{equipment.type}</p>
+                      </div>
+                      <Button
+                        onClick={() => sendToRepairMutation.mutate(equipment.id)}
+                        disabled={sendToRepairMutation.isPending}
+                        size="sm"
+                        className="ml-2 bg-blue-600 hover:bg-blue-500 text-xs px-2 py-1"
+                        data-testid={`button-send-${equipment.id}`}
+                      >
+                        {sendToRepairMutation.isPending ? "..." : "Send"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Work Order Activity Log */}
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 mt-6">
