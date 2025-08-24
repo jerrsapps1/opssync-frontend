@@ -70,6 +70,7 @@ export const queryClient = new QueryClient({
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: 0, // No stale time for immediate updates
+      cacheTime: 0, // No cache time to force fresh data
       retry: 1,
     },
     mutations: {

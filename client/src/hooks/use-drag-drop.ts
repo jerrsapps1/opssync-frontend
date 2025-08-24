@@ -122,11 +122,13 @@ export function useDragDrop() {
       );
       queryClient.setQueryData(["/api", "employees"], updatedEmployees);
       
-      // Also force a complete refresh to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["/api"] });
+      // Force immediate refetch to ensure fresh data
+      await queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
+      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
       
       console.log("✅ EMPLOYEE SUCCESS:", variables.employeeId, "assigned to", variables.projectId);
       console.log("🔄 Updated cache with new employee data:", employee);
+      console.log("📊 Current unassigned count should decrease now");
     },
     onError: (error) => {
       toast({
@@ -206,11 +208,13 @@ export function useDragDrop() {
       );
       queryClient.setQueryData(["/api", "equipment"], updatedEquipment);
       
-      // Also force a complete refresh to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ["/api"] });
+      // Force immediate refetch to ensure fresh data
+      await queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
+      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
       
       console.log("✅ EQUIPMENT SUCCESS:", variables.equipmentId, "assigned to", variables.projectId);
       console.log("🔄 Updated cache with new equipment data:", equipment);
+      console.log("📊 Current unassigned count should decrease now");
       
       // If equipment was assigned to repair shop, also invalidate repair shop queries
       if (variables.projectId === "repair-shop") {
