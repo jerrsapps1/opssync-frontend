@@ -643,23 +643,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let importedCount = 0;
       let errors: string[] = [];
 
-      for (const [index, row] of jsonData.entries()) {
+      for (const [index, row] of Array.from(jsonData.entries())) {
         try {
+          const rowData = row as any;
           // Skip header rows or instruction rows
-          if (!row['Name'] || row['Name'].toString().toLowerCase().includes('template') || 
-              row['Name'].toString().toLowerCase().includes('instruction')) {
+          if (!rowData['Name'] || rowData['Name'].toString().toLowerCase().includes('template') || 
+              rowData['Name'].toString().toLowerCase().includes('instruction')) {
             continue;
           }
 
           const employeeData = {
-            name: row['Name']?.toString().trim(),
-            role: row['Role']?.toString().trim(),
-            email: row['Email']?.toString().trim() || undefined,
-            phone: row['Phone']?.toString().trim() || undefined,
-            employmentStatus: row['Employment Status']?.toString().trim() || 'active',
-            yearsExperience: parseInt(row['Years Experience']?.toString()) || 0,
-            operates: row['Equipment Operated'] ? 
-              row['Equipment Operated'].toString().split(',').map(s => s.trim()).filter(s => s) : []
+            name: rowData['Name']?.toString().trim(),
+            role: rowData['Role']?.toString().trim(),
+            email: rowData['Email']?.toString().trim() || undefined,
+            phone: rowData['Phone']?.toString().trim() || undefined,
+            employmentStatus: rowData['Employment Status']?.toString().trim() || 'active',
+            yearsExperience: parseInt(rowData['Years Experience']?.toString()) || 0,
+            operates: rowData['Equipment Operated'] ? 
+              rowData['Equipment Operated'].toString().split(',').map((s: string) => s.trim()).filter((s: string) => s) : []
           };
 
           // Validate required fields
@@ -671,9 +672,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create employee through storage
           await storage.createEmployee(employeeData);
           importedCount++;
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Error importing row ${index + 1}:`, error);
-          errors.push(`Row ${index + 1}: ${error.message || 'Failed to import'}`);
+          errors.push(`Row ${index + 1}: ${error?.message || 'Failed to import'}`);
         }
       }
 
@@ -955,7 +956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🚜 Equipment Excel Export: Found ${equipment.length} equipment items`);
       
       // Transform equipment data for Excel export
-      const exportData = equipment.map((eq, index) => ({
+      const exportData = equipment.map((eq: any, index: number) => ({
         'Row': index + 1,
         'Name': eq.name,
         'Type': eq.type || '',
@@ -984,8 +985,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       
       // Add all data rows
-      exportData.forEach(row => {
-        worksheetData.push(Object.values(row).map(v => v?.toString() || ''));
+      exportData.forEach((row: any) => {
+        worksheetData.push(Object.values(row).map((v: any) => v?.toString() || ''));
       });
       
       // Create worksheet from the 2D array
@@ -1044,7 +1045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let yPosition = 110;
       
-      equipment.forEach((eq, index) => {
+      equipment.forEach((eq: any, index: number) => {
         if (yPosition > 700) {
           doc.addPage();
           yPosition = 50;
@@ -1369,7 +1370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/logo/upload-url", async (req, res) => {
     try {
       const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getLogoUploadURL();
+      const uploadURL = await objectStorageService.getWorkOrderDocumentUploadURL();
       res.json({ uploadURL });
     } catch (error) {
       console.error("Error generating logo upload URL:", error);
@@ -1532,7 +1533,7 @@ Rules:
   app.use("/api/supervisor", supervisorRouter);
   
   // Apply mock auth for development
-  app.use(mockAuth());
+  app.use('/api', mockAuth);
 
   // Mount routes conditionally based on feature flags
   if (features.SLA) {
