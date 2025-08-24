@@ -1004,32 +1004,7 @@ export default function RepairShop() {
             Create Work Order - {createWorkOrderEquipment?.name}
           </div>
         }
-        footer={
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setCreateWorkOrderEquipment(null)}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={createWorkOrderMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-500"
-              data-testid="button-create-workorder"
-              onClick={() => {
-                console.log("🔧 Create Work Order button clicked!");
-                console.log("🔧 Form valid?", form.formState.isValid);
-                console.log("🔧 Form errors:", form.formState.errors);
-                console.log("🔧 Form values:", form.getValues());
-                console.log("🔧 Form state:", form.formState);
-              }}
-            >
-              {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
-            </Button>
-          </div>
-        }
+        footer={null}
       >
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmitWorkOrder)}>
@@ -1116,6 +1091,33 @@ export default function RepairShop() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Submit buttons inside the form */}
+            <div className="flex gap-3 justify-end pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCreateWorkOrderEquipment(null)}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createWorkOrderMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-500"
+                data-testid="button-create-workorder"
+                onClick={() => {
+                  console.log("🔧 Create Work Order button clicked!");
+                  console.log("🔧 Form valid?", form.formState.isValid);
+                  console.log("🔧 Form errors:", form.formState.errors);
+                  console.log("🔧 Form values:", form.getValues());
+                  console.log("🔧 Form state:", form.formState);
+                }}
+              >
+                {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
+              </Button>
             </div>
           </form>
         </Form>
