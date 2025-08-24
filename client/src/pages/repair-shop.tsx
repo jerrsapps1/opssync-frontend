@@ -480,7 +480,7 @@ export default function RepairShop() {
                                       <Badge className={`${getPriorityColor(workOrder.priority)} text-xs px-1 py-0`}>
                                         {workOrder.priority.toUpperCase()}
                                       </Badge>
-                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-1 py-0`}>
+                                      <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[90px] text-center`}>
                                         {workOrder.status.toUpperCase()}
                                       </Badge>
                                     </div>
@@ -710,7 +710,7 @@ export default function RepairShop() {
                         </div>
                         
                         <div className="col-span-1">
-                          <Badge className={`${getStatusColor(workOrder.status)} text-xs`}>
+                          <Badge className={`${getStatusColor(workOrder.status)} text-xs px-2 py-1 min-w-[90px] text-center`}>
                             {workOrder.status.toUpperCase()}
                           </Badge>
                         </div>
