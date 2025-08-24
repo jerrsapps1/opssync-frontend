@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
@@ -721,62 +721,94 @@ export default function RepairShop() {
                           
                           <div className="grid grid-cols-1 gap-6">
                             <div>
-                              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                              <h4 className="text-white font-medium mb-4 flex items-center gap-2">
                                 <MessageCircle className="h-4 w-4" />
-                                Comments Thread
+                                Messages
                               </h4>
                               
-                              {/* Comments will load automatically via useEffect when expanded */}
-                              
-                              <div className="space-y-3">
-                                {/* Comment History */}
-                                {workOrderComments[workOrder.id] && workOrderComments[workOrder.id].length > 0 ? (
-                                  workOrderComments[workOrder.id].map((comment, index) => (
-                                    <div key={comment.id} className="bg-gray-700 p-3 rounded border-l-2 border-blue-400">
-                                      <div className="flex justify-between items-start mb-2">
-                                        <span className="text-blue-400 text-xs font-medium">
-                                          Comment #{workOrderComments[workOrder.id].length - index}
-                                        </span>
-                                        <span className="text-gray-400 text-xs">
-                                          {format(new Date(comment.createdAt || new Date()), "MMM dd, yyyy 'at' h:mm a")} by {user?.username || comment.createdBy}
-                                        </span>
-                                      </div>
-                                      <div className="text-gray-300 text-sm">
-                                        {comment.comment}
-                                      </div>
+                              {/* Chat Messages Container */}
+                              <div className="bg-gray-800 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                <div className="space-y-3">
+                                  {/* Chat Messages */}
+                                  {workOrderComments[workOrder.id] && workOrderComments[workOrder.id].length > 0 ? (
+                                    workOrderComments[workOrder.id].map((comment) => {
+                                      const username = user?.username || comment.createdBy || 'User';
+                                      const initials = username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                                      const timeAgo = formatDistanceToNow(new Date(comment.createdAt || new Date()), { addSuffix: true });
+                                      
+                                      return (
+                                        <div key={comment.id} className="flex gap-3">
+                                          {/* User Avatar */}
+                                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-medium shrink-0">
+                                            {initials}
+                                          </div>
+                                          
+                                          {/* Message Bubble */}
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <span className="text-blue-400 text-sm font-medium">{username}</span>
+                                              <span className="text-gray-500 text-xs">{timeAgo}</span>
+                                            </div>
+                                            <div className="bg-gray-700 rounded-lg rounded-tl-none p-3">
+                                              <div className="text-gray-200 text-sm leading-relaxed">
+                                                {comment.comment}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })
+                                  ) : (
+                                    <div className="text-center text-gray-400 text-sm py-8">
+                                      <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                      <p>No messages yet. Start the conversation!</p>
                                     </div>
-                                  ))
-                                ) : (
-                                  <div className="text-gray-400 italic text-sm">No comments yet. Add the first comment below.</div>
-                                )}
-                                
-                                {/* Add New Comment */}
-                                <div className="border-t border-gray-600 pt-3">
-                                  <div className="flex gap-2">
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Message Input */}
+                              <div className="mt-4 bg-gray-800 rounded-lg p-3">
+                                <div className="flex gap-3 items-end">
+                                  <div className="flex-1">
                                     <Textarea
-                                      placeholder="Add a comment..."
+                                      placeholder="Type a message..."
                                       value={newComment}
                                       onChange={(e) => setNewComment(e.target.value)}
-                                      className="bg-gray-800 border-gray-600 text-white text-sm resize-none"
-                                      rows={2}
-                                      data-testid={`textarea-comment-${workOrder.id}`}
-                                    />
-                                    <Button
-                                      onClick={() => {
-                                        if (newComment.trim()) {
-                                          createCommentMutation.mutate({
-                                            workOrderId: workOrder.id,
-                                            comment: newComment.trim()
-                                          });
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                          e.preventDefault();
+                                          if (newComment.trim()) {
+                                            createCommentMutation.mutate({
+                                              workOrderId: workOrder.id,
+                                              comment: newComment.trim()
+                                            });
+                                          }
                                         }
                                       }}
-                                      disabled={!newComment.trim() || createCommentMutation.isPending}
-                                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 shrink-0"
-                                      data-testid={`button-add-comment-${workOrder.id}`}
-                                    >
-                                      {createCommentMutation.isPending ? "Adding..." : "Add Comment"}
-                                    </Button>
+                                      className="bg-gray-700 border-gray-600 text-white text-sm resize-none rounded-lg"
+                                      rows={1}
+                                      data-testid={`textarea-comment-${workOrder.id}`}
+                                    />
                                   </div>
+                                  <Button
+                                    onClick={() => {
+                                      if (newComment.trim()) {
+                                        createCommentMutation.mutate({
+                                          workOrderId: workOrder.id,
+                                          comment: newComment.trim()
+                                        });
+                                      }
+                                    }}
+                                    disabled={!newComment.trim() || createCommentMutation.isPending}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shrink-0"
+                                    data-testid={`button-add-comment-${workOrder.id}`}
+                                  >
+                                    {createCommentMutation.isPending ? "..." : "Send"}
+                                  </Button>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-2">
+                                  Press Enter to send, Shift+Enter for new line
                                 </div>
                               </div>
                             </div>
