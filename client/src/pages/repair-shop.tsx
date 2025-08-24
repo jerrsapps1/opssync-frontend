@@ -184,7 +184,7 @@ export default function RepairShop() {
   const handleSaveUpdate = () => {
     const { status, comments } = updateData;
     
-    if (!status && !comments.trim()) {
+    if ((!status || status === "no-change") && !comments.trim()) {
       toast({
         title: "No Changes",
         description: "Please update at least one field.",
@@ -196,7 +196,7 @@ export default function RepairShop() {
     const selectedIds = Array.from(selectedWorkOrders);
     const updates: { status?: string; comments?: string } = {};
     
-    if (status) updates.status = status;
+    if (status && status !== "no-change") updates.status = status;
     if (comments.trim()) updates.comments = comments;
     
     updateWorkOrderMutation.mutate({
@@ -414,9 +414,6 @@ export default function RepairShop() {
                                     {workOrder.assignedTo && (
                                       <div><strong>Assigned to:</strong> {workOrder.assignedTo}</div>
                                     )}
-                                    {workOrder.estimatedCost && (
-                                      <div><strong>Est. Cost:</strong> ${(workOrder.estimatedCost / 100).toFixed(2)}</div>
-                                    )}
                                     {workOrder.notes && (
                                       <div><strong>Notes:</strong> {workOrder.notes}</div>
                                     )}
@@ -575,10 +572,6 @@ export default function RepairShop() {
                   Comments
                 </div>
                 
-                <div className="col-span-1 flex items-center gap-1">
-                  <DollarSign className="h-4 w-4" />
-                  Cost
-                </div>
               </div>
             </div>
 
@@ -686,20 +679,6 @@ export default function RepairShop() {
                           </div>
                         </div>
                         
-                        <div className="col-span-1 text-sm">
-                          <div className="text-white">
-                            {workOrder.estimatedCost ? (
-                              `$${(workOrder.estimatedCost / 100).toFixed(2)}`
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                          {workOrder.actualCost && (
-                            <div className="text-gray-400 text-xs">
-                              Actual: ${(workOrder.actualCost / 100).toFixed(2)}
-                            </div>
-                          )}
-                        </div>
                       </div>
                       
                       {/* Expanded Details */}
@@ -713,40 +692,6 @@ export default function RepairShop() {
                           </div>
                           
                           <div className="grid grid-cols-2 gap-6">
-                            <div>
-                              <h5 className="text-white font-medium mb-3 flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                Timeline & Details
-                              </h5>
-                              <div className="space-y-2 text-sm">
-                                <div>
-                                  <span className="text-gray-400">Reason:</span>
-                                  <span className="text-white ml-2">{workOrder.reason}</span>
-                                </div>
-                                {workOrder.dateStarted && (
-                                  <div>
-                                    <span className="text-gray-400">Started:</span>
-                                    <span className="text-white ml-2">
-                                      {format(new Date(workOrder.dateStarted), "MMM dd, yyyy h:mm a")}
-                                    </span>
-                                  </div>
-                                )}
-                                {workOrder.dateCompleted && (
-                                  <div>
-                                    <span className="text-gray-400">Completed:</span>
-                                    <span className="text-white ml-2">
-                                      {format(new Date(workOrder.dateCompleted), "MMM dd, yyyy h:mm a")}
-                                    </span>
-                                  </div>
-                                )}
-                                {workOrder.partsUsed && (
-                                  <div>
-                                    <span className="text-gray-400">Parts Used:</span>
-                                    <span className="text-white ml-2">{workOrder.partsUsed}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
                             
                             <div>
                               <h4 className="text-white font-medium mb-3">Additional Notes</h4>
@@ -826,7 +771,7 @@ export default function RepairShop() {
                 <SelectValue placeholder="Select new status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No change</SelectItem>
+                <SelectItem value="no-change">No change</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
                 <SelectItem value="in-progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
