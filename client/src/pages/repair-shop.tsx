@@ -622,38 +622,31 @@ export default function RepairShop() {
               </Select>
 
               <Button
-                onClick={handleUpdateClick}
-                size="sm"
-                variant="outline"
-                className="flex items-center gap-2 bg-blue-700 border-blue-600 text-white hover:bg-blue-600"
-                disabled={selectedWorkOrders.size === 0}
-                data-testid="button-update-workorders"
-              >
-                <Wrench className="h-4 w-4" />
-                Update ({selectedWorkOrders.size})
-              </Button>
-
-              <Button
                 onClick={() => {
-                  // For creating work orders from this section, we need to show equipment selection
-                  // For now, just show equipment selection or find first available equipment
-                  const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
-                  if (availableEquipment) {
-                    setCreateWorkOrderEquipment(availableEquipment);
+                  // If work orders are selected, update them. Otherwise, create new work order.
+                  if (selectedWorkOrders.size > 0) {
+                    handleUpdateClick();
                   } else {
-                    toast({
-                      title: "No Equipment Available",
-                      description: "All repair shop equipment already has work orders. Create work orders from the equipment cards above.",
-                      variant: "destructive",
-                    });
+                    // For creating work orders from this section, we need to show equipment selection
+                    // For now, just show equipment selection or find first available equipment
+                    const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
+                    if (availableEquipment) {
+                      setCreateWorkOrderEquipment(availableEquipment);
+                    } else {
+                      toast({
+                        title: "No Equipment Available",
+                        description: "All repair shop equipment already has work orders. Create work orders from the equipment cards above.",
+                        variant: "destructive",
+                      });
+                    }
                   }
                 }}
                 size="sm"
                 className="flex items-center gap-2 bg-green-600 border-green-500 text-white hover:bg-green-500"
-                data-testid="button-create-workorder-activity"
+                data-testid="button-create-update-workorder"
               >
                 <Plus className="h-4 w-4" />
-                Create Work Order
+                Create/Update Work Order{selectedWorkOrders.size > 0 ? ` (${selectedWorkOrders.size})` : ''}
               </Button>
               
               <div className="text-sm text-gray-400">
