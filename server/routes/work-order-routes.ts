@@ -153,33 +153,28 @@ export function registerWorkOrderRoutes(app: Express) {
   });
 
   app.post("/api/work-orders/:workOrderId/comments", async (req, res) => {
+    console.log("🚀 Comment route hit! WorkOrderId:", req.params.workOrderId);
+    console.log("🚀 Request body:", req.body);
+    
+    // Simple approach without schema validation for now
     try {
-      console.log("POST /api/work-orders/:workOrderId/comments - Request body:", req.body);
-      console.log("WorkOrderId:", req.params.workOrderId);
-      
-      // Get user from session/auth - for now using test user
-      const userId = "test-user-001"; // TODO: Get from actual session
-      
-      const dataToValidate = {
-        ...req.body,
+      const commentData = {
         workOrderId: req.params.workOrderId,
-        createdBy: userId,
-        createdAt: new Date(), // Ensure current timestamp
+        comment: req.body.comment,
+        createdBy: "test-user-001",
+        createdAt: new Date()
       };
       
-      console.log("Data to validate:", dataToValidate);
+      console.log("🚀 Creating comment with data:", commentData);
       
-      const validatedData = insertWorkOrderCommentSchema.parse(dataToValidate);
-      console.log("Validated data:", validatedData);
+      const newComment = await storage.createWorkOrderComment(commentData);
+      console.log("🚀 Successfully created comment:", newComment);
       
-      const comment = await storage.createWorkOrderComment(validatedData);
-      console.log("Created comment:", comment);
-      
-      res.json(comment);
-    } catch (error) {
-      console.error("Error creating work order comment:", error);
-      console.error("Error stack:", error.stack);
-      res.status(500).json({ error: "Failed to create comment", details: error.message });
+      res.json(newComment);
+    } catch (error: any) {
+      console.error("❌ Error creating work order comment:", error);
+      console.error("❌ Error stack:", error?.stack);
+      res.status(500).json({ error: "Failed to create comment", details: error?.message });
     }
   });
 
