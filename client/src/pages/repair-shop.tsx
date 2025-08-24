@@ -474,7 +474,7 @@ export default function RepairShop() {
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white text-lg font-semibold">
-                Assets Needing Repairs or PM ({repairEquipment.filter(eq => getWorkOrdersForEquipment(eq.id).length === 0).length})
+                Assets Needing Repairs or PM ({repairEquipment.length})
               </h3>
               {selectedItems.size > 0 && (
                 <div className="flex gap-2">
@@ -493,12 +493,12 @@ export default function RepairShop() {
               )}
             </div>
             
-            {repairEquipment.filter(eq => getWorkOrdersForEquipment(eq.id).length === 0).length === 0 ? (
+            {repairEquipment.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔧</div>
-                <h3 className="text-xl font-semibold text-white mb-2">No New Equipment Needs Work Orders</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">No Equipment in Repair</h3>
                 <p className="text-gray-400 mb-4">
-                  Equipment waiting for work orders will appear here. Equipment with active work orders is tracked in the Activity Log below.
+                  Equipment will appear here when assigned to the repair shop from the dashboard.
                 </p>
                 <div className="mt-6 p-4 border-2 border-dashed border-gray-600 rounded-lg bg-gray-800/50">
                   <div className="text-4xl mb-2">🔧</div>
@@ -507,13 +507,7 @@ export default function RepairShop() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {repairEquipment
-                  .filter((equipment) => {
-                    // Only show equipment that doesn't have work orders yet
-                    const equipmentWorkOrders = getWorkOrdersForEquipment(equipment.id);
-                    return equipmentWorkOrders.length === 0;
-                  })
-                  .map((equipment) => {
+                {repairEquipment.map((equipment) => {
                   const equipmentWorkOrders = getWorkOrdersForEquipment(equipment.id);
                   const isSelected = selectedItems.has(equipment.id);
                   
