@@ -592,7 +592,7 @@ export default function RepairShop() {
                 
                 
                 <div className="col-span-5 flex items-center gap-1">
-                  Work Order Details
+                  Details
                 </div>
                 
                 <button
