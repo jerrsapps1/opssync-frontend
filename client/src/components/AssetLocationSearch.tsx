@@ -51,20 +51,20 @@ export function AssetLocationSearch() {
   const { data: equipment = [] } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/employees"],
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   // Fetch projects data - force fresh data
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   // Create project lookup
@@ -117,13 +117,29 @@ export function AssetLocationSearch() {
 
   // Filter and create search results for employees
   const employeeResults = employees
-    .filter(emp => 
-      searchTerm.length >= 2 && 
-      ((emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-       (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-       (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-       emp.id.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter(emp => {
+      const isMatch = searchTerm.length >= 2 && 
+        ((emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+         (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+         (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+         emp.id.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Debug Test Employee matches
+      if (isMatch && emp.name.toLowerCase().includes('test')) {
+        console.log('🔍 Test Employee match for "' + searchTerm + '":', {
+          name: emp.name,
+          role: emp.role,
+          email: emp.email,
+          id: emp.id,
+          nameMatch: (emp.name || '').toLowerCase().includes(searchTerm.toLowerCase()),
+          roleMatch: (emp.role || '').toLowerCase().includes(searchTerm.toLowerCase()),
+          emailMatch: (emp.email || '').toLowerCase().includes(searchTerm.toLowerCase()),
+          idMatch: emp.id.toLowerCase().includes(searchTerm.toLowerCase())
+        });
+      }
+      
+      return isMatch;
+    })
     .map(emp => {
       let location: string;
       let locationIcon: any;
