@@ -69,9 +69,10 @@ export function useDragDrop() {
       } catch (parseError) {
         console.error("Failed to parse employee response:", parseError);
         // Fall back to forcing cache refresh without audit log
-        queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
-        queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
-        queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
+        queryClient.removeQueries({ queryKey: ["/api", "employees"] });
+        queryClient.removeQueries({ queryKey: ["/api", "projects"] });
+        await queryClient.refetchQueries({ queryKey: ["/api", "employees"], type: 'all' });
+        await queryClient.refetchQueries({ queryKey: ["/api", "projects"], type: 'all' });
         return;
       }
       
@@ -114,13 +115,19 @@ export function useDragDrop() {
         console.error("Failed to create employee audit log:", auditError);
       }
       
-      // Force immediate invalidation and refetch using consistent query keys
-      await queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
-      await queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
-      await queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
-      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
+      // Force cache to be completely cleared and refetched
+      queryClient.removeQueries({ queryKey: ["/api", "employees"] });
+      queryClient.removeQueries({ queryKey: ["/api", "projects"] });
+      
+      // Force immediate refetch with no cache
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api", "employees"], 
+        type: 'all' 
+      });
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api", "projects"], 
+        type: 'all' 
+      });
       
       console.log("✅ EMPLOYEE SUCCESS:", variables.employeeId, "assigned to", variables.projectId);
     },
@@ -149,9 +156,10 @@ export function useDragDrop() {
       } catch (parseError) {
         console.error("Failed to parse equipment response:", parseError);
         // Fall back to forcing cache refresh without audit log
-        queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
-        queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
-        queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
+        queryClient.removeQueries({ queryKey: ["/api", "equipment"] });
+        queryClient.removeQueries({ queryKey: ["/api", "projects"] });
+        await queryClient.refetchQueries({ queryKey: ["/api", "equipment"], type: 'all' });
+        await queryClient.refetchQueries({ queryKey: ["/api", "projects"], type: 'all' });
         return;
       }
       
@@ -194,13 +202,19 @@ export function useDragDrop() {
         console.error("Failed to create equipment audit log:", auditError);
       }
       
-      // Force immediate invalidation and refetch using consistent query keys
-      await queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
-      await queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
-      await queryClient.invalidateQueries({ queryKey: ["/api", "projects"] }); // Also invalidate projects to update counts
-      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api", "stats"] });
+      // Force cache to be completely cleared and refetched
+      queryClient.removeQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.removeQueries({ queryKey: ["/api", "projects"] });
+      
+      // Force immediate refetch with no cache
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api", "equipment"], 
+        type: 'all' 
+      });
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api", "projects"], 
+        type: 'all' 
+      });
       
       console.log("✅ EQUIPMENT SUCCESS:", variables.equipmentId, "assigned to", variables.projectId);
       
