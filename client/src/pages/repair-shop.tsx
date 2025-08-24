@@ -11,8 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EnhancedWorkOrderWizard } from "@/components/work-orders/EnhancedWorkOrderWizard";
-import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
+import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
 
@@ -44,9 +43,6 @@ export default function RepairShop() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [showWorkOrderWizard, setShowWorkOrderWizard] = useState(false);
-  const [editingWorkOrder, setEditingWorkOrder] = useState<WorkOrder | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const previousEquipmentCount = useRef(0);
   
@@ -63,28 +59,6 @@ export default function RepairShop() {
     queryFn: getRepairShopEquipment,
   });
 
-  // Auto-open work order wizard when new equipment is dragged to repair shop
-  useEffect(() => {
-    console.log('DEBUG: useEffect triggered - isLoading:', isLoading, 'repairEquipment.length:', repairEquipment.length, 'previousCount:', previousEquipmentCount.current);
-    if (!isLoading && repairEquipment.length > 0) {
-      // If this is the first load, just set the previous count
-      if (previousEquipmentCount.current === 0) {
-        previousEquipmentCount.current = repairEquipment.length;
-        console.log('DEBUG: First load, setting count to:', repairEquipment.length);
-        return;
-      }
-      
-      // If we have more equipment than before, auto-open wizard for the newest one
-      if (repairEquipment.length > previousEquipmentCount.current) {
-        const newestEquipment = repairEquipment[repairEquipment.length - 1];
-        console.log('DEBUG: Auto-opening wizard for:', newestEquipment.name);
-        setSelectedEquipment(newestEquipment);
-        setShowWorkOrderWizard(true);
-      }
-      
-      previousEquipmentCount.current = repairEquipment.length;
-    }
-  }, [repairEquipment, isLoading]);
 
   const { data: workOrders = [] } = useQuery({
     queryKey: ["/api", "work-orders"],
@@ -141,26 +115,6 @@ export default function RepairShop() {
     }
   };
 
-  const handleCreateWorkOrder = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setShowWorkOrderWizard(true);
-  };
-
-  const handleWorkOrderCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
-    setShowWorkOrderWizard(false);
-    setSelectedEquipment(null);
-    setEditingWorkOrder(null);
-  };
-
-  const handleEditWorkOrder = (workOrder: WorkOrder) => {
-    const equipment = repairEquipment.find(eq => eq.id === workOrder.equipmentId);
-    if (equipment) {
-      setEditingWorkOrder(workOrder);
-      setSelectedEquipment(equipment);
-      setShowWorkOrderWizard(true);
-    }
-  };
 
   const handleCompleteRepair = (equipmentId: string) => {
     completeRepairMutation.mutate(equipmentId);
@@ -283,16 +237,6 @@ export default function RepairShop() {
                 <div className="flex gap-2">
                   <Button
                     onClick={() => {
-                      const equipment = repairEquipment.find(eq => selectedItems.has(eq.id));
-                      if (equipment) handleCreateWorkOrder(equipment);
-                    }}
-                    size="sm"
-                    className="bg-orange-600 hover:bg-orange-500"
-                  >
-                    Create Work Order
-                  </Button>
-                  <Button
-                    onClick={() => {
                       selectedItems.forEach(id => handleCompleteRepair(id));
                       setSelectedItems(new Set());
                     }}
@@ -358,17 +302,6 @@ export default function RepairShop() {
                             <h4 className="text-white font-medium text-sm leading-tight">
                               {equipment.name}
                             </h4>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCreateWorkOrder(equipment);
-                              }}
-                              size="sm"
-                              className="bg-orange-600 hover:bg-orange-500 text-xs px-2 py-1 h-6"
-                              data-testid={`button-create-work-order-${equipment.id}`}
-                            >
-                              + Work Order
-                            </Button>
                           </div>
                           <p className="text-gray-400 text-xs mb-2">
                             {equipment.type}
@@ -409,7 +342,6 @@ export default function RepairShop() {
                           ) : (
                             <div className="bg-gray-600 p-2 rounded text-xs text-gray-300">
                               <p className="text-center">No work orders yet</p>
-                              <p className="text-center mt-1 text-gray-400">Click "+ Work Order" to create one</p>
                             </div>
                           )}
                         </div>
@@ -639,19 +571,6 @@ export default function RepairShop() {
                               <Clock className="h-4 w-4" />
                               Work Order Details
                             </h4>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditWorkOrder(workOrder);
-                              }}
-                              size="sm"
-                              variant="outline"
-                              className="border-blue-600 text-blue-400 hover:bg-blue-900 flex items-center gap-2"
-                              data-testid={`button-edit-workorder-${workOrder.id}`}
-                            >
-                              <Edit3 className="h-3 w-3" />
-                              Edit Work Order
-                            </Button>
                           </div>
                           
                           <div className="grid grid-cols-2 gap-6">
@@ -727,20 +646,6 @@ export default function RepairShop() {
         </div>
       </div>
 
-      {/* Enhanced Work Order Wizard */}
-      {showWorkOrderWizard && selectedEquipment && (
-        <EnhancedWorkOrderWizard
-          equipmentId={selectedEquipment.id}
-          equipmentName={selectedEquipment.name}
-          editingWorkOrder={editingWorkOrder}
-          onClose={() => {
-            setShowWorkOrderWizard(false);
-            setSelectedEquipment(null);
-            setEditingWorkOrder(null);
-          }}
-          onSuccess={handleWorkOrderCreated}
-        />
-      )}
     </DragDropContext>
   );
 }
