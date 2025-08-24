@@ -115,20 +115,11 @@ export function useDragDrop() {
         console.error("Failed to create employee audit log:", auditError);
       }
       
-      // Update the specific employee in the cache directly
-      const currentEmployees = queryClient.getQueryData(["/api", "employees"]) as any[] || [];
-      const updatedEmployees = currentEmployees.map(emp => 
-        emp.id === employee.id ? employee : emp
-      );
-      queryClient.setQueryData(["/api", "employees"], updatedEmployees);
-      
-      // Force immediate refetch to ensure fresh data
-      await queryClient.refetchQueries({ queryKey: ["/api", "employees"] });
-      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
+      // Simple approach: just invalidate and refetch immediately
+      queryClient.invalidateQueries({ queryKey: ["/api", "employees"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
       
       console.log("✅ EMPLOYEE SUCCESS:", variables.employeeId, "assigned to", variables.projectId);
-      console.log("🔄 Updated cache with new employee data:", employee);
-      console.log("📊 Current unassigned count should decrease now");
     },
     onError: (error) => {
       toast({
@@ -201,20 +192,11 @@ export function useDragDrop() {
         console.error("Failed to create equipment audit log:", auditError);
       }
       
-      // Update the specific equipment in the cache directly
-      const currentEquipment = queryClient.getQueryData(["/api", "equipment"]) as any[] || [];
-      const updatedEquipment = currentEquipment.map(eq => 
-        eq.id === equipment.id ? equipment : eq
-      );
-      queryClient.setQueryData(["/api", "equipment"], updatedEquipment);
-      
-      // Force immediate refetch to ensure fresh data
-      await queryClient.refetchQueries({ queryKey: ["/api", "equipment"] });
-      await queryClient.refetchQueries({ queryKey: ["/api", "projects"] });
+      // Simple approach: just invalidate and refetch immediately
+      queryClient.invalidateQueries({ queryKey: ["/api", "equipment"] });
+      queryClient.invalidateQueries({ queryKey: ["/api", "projects"] });
       
       console.log("✅ EQUIPMENT SUCCESS:", variables.equipmentId, "assigned to", variables.projectId);
-      console.log("🔄 Updated cache with new equipment data:", equipment);
-      console.log("📊 Current unassigned count should decrease now");
       
       // If equipment was assigned to repair shop, also invalidate repair shop queries
       if (variables.projectId === "repair-shop") {
