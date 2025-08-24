@@ -1639,15 +1639,25 @@ Rules:
       const workOrder = await storage.updateWorkOrder(req.params.id, updates);
       
       // Log status and priority changes
+      console.log('🔍 Checking for changes:');
+      console.log('  Current status:', currentWorkOrder.status);
+      console.log('  New status:', updates.status);
+      console.log('  Current priority:', currentWorkOrder.priority);
+      console.log('  New priority:', updates.priority);
+      
       const changeLogs = [];
       
       if (updates.status && updates.status !== currentWorkOrder.status) {
+        console.log('📝 Status change detected!');
         changeLogs.push(`Status changed from ${currentWorkOrder.status.toUpperCase()} to ${updates.status.toUpperCase()}`);
       }
       
       if (updates.priority && updates.priority !== currentWorkOrder.priority) {
+        console.log('📝 Priority change detected!');
         changeLogs.push(`Priority changed from ${currentWorkOrder.priority.toUpperCase()} to ${updates.priority.toUpperCase()}`);
       }
+      
+      console.log('📋 Change logs array:', changeLogs);
       
       // Create comment for any changes
       if (changeLogs.length > 0) {
