@@ -46,7 +46,7 @@ export function onDragEndFactory(fns: Fns) {
       projectId = destination.droppableId;
     }
 
-    console.log("Drag and Drop Debug:", {
+    console.log("🎯 DRAG ATTEMPT:", {
       draggableId,
       source: source.droppableId,
       destination: destination.droppableId,
@@ -57,10 +57,23 @@ export function onDragEndFactory(fns: Fns) {
       isRepairShop
     });
 
-    if (isEmp) {
-      await fns.setEmployeeAssignment(id, projectId);
-    } else {
-      await fns.setEquipmentAssignment(id, projectId);
+    try {
+      if (isEmp) {
+        console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
+        await fns.setEmployeeAssignment(id, projectId);
+        console.log(`✅ EMPLOYEE SUCCESS: ${id} assigned to ${projectId}`);
+      } else {
+        console.log(`🔧 EQUIPMENT ASSIGNMENT: Starting for ${id}`);
+        await fns.setEquipmentAssignment(id, projectId);
+        console.log(`✅ EQUIPMENT SUCCESS: ${id} assigned to ${projectId}`);
+      }
+    } catch (error: any) {
+      console.error(`❌ DRAG FAILED: ${isEmp ? 'Employee' : 'Equipment'} ${id}`);
+      console.error(`❌ Error:`, error.message);
+      console.error(`❌ Target:`, projectId);
+      
+      // Re-throw to let higher level handlers deal with it
+      throw error;
     }
   };
 }
