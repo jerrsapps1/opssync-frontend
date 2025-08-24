@@ -1,61 +1,47 @@
 import React, { useState } from "react";
 
-interface InviteFormProps {
-  onInvite: (email: string) => void;
-}
+export default function InviteForm({
+  onInvited,
+  remaining
+}: {
+  onInvited: () => void;
+  remaining: number;
+}) {
+  const [emails, setEmails] = useState<string>("");
 
-export default function InviteForm({ onInvite }: InviteFormProps) {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || isSubmitting) return;
-
-    setIsSubmitting(true);
+    const list = emails.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    if (!list.length) return alert("Add at least one email");
     try {
-      await onInvite(email);
-      setEmail("");
-    } finally {
-      setIsSubmitting(false);
+      const res = await fetch("/api/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: list })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to invite");
+      alert(`Invited: ${data.sent}/${list.length}`);
+      setEmails("");
+      onInvited();
+    } catch (e: any) {
+      alert(e.message);
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-      <div style={{ flex: 1 }}>
-        <input
-          type="email"
-          placeholder="Enter email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={isSubmitting}
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            fontSize: "14px",
-          }}
-        />
+    <form onSubmit={submit} style={{ display: "grid", gap: 8, maxWidth: 600 }}>
+      <label><b>Emails to invite</b> (separate with commas or spaces)</label>
+      <textarea
+        value={emails}
+        onChange={(e) => setEmails(e.target.value)}
+        rows={4}
+        placeholder="alice@company.com, bob@company.com"
+      />
+      <div style={{ fontSize: 12, color: "#555" }}>Seats remaining: {remaining}</div>
+      <div>
+        <button type="submit">Send Invites</button>
       </div>
-      
-      <button
-        type="submit"
-        disabled={!email || isSubmitting}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: isSubmitting ? "#ccc" : "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: isSubmitting ? "not-allowed" : "pointer",
-          fontSize: "14px",
-        }}
-      >
-        {isSubmitting ? "Sending..." : "Send Invite"}
-      </button>
     </form>
   );
 }

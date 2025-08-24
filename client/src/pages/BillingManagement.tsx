@@ -1,73 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PlanSelector from "../components/PlanSelector";
 import InviteForm from "../components/InviteForm";
 
+type Org = {
+  id: string;
+  name: string;
+  plan: "single" | "five" | "ten";
+  seat_limit: number;
+  seats_used: number;
+};
+
 export default function BillingManagement() {
-  const [currentPlan, setCurrentPlan] = useState("single");
-  const [users, setUsers] = useState([]);
-  const [invites, setInvites] = useState([]);
+  const [org, setOrg] = useState<Org | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handlePlanUpgrade = async (planId: string) => {
+  async function refresh() {
+    setLoading(true);
     try {
-      const response = await fetch("/api/billing/upgrade", {
+      const res = await fetch("/api/billing/org");
+      const data = await res.json();
+      setOrg(data.org);
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || "Failed to load org");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { refresh(); }, []);
+
+  async function onPlanChange(plan: "single" | "five" | "ten") {
+    try {
+      const res = await fetch("/api/billing/upgrade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, orgId: "org-001" }),
+        body: JSON.stringify({ plan })
       });
-      if (response.ok) {
-        setCurrentPlan(planId);
-        alert("Plan upgraded successfully!");
-      }
-    } catch (error) {
-      alert("Failed to upgrade plan");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upgrade failed");
+      await refresh();
+      alert("Plan updated");
+    } catch (e: any) {
+      alert(e.message);
     }
-  };
+  }
 
-  const handleInvite = async (email: string) => {
-    try {
-      const response = await fetch("/api/invites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, orgId: "org-001" }),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setInvites([...invites, { email, inviteLink: result.inviteLink }]);
-        alert(`Invite sent! Link: ${result.inviteLink}`);
-      } else {
-        alert(result.error);
-      }
-    } catch (error) {
-      alert("Failed to send invite");
-    }
-  };
+  if (loading) return <p>Loading…</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (!org) return <p>No organization found.</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h2>Billing Management</h2>
-      
-      <div style={{ marginBottom: "30px" }}>
-        <h3>Current Plan: {currentPlan}</h3>
-        <PlanSelector currentPlan={currentPlan} onUpgrade={handlePlanUpgrade} />
-      </div>
+      <p><b>Organization:</b> {org.name}</p>
+      <p><b>Current Plan:</b> {org.plan} — {org.seats_used}/{org.seat_limit} seats used</p>
 
-      <div style={{ marginBottom: "30px" }}>
-        <h3>Team Members</h3>
-        <p>Current users: {users.length}</p>
-        <InviteForm onInvite={handleInvite} />
-      </div>
+      <PlanSelector value={org.plan} onChange={onPlanChange} />
 
-      {invites.length > 0 && (
-        <div>
-          <h3>Recent Invites</h3>
-          {invites.map((invite, index) => (
-            <div key={index} style={{ marginBottom: "10px", padding: "10px", border: "1px solid #ccc" }}>
-              <p>Email: {invite.email}</p>
-              <p>Invite Link: <a href={invite.inviteLink}>{invite.inviteLink}</a></p>
-            </div>
-          ))}
-        </div>
-      )}
+      <hr style={{ margin: "24px 0" }} />
+
+      <h3>Invite Users</h3>
+      <InviteForm onInvited={refresh} remaining={org.seat_limit - org.seats_used} />
     </div>
   );
 }
