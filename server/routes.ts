@@ -1598,7 +1598,7 @@ Rules:
         ...validatedData,
         approvalRequired,
         status: approvalRequired ? "pending-approval" : "open",
-        createdBy: req.user!.id,
+        // Skip createdBy for now to avoid foreign key constraint issues
       };
 
       const workOrder = await storage.createWorkOrder(workOrderData);
