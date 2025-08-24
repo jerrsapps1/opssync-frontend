@@ -25,6 +25,7 @@ export function Sidebar() {
         <Item to="/projects">Projects</Item>
         <Item to="/employees">Employees</Item>
         <Item to="/equipment">Equipment</Item>
+        <Item to="/logs">Logs</Item>
         <Item to="/analytics">Advanced Analytics</Item>
         <Item to="/settings">Settings</Item>
         <div className="mt-3 pt-3 border-t border-gray-800 text-xs uppercase text-gray-500">

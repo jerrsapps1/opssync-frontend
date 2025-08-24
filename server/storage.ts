@@ -40,14 +40,6 @@ import {
   type NotificationRecipient,
   type InsertNotificationRecipient,
   type UpdateNotificationRecipient,
-  messageThreads,
-  messages,
-  type MessageThread,
-  type InsertMessageThread,
-  type UpdateMessageThread,
-  type Message,
-  type InsertMessage,
-  type UpdateMessage
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
@@ -159,13 +151,6 @@ export interface IStorage {
   updateNotificationRecipient(id: string, updates: UpdateNotificationRecipient): Promise<NotificationRecipient>;
   deleteNotificationRecipient(id: string): Promise<void>;
   
-  // Messages
-  getMessageThreads(): Promise<MessageThread[]>;
-  createMessageThread(thread: InsertMessageThread): Promise<MessageThread>;
-  getMessagesByThread(threadId: string): Promise<Message[]>;
-  createMessage(message: InsertMessage): Promise<Message>;
-  updateMessageThreadTimestamp(threadId: string): Promise<void>;
-  searchMessages(query?: string, date?: string): Promise<{ thread: MessageThread; messages: Message[] }[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -2212,103 +2197,6 @@ export class PostgreSQLStorage extends MemStorage {
     await db.delete(notificationRecipients).where(eq(notificationRecipients.id, id));
   }
 
-  // Messages implementation
-  async getMessageThreads(): Promise<MessageThread[]> {
-    try {
-      return await db.select().from(messageThreads).orderBy(desc(messageThreads.updatedAt));
-    } catch (error) {
-      console.error('Error getting message threads:', error);
-      // Fallback to raw SQL
-      const result = await db.execute(sql`SELECT * FROM message_threads ORDER BY updated_at DESC`);
-      return result.rows as MessageThread[];
-    }
-  }
-
-  async createMessageThread(thread: InsertMessageThread): Promise<MessageThread> {
-    try {
-      const [newThread] = await db.insert(messageThreads).values(thread).returning();
-      return newThread;
-    } catch (error) {
-      console.error('Error creating message thread:', error);
-      // Fallback to raw SQL
-      const result = await db.execute(sql`
-        INSERT INTO message_threads (topic, created_by, created_at, updated_at) 
-        VALUES (${thread.topic}, ${thread.createdBy}, NOW(), NOW()) 
-        RETURNING *
-      `);
-      return result.rows[0] as MessageThread;
-    }
-  }
-
-  async getMessagesByThread(threadId: string): Promise<Message[]> {
-    try {
-      return await db.select().from(messages).where(eq(messages.threadId, threadId)).orderBy(messages.createdAt);
-    } catch (error) {
-      console.error('Error getting messages by thread:', error);
-      // Fallback to raw SQL
-      const result = await db.execute(sql`SELECT * FROM messages WHERE thread_id = ${threadId} ORDER BY created_at`);
-      return result.rows as Message[];
-    }
-  }
-
-  async createMessage(message: InsertMessage): Promise<Message> {
-    try {
-      const [newMessage] = await db.insert(messages).values(message).returning();
-      return newMessage;
-    } catch (error) {
-      console.error('Error creating message:', error);
-      // Fallback to raw SQL
-      const result = await db.execute(sql`
-        INSERT INTO messages (thread_id, content, created_by, created_at) 
-        VALUES (${message.threadId}, ${message.content}, ${message.createdBy}, NOW()) 
-        RETURNING *
-      `);
-      return result.rows[0] as Message;
-    }
-  }
-
-  async updateMessageThreadTimestamp(threadId: string): Promise<void> {
-    try {
-      await db
-        .update(messageThreads)
-        .set({ updatedAt: new Date() })
-        .where(eq(messageThreads.id, threadId));
-    } catch (error) {
-      console.error('Error updating message thread timestamp:', error);
-      // Fallback to raw SQL
-      await db.execute(sql`UPDATE message_threads SET updated_at = NOW() WHERE id = ${threadId}`);
-    }
-  }
-
-  async searchMessages(query?: string, date?: string): Promise<{ thread: MessageThread; messages: Message[] }[]> {
-    // Get all threads first
-    const threads = await this.getMessageThreads();
-    
-    const results: { thread: MessageThread; messages: Message[] }[] = [];
-    
-    for (const thread of threads) {
-      let threadMessages = await this.getMessagesByThread(thread.id);
-      
-      // Filter messages based on search criteria
-      if (query || date) {
-        threadMessages = threadMessages.filter(msg => {
-          const matchesQuery = !query || 
-            msg.content.toLowerCase().includes(query.toLowerCase()) ||
-            thread.topic.toLowerCase().includes(query.toLowerCase());
-            
-          const matchesDate = !date || msg.createdAt.toDateString() === new Date(date).toDateString();
-          
-          return matchesQuery && matchesDate;
-        });
-      }
-      
-      if (threadMessages.length > 0) {
-        results.push({ thread, messages: threadMessages });
-      }
-    }
-    
-    return results;
-  }
 }
 
 export const storage = new PostgreSQLStorage();
