@@ -1628,7 +1628,36 @@ Rules:
   app.patch("/api/work-orders/:id", authenticateToken, async (req, res) => {
     try {
       const updates = updateWorkOrderSchema.parse(req.body);
+      
+      // Get current work order to track changes
+      const currentWorkOrder = await storage.getWorkOrder(req.params.id);
+      if (!currentWorkOrder) {
+        return res.status(404).json({ message: "Work order not found" });
+      }
+      
+      // Update the work order
       const workOrder = await storage.updateWorkOrder(req.params.id, updates);
+      
+      // Log status and priority changes
+      const changeLogs = [];
+      
+      if (updates.status && updates.status !== currentWorkOrder.status) {
+        changeLogs.push(`Status changed from ${currentWorkOrder.status.toUpperCase()} to ${updates.status.toUpperCase()}`);
+      }
+      
+      if (updates.priority && updates.priority !== currentWorkOrder.priority) {
+        changeLogs.push(`Priority changed from ${currentWorkOrder.priority.toUpperCase()} to ${updates.priority.toUpperCase()}`);
+      }
+      
+      // Create comment for any changes
+      if (changeLogs.length > 0) {
+        await storage.createWorkOrderComment({
+          workOrderId: req.params.id,
+          comment: changeLogs.join('. '),
+          createdBy: (req as any).user?.username || 'System',
+        });
+      }
+      
       res.json(workOrder);
     } catch (error) {
       console.error("Error updating work order:", error);
