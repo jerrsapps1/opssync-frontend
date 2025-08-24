@@ -66,27 +66,15 @@ export function onDragEndFactory(fns: Fns) {
       return; // Skip invalid employee IDs
     }
     
-    // Execute assignment in background - don't await to allow drag completion
-    if (isEmp) {
-      console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
-      const result = fns.setEmployeeAssignment(id, projectId);
-      if (result && typeof result.then === 'function') {
-        result
-          .then(() => console.log(`✅ EMPLOYEE SUCCESS: ${id} assigned to ${projectId}`))
-          .catch((error: any) => {
-            console.error(`❌ EMPLOYEE DRAG FAILED: ${id}`, error.message);
-          });
+    // Fire assignment in background - completely async to not block drag completion
+    setTimeout(() => {
+      if (isEmp) {
+        console.log(`🧑 EMPLOYEE ASSIGNMENT: Starting for ${id}`);
+        fns.setEmployeeAssignment(id, projectId);
+      } else {
+        console.log(`🔧 EQUIPMENT ASSIGNMENT: Starting for ${id}`);
+        fns.setEquipmentAssignment(id, projectId);
       }
-    } else {
-      console.log(`🔧 EQUIPMENT ASSIGNMENT: Starting for ${id}`);
-      const result = fns.setEquipmentAssignment(id, projectId);
-      if (result && typeof result.then === 'function') {
-        result
-          .then(() => console.log(`✅ EQUIPMENT SUCCESS: ${id} assigned to ${projectId}`))
-          .catch((error: any) => {
-            console.error(`❌ EQUIPMENT DRAG FAILED: ${id}`, error.message);
-          });
-      }
-    }
+    }, 0);
   };
 }
