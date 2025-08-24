@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Box, Flex, Text, Avatar, Badge, Spinner } from "@chakra-ui/react";
-import { User, Clock } from "lucide-react";
+import { User } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AssetLocationSearch } from "./AssetLocationSearch";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface User {
   id: string;
@@ -18,27 +18,12 @@ interface User {
 export function DashboardHeader() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update time every minute
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
-
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ["/api/auth/validate"],
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString([], {
@@ -103,13 +88,6 @@ export function DashboardHeader() {
         <AssetLocationSearch />
 
         <Flex align="center" gap={6}>
-          <Flex align="center" gap={2} color="gray.300">
-            <Clock size={16} />
-            <Text fontSize="sm" fontWeight="medium">
-              {formatTime(currentTime)}
-            </Text>
-          </Flex>
-
           <NotificationBell />
 
           <Flex align="center" gap={3}>
