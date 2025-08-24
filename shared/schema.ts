@@ -325,6 +325,7 @@ export const workOrders = pgTable("work_orders", {
   priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
   status: text("status").notNull().default("open"), // open, in-progress, completed, cancelled, pending-approval, approved, rejected
   assignedTo: text("assigned_to"), // Who is working on the repair
+  comments: text("comments"), // User comments for the work order
   estimatedCost: integer("estimated_cost"), // Estimated repair cost in cents
   actualCost: integer("actual_cost"), // Actual repair cost in cents
   laborCost: integer("labor_cost"), // Labor cost in cents

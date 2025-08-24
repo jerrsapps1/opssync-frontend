@@ -1636,6 +1636,21 @@ Rules:
     }
   });
 
+  // Update work order comments
+  app.patch("/api/work-orders/:id/comments", authenticateToken, async (req, res) => {
+    try {
+      const { comments } = req.body;
+      if (typeof comments !== 'string') {
+        return res.status(400).json({ message: "Comments must be a string" });
+      }
+      const workOrder = await storage.updateWorkOrder(req.params.id, { comments });
+      res.json(workOrder);
+    } catch (error) {
+      console.error("Error updating work order comments:", error);
+      res.status(400).json({ message: "Failed to update work order comments" });
+    }
+  });
+
   app.delete("/api/work-orders/:id", authenticateToken, async (req, res) => {
     try {
       await storage.deleteWorkOrder(req.params.id);

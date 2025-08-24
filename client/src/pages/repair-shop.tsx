@@ -11,7 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle, Plus } from "lucide-react";
 import { format } from "date-fns";
 import type { Equipment, WorkOrder } from "@shared/schema";
 
@@ -53,6 +55,8 @@ export default function RepairShop() {
   const [sortBy, setSortBy] = useState<"dateCreated" | "priority" | "status" | "equipment">("dateCreated");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [expandedWorkOrder, setExpandedWorkOrder] = useState<string | null>(null);
+  const [commentingWorkOrder, setCommentingWorkOrder] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -118,6 +122,46 @@ export default function RepairShop() {
 
   const handleCompleteRepair = (equipmentId: string) => {
     completeRepairMutation.mutate(equipmentId);
+  };
+
+  const updateCommentMutation = useMutation({
+    mutationFn: async ({ workOrderId, comments }: { workOrderId: string; comments: string }) => {
+      const response = await apiRequest("PATCH", `/api/work-orders/${workOrderId}/comments`, {
+        comments
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
+      setCommentingWorkOrder(null);
+      setCommentText("");
+      toast({
+        title: "Comment Added",
+        description: "Work order comment has been updated.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update comment",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleAddComment = (workOrderId: string) => {
+    setCommentingWorkOrder(workOrderId);
+    const workOrder = workOrders.find(wo => wo.id === workOrderId);
+    setCommentText(workOrder?.comments || "");
+  };
+
+  const handleSaveComment = () => {
+    if (commentingWorkOrder) {
+      updateCommentMutation.mutate({
+        workOrderId: commentingWorkOrder,
+        comments: commentText
+      });
+    }
   };
 
   const toggleSelection = (equipmentId: string) => {
@@ -534,15 +578,40 @@ export default function RepairShop() {
                         </div>
                         
                         <div className="col-span-1">
-                          <Badge className={`${getStatusColor(workOrder.status)} text-xs`}>
-                            {workOrder.status.toUpperCase()}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge className={`${getStatusColor(workOrder.status)} text-xs`}>
+                              {workOrder.status.toUpperCase()}
+                            </Badge>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddComment(workOrder.id);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="h-5 w-5 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
+                              data-testid={`button-comment-${workOrder.id}`}
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                         
                         <div className="col-span-2 text-sm">
                           <div className="text-white">
-                            {workOrder.assignedTo || (
-                              <span className="text-gray-400 italic">Unassigned</span>
+                            {workOrder.comments ? (
+                              <div className="bg-gray-700 p-2 rounded text-xs">
+                                <div className="flex items-center gap-1 mb-1">
+                                  <MessageCircle className="h-3 w-3 text-blue-400" />
+                                  <span className="text-blue-400 font-medium">Comment:</span>
+                                </div>
+                                <div className="text-gray-300">{workOrder.comments}</div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-gray-400 italic">
+                                <MessageCircle className="h-3 w-3" />
+                                <span>No comments</span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -646,6 +715,48 @@ export default function RepairShop() {
         </div>
       </div>
 
+      {/* Comment Dialog */}
+      <Dialog open={!!commentingWorkOrder} onOpenChange={() => setCommentingWorkOrder(null)}>
+        <DialogContent className="bg-gray-800 border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-blue-400" />
+              Add Work Order Comment
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                Comment
+              </label>
+              <Textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Add your comment about this work order..."
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
+                data-testid="textarea-comment"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCommentingWorkOrder(null)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveComment}
+              disabled={updateCommentMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-500"
+              data-testid="button-save-comment"
+            >
+              {updateCommentMutation.isPending ? "Saving..." : "Save Comment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DragDropContext>
   );
 }
