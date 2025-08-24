@@ -14,13 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Search, Filter, Calendar, User, Wrench, DollarSign, Clock, ChevronDown, ChevronUp, MessageCircle, Plus } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment, InsertWorkOrder } from "@shared/schema";
-import { insertWorkOrderSchema } from "@shared/schema";
+import type { Equipment, WorkOrder, WorkOrderComment, InsertWorkOrderComment } from "@shared/schema";
 
 async function getRepairShopEquipment(): Promise<Equipment[]> {
   const response = await apiRequest("GET", "/api/equipment");
@@ -82,8 +78,6 @@ export default function RepairShop() {
   const [newComment, setNewComment] = useState("");
   const [loadedComments, setLoadedComments] = useState<Set<string>>(new Set());
   
-  // Create work order state
-  const [createWorkOrderEquipment, setCreateWorkOrderEquipment] = useState<Equipment | null>(null);
 
   const { data: repairEquipment = [], isLoading } = useQuery({
     queryKey: ["/api", "repair-shop", "equipment"],
@@ -246,67 +240,9 @@ export default function RepairShop() {
     }
   });
 
-  const createWorkOrderMutation = useMutation({
-    mutationFn: async (workOrder: InsertWorkOrder) => {
-      const response = await apiRequest("POST", "/api/work-orders", workOrder);
-      return response.json();
-    },
-    onSuccess: (newWorkOrder) => {
-      queryClient.invalidateQueries({ queryKey: ["/api", "work-orders"] });
-      setCreateWorkOrderEquipment(null);
-      toast({
-        title: "Work Order Created",
-        description: "New work order has been created successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create work order. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
-  const form = useForm<InsertWorkOrder>({
-    resolver: zodResolver(insertWorkOrderSchema),
-    defaultValues: {
-      title: "",
-      description: "Work order created from repair shop",
-      reason: "Equipment requires maintenance/repair",
-      priority: "medium",
-      status: "open",
-      equipmentId: "",
-    },
-  });
 
-  const onSubmitWorkOrder = (data: InsertWorkOrder) => {
-    if (createWorkOrderEquipment) {
-      const workOrderData = {
-        ...data,
-        equipmentId: createWorkOrderEquipment.id,
-        description: data.description || "Work order created from repair shop",
-        reason: data.reason || "Equipment requires maintenance/repair",
-      };
-      createWorkOrderMutation.mutate(workOrderData);
-    }
-  };
 
-  // Reset form when equipment changes and auto-populate title
-  useEffect(() => {
-    if (createWorkOrderEquipment) {
-      const autoTitle = `${createWorkOrderEquipment.make || ''} ${createWorkOrderEquipment.model || ''} - Asset #${createWorkOrderEquipment.assetNumber || createWorkOrderEquipment.id}`.trim();
-      
-      form.reset({
-        title: autoTitle,
-        description: "Work order created from repair shop",
-        reason: "Equipment requires maintenance/repair",
-        priority: "medium",
-        status: "open",
-        equipmentId: createWorkOrderEquipment.id,
-      });
-    }
-  }, [createWorkOrderEquipment, form]);
 
   const handleUpdateClick = () => {
     const selectedIds = Array.from(selectedWorkOrders);
@@ -600,48 +536,6 @@ export default function RepairShop() {
                 </SelectContent>
               </Select>
 
-              <Button
-                onClick={() => {
-                  // If work orders are selected, update them. Otherwise, create new work order.
-                  if (selectedWorkOrders.size > 0) {
-                    handleUpdateClick();
-                  } else {
-                    // Use selected equipment if any, otherwise find first available equipment
-                    const selectedEquipmentIds = Array.from(selectedItems);
-                    if (selectedEquipmentIds.length === 1) {
-                      // Single equipment selected - use it
-                      const selectedEquipment = repairEquipment.find(eq => eq.id === selectedEquipmentIds[0]);
-                      if (selectedEquipment) {
-                        setCreateWorkOrderEquipment(selectedEquipment);
-                      }
-                    } else if (selectedEquipmentIds.length > 1) {
-                      toast({
-                        title: "Multiple Equipment Selected",
-                        description: "Please select only one piece of equipment to create a work order.",
-                        variant: "destructive",
-                      });
-                    } else {
-                      // No equipment selected - find first available equipment
-                      const availableEquipment = repairEquipment.find(eq => getWorkOrdersForEquipment(eq.id).length === 0);
-                      if (availableEquipment) {
-                        setCreateWorkOrderEquipment(availableEquipment);
-                      } else {
-                        toast({
-                          title: "No Equipment Available",
-                          description: "All repair shop equipment already has work orders. Select an equipment card above to create a work order for it.",
-                          variant: "destructive",
-                        });
-                      }
-                    }
-                  }
-                }}
-                size="sm"
-                className="flex items-center gap-2 bg-green-600 border-green-500 text-white hover:bg-green-500"
-                data-testid="button-create-update-workorder"
-              >
-                <Plus className="h-4 w-4" />
-                Create/Update Work Order{selectedWorkOrders.size > 0 ? ` (${selectedWorkOrders.size})` : ''}
-              </Button>
               
               <div className="text-sm text-gray-400">
                 Showing {filteredAndSortedWorkOrders.length} of {workOrders.length} work orders
@@ -988,127 +882,6 @@ export default function RepairShop() {
         </div>
       </Dialog>
 
-      {/* Create Work Order Dialog */}
-      <Dialog 
-        open={createWorkOrderEquipment !== null} 
-        onClose={() => setCreateWorkOrderEquipment(null)}
-        title={
-          <div className="flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-blue-400" />
-            Create Work Order - {createWorkOrderEquipment?.name}
-          </div>
-        }
-        footer={null}
-      >
-        <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmitWorkOrder)}>
-            {/* Hidden fields for required schema validation */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <Input {...field} type="hidden" />
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <Input {...field} type="hidden" />
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Title</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      className="bg-gray-700 border-gray-600 text-white"
-                      data-testid="input-workorder-title"
-                      readOnly
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Priority</FormLabel>
-                    <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-priority">
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Status</FormLabel>
-                    <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white" data-testid="select-workorder-status">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="open">Open</SelectItem>
-                          <SelectItem value="in-progress">In Progress</SelectItem>
-                          <SelectItem value="completed">Returned to Service</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Submit buttons inside the form */}
-            <div className="flex gap-3 justify-end pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreateWorkOrderEquipment(null)}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createWorkOrderMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-500"
-                data-testid="button-create-workorder"
-              >
-                {createWorkOrderMutation.isPending ? "Creating..." : "Create Work Order"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </Dialog>
 
     </DragDropContext>
   );
