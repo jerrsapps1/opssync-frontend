@@ -1604,18 +1604,23 @@ Rules:
 
       const workOrder = await storage.createWorkOrder(workOrderData);
       
-      // If approval required, create approval requests
+      // If approval required, create approval requests (with error handling)
       if (approvalRequired) {
-        const thresholds = await storage.getCostApprovalThresholds();
-        for (const threshold of thresholds) {
-          if (totalCost > threshold.maxAmount) {
-            await storage.createWorkOrderApproval({
-              workOrderId: workOrder.id,
-              approverRole: threshold.role,
-              thresholdAmount: threshold.maxAmount,
-              requiredBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-            });
+        try {
+          const thresholds = await storage.getCostApprovalThresholds();
+          for (const threshold of thresholds) {
+            if (totalCost > threshold.maxAmount) {
+              await storage.createWorkOrderApproval({
+                workOrderId: workOrder.id,
+                approverRole: threshold.role,
+                thresholdAmount: threshold.maxAmount,
+                requiredBy: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+              });
+            }
           }
+        } catch (approvalError) {
+          console.warn("Warning: Could not process approval thresholds:", approvalError);
+          // Continue without approval processing - don't block work order creation
         }
       }
       
