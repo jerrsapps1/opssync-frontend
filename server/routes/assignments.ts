@@ -51,8 +51,8 @@ async function logProjectActivity({
         entityId,
         projectId: newProjectId,
         projectName: newProject.name,
-        fromProjectId: previousProjectId,
-        fromProjectName: previousProject.name,
+        fromProjectId: previousProjectId || undefined,
+        fromProjectName: previousProject?.name || '',
         performedBy,
         performedByEmail
       });
@@ -88,8 +88,8 @@ async function logProjectActivity({
         entityId,
         projectId: newProjectId,
         projectName: newProject.name,
-        fromProjectId: previousProjectId,
-        fromProjectName: previousProject?.name,
+        fromProjectId: previousProjectId || undefined,
+        fromProjectName: previousProject?.name || undefined,
         performedBy,
         performedByEmail
       });
@@ -118,7 +118,7 @@ router.patch("/employees/:id/assignment", async (req, res) => {
     const previousProjectId = currentEmployee?.currentProjectId;
     
     // Update employee assignment directly via storage
-    const updatedEmployee = await storage.updateEmployeeAssignment(id, { currentProjectId: projectId });
+    const updatedEmployee = await storage.updateEmployeeAssignment(id, { projectId });
     
     // Status-based conditional logging
     await logProjectActivity({
@@ -154,23 +154,61 @@ router.patch("/equipment/:id/assignment", async (req, res) => {
     // Get current equipment state for logging
     const currentEquipment = await storage.getEquipmentItem(id);
     const previousProjectId = currentEquipment?.currentProjectId;
+    const previousStatus = currentEquipment?.status;
     
-    // Update equipment assignment directly via storage
-    const updatedEquipment = await storage.updateEquipmentAssignment(id, { currentProjectId: projectId });
+    let finalProjectId = projectId;
+    let finalStatus = currentEquipment?.status || "available";
     
-    // Status-based conditional logging
+    // Handle repair shop logic
+    if (projectId === "repair-shop") {
+      // Moving TO repair shop: set projectId to null, status to maintenance
+      finalProjectId = null;
+      finalStatus = "maintenance";
+      console.log("🔧 Moving equipment to repair shop");
+    } else if (previousStatus === "maintenance" && projectId === null) {
+      // Moving FROM repair shop to available: set status to available
+      finalStatus = "available";
+      console.log("✅ Moving equipment from repair shop to available");
+    } else if (previousStatus === "maintenance" && projectId) {
+      // Moving FROM repair shop to project: set status to in_use
+      finalStatus = "in_use";
+      console.log("📋 Moving equipment from repair shop to project");
+    } else if (projectId) {
+      // Regular project assignment
+      finalStatus = "in_use";
+    } else {
+      // Moving to unassigned (available)
+      finalStatus = "available";
+    }
+    
+    // Update equipment assignment and status separately
+    const updatedEquipment = await storage.updateEquipmentAssignment(id, { 
+      projectId: finalProjectId
+    });
+    
+    // Update status separately if it changed
+    if (finalStatus !== currentEquipment?.status) {
+      await storage.updateEquipment(id, { status: finalStatus });
+    }
+    
+    // Status-based conditional logging (use original projectId for repair shop logging)
     await logProjectActivity({
       equipmentId: id,
       equipmentName: updatedEquipment.name,
       previousProjectId,
-      newProjectId: projectId,
+      newProjectId: projectId, // Use original projectId for logging
       entityType: "equipment"
     });
     
-    console.log("Equipment assignment complete:", updatedEquipment);
+    console.log("Equipment assignment complete:", { 
+      originalProjectId: projectId,
+      finalProjectId,
+      finalStatus,
+      equipment: updatedEquipment
+    });
     console.log("=================================");
     
-    broadcast({ type: "assignment.updated", entity: "equipment", id, currentProjectId: projectId });
+    broadcast({ type: "assignment.updated", entity: "equipment", id, currentProjectId: finalProjectId, status: finalStatus });
     res.json(updatedEquipment);
   } catch (e:any) {
     console.error("Equipment assignment error:", e.message);

@@ -17,14 +17,7 @@ export function useDragDrop() {
   };
 
   const setEquipmentAssignment = async (id: string, projectId: string | null) => {
-    const result = await assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
-    
-    // Navigate to repair shop if equipment was assigned to repair shop
-    if (projectId === "repair-shop") {
-      navigate("/repair-shop");
-    }
-    
-    return result;
+    return await assignEquipmentMutation.mutateAsync({ equipmentId: id, projectId });
   };
 
   const assignEmployeeMutation = useMutation({
