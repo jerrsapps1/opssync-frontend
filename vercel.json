@@ -1,0 +1,8 @@
+cat > vercel.json <<'JSON'
+{
+  "version": 2,
+  "framework": "vite",
+  "buildCommand": "npm ci && npm run build",
+  "outputDirectory": "dist"
+}
+JSON
